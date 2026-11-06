@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Morfa.Core/Morfa.Core.csproj" />
+    <Project Path="src/Morfa.Engines/Morfa.Engines.csproj" />
+    <Project Path="src/Morfa.Platform.Windows/Morfa.Platform.Windows.csproj" />
+    <Project Path="src/Morfa.Platform.Linux/Morfa.Platform.Linux.csproj" />
+    <Project Path="src/Morfa.Platform.MacOS/Morfa.Platform.MacOS.csproj" />
+    <Project Path="src/Morfa.App/Morfa.App.csproj" />
+    <Project Path="src/Morfa.Cli/Morfa.Cli.csproj" />
+    <Project Path="src/Morfa.Setup/Morfa.Setup.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Morfa.Core.Tests/Morfa.Core.Tests.csproj" />
+    <Project Path="tests/Morfa.Engines.Tests/Morfa.Engines.Tests.csproj" />
+    <Project Path="tests/Morfa.App.Tests/Morfa.App.Tests.csproj" />
+    <Project Path="tests/Morfa.Cli.Tests/Morfa.Cli.Tests.csproj" />
+    <Project Path="tests/Morfa.Platform.Tests/Morfa.Platform.Tests.csproj" />
+    <Project Path="tests/Morfa.Setup.Tests/Morfa.Setup.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path=".editorconfig" />
+  </Folder>
+</Solution>

@@ -1,0 +1,54 @@
+# Source snapshots used only as reverse-engineering references.
+Filee-main/
+rea-main/
+
+# Build output
+bin/
+obj/
+artifacts/
+publish/
+Releases/
+
+# Downloaded conversion engines (see build/fetch-engines.ps1)
+engines/
+build/.cache/
+
+# IDE
+.vs/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# Test results
+TestResults/
+*.trx
+coverage*/
+
+# Local scratch output
+app_final.txt
+app_test_result.txt
+engines_test_result.txt
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Fonts are downloaded by build/fetch-fonts.ps1
+src/Morfa.App/Assets/Fonts/*.ttf
+src/Morfa.App/Assets/Fonts/*.otf
+
+# Local-only working notes (never committed)
+rules.md
+guide.md
+docs.md
+reference.md
+security-web.md
+security-app.md
+security-general.md
+SECURITY_MAP.md
+SECURITY_REVIEW.md
+SECURITY_REPORT.md
+rancangan.md
