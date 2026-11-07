@@ -2,6 +2,15 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
+## v1.0.0
+
+Morfa kini tampil dan berperilaku seperti produknya sendiri, bukan seperti leluhur Filee-nya.
+
+## Peningkatan
+
+- **Identitas sendiri, di mana-mana.** Logo, ikon jendela, Setup, dan warna aksen berpindah dari donut dan ungu warisan ke tanda morfa berwarna teal.
+- **Sponsor langsung ke GitHub.** Tombol Sponsor sekarang membuka GitHub Sponsors secara langsung, tanpa jendela berisi layanan lain.
+
 ## v0.1.1
 
 Logo, ikon jendela, Setup, dan warna aksen kini memakai identitas produk ini sendiri.

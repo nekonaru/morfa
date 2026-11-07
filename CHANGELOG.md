@@ -2,6 +2,15 @@
 
 What changed in each version of Morfa. Newest version on top.
 
+## v1.0.0
+
+Morfa now looks and behaves like its own product instead of its Filee ancestor.
+
+## Improvements
+
+- **Own identity, everywhere.** The logo, window icons, Setup and accent colour switched from the inherited donut and purple to the teal morfa mark.
+- **Sponsor goes straight to GitHub.** The Sponsor button now opens GitHub Sponsors directly instead of a window listing outside services.
+
 ## v0.1.1
 
 The logo, window icons, Setup and accent colours now use the product's own identity.
