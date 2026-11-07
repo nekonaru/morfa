@@ -559,7 +559,6 @@ public class RenderTests
     /// default): their presets' names fit their ring slices, in every language.
     /// </summary>
     [AvaloniaTheory]
-    [InlineData("id")]
     [InlineData("en")]
     [InlineData("id")]
     public void The_rotate_and_flip_groups_fan_out_names_that_fit(string language)
@@ -606,7 +605,6 @@ public class RenderTests
     /// under the pointer there is what a drop or click converts with.
     /// </summary>
     [AvaloniaTheory]
-    [InlineData("id")]
     [InlineData("en")]
     [InlineData("id")]
     public void A_group_slice_fans_out_its_presets(string language)
@@ -1527,9 +1525,7 @@ public class RenderTests
     /// </summary>
     [AvaloniaTheory]
     [InlineData("en", false)]
-    [InlineData("id", false)]
     [InlineData("en", true)]
-    [InlineData("id", true)]
     [InlineData("id", false)]
     [InlineData("id", true)]
     public void Toolbar_extension_editor_renders(string language, bool dark)
@@ -1606,11 +1602,9 @@ public class RenderTests
     /// <summary>The preset popup with the video/audio and archive sections, and the target list.</summary>
     [AvaloniaTheory]
     [InlineData("en", false)]
+    [InlineData("en", true)]
     [InlineData("id", false)]
     [InlineData("id", true)]
-    [InlineData("id", false)]
-    [InlineData("id", true)]
-    [InlineData("id", false)]
     public void Preset_editor_shows_media_and_archive_options(string language, bool dark)
     {
         TestServices.EnsureInitialized(language);
@@ -1956,10 +1950,6 @@ public class RenderTests
     [AvaloniaTheory]
     [InlineData("en", false)]
     [InlineData("en", true)]
-    [InlineData("id", false)]
-    [InlineData("id", true)]
-    [InlineData("id", false)]
-    [InlineData("id", true)]
     [InlineData("id", false)]
     [InlineData("id", true)]
     public void Palette_tabs_fit_narrow_column(string language, bool dark)

@@ -1028,8 +1028,7 @@ public class DonutFlipTests
     /// </summary>
     [AvaloniaTheory]
     [InlineData("en", false)]
-    [InlineData("id", false)]
-    [InlineData("id", true)]
+    [InlineData("en", true)]
     [InlineData("id", false)]
     [InlineData("id", true)]
     public void The_flip_key_is_recorded_and_checked_in_the_shortcut_settings(string language, bool dark) =>
@@ -1125,11 +1124,9 @@ public class DonutFlipTests
     /// <summary>The image donut's back face, light and dark, and the ring halfway through its turn.</summary>
     [AvaloniaTheory]
     [InlineData("en", false)]
+    [InlineData("en", true)]
     [InlineData("id", false)]
     [InlineData("id", true)]
-    [InlineData("id", false)]
-    [InlineData("id", true)]
-    [InlineData("id", false)]
     public void The_back_face_renders(string language, bool dark) => With(animations: true, back: null, () =>
     {
         var theme = AppHost.Get<ThemeService>();
@@ -1209,8 +1206,7 @@ public class DonutFlipTests
     /// </summary>
     [AvaloniaTheory]
     [InlineData("en", false)]
-    [InlineData("id", false)]
-    [InlineData("id", true)]
+    [InlineData("en", true)]
     [InlineData("id", false)]
     [InlineData("id", true)]
     public void The_editor_switches_between_the_front_and_the_back(string language, bool dark) => With(animations: false, back: null, () =>
