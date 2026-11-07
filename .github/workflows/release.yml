@@ -125,10 +125,11 @@ jobs:
           # Windows is unsigned: the release notes below warn about SmartScreen. Include all packages; a signed build
           # is published with build/sign-release.ps1 on a PC signed in to SimplySign.
           $files = Get-ChildItem Releases -File -Filter "Morfa-$version-*" | ForEach-Object FullName
-          # "## 1.4.0" up to the next "## " heading of CHANGELOG.md, without the heading itself.
+          # "## 1.4.0" up to the next version heading of CHANGELOG.md, without the heading itself.
+          # Subsections ("## Changes", "## New features", ...) belong to the section; a new version starts "## <digit>".
           $changes = ''
           $changelog = Get-Content CHANGELOG.md -Raw -Encoding utf8
-          if ($changelog -match "(?ms)^## $([regex]::Escape($version))[ \t]*\r?\n(.*?)(?=^## |\z)") {
+          if ($changelog -match "(?ms)^## $([regex]::Escape($version))[ \t]*\r?\n(.*?)(?=^## \d|\z)") {
             # One line per list item: GitHub shows the line breaks of the 120-column file in release notes. Indented
             # lines continue the item above, unless they start a nested item ("  - "), which keeps its own line.
             $changes = $Matches[1].Trim() -replace '\r?\n +(?!- |\* |\d+\. )(?=\S)', ' '
