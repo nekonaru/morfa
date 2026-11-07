@@ -5,8 +5,8 @@
 
 using System.IO.Compression;
 using System.Text;
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Geo;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Tests;
 

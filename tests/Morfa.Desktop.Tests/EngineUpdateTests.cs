@@ -3,10 +3,10 @@
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
+using Morfa.Converters.Infrastructure;
 using Morfa.Desktop.Services;
 using Morfa.Desktop.Views;
 using Morfa.Domain.Localization;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Desktop.Tests;
 

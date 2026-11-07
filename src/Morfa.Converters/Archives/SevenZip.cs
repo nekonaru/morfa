@@ -3,8 +3,8 @@
 // errors. 7-Zip installed on the system is never used.
 
 using System.Text;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Infrastructure;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Archives;
 

@@ -2,9 +2,9 @@
 // box as a code of the font (w:sym w:font="Wingdings 2" w:char="F052"); the built-in Word → HWPX/PDF route drew every
 // such symbol as a black dot "●" and Wingdings' empty box as "◆". They now arrive as the Unicode characters they show.
 
+using Morfa.Converters.Hwp.Hwpx;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Hwp.Hwpx;
 using UglyToad.PdfPig;
 using static Morfa.Converters.Tests.DocxBuilder;
 using static Morfa.Converters.Tests.HwpxAssert;

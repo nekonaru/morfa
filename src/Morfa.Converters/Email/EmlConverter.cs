@@ -14,8 +14,8 @@ using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using MimeKit;
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Infrastructure;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Email;
 

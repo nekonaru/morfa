@@ -1,8 +1,8 @@
 // What the clip window reads of a video: its length and pictures of its frames, the loudness of its sound and where
 // it is silent, and the clip played with its sound. Morfa's FFmpeg does it; tests stand in for it.
 
-using Morfa.Domain.Presets;
 using Morfa.Converters.Media;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Desktop.Services;
 

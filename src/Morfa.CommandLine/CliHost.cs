@@ -1,12 +1,12 @@
 // The conversion pipeline without the app: the user's settings and presets, every engine (bundled ones next to the
 // executable, downloaded ones in the per-user engines folder) and a job queue. Mirrors AppHost in Morfa.Desktop.
 
+using Morfa.Converters;
+using Morfa.Converters.Infrastructure;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
 using Morfa.Domain.Settings;
-using Morfa.Converters;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.CommandLine;
 

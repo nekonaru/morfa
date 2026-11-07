@@ -6,10 +6,10 @@ using System.IO.Compression;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Office;
 using Morfa.Converters.Office.Sheets;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using static Morfa.Converters.Tests.DocxBuilder;
 
 namespace Morfa.Converters.Tests;

@@ -2,10 +2,10 @@
 // the coders the bundled build really has, then converted there and back. Inputs are generated in the tests.
 
 using ImageMagick;
+using Morfa.Converters.Magick;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Magick;
 
 namespace Morfa.Converters.Tests;
 

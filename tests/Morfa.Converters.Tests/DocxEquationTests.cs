@@ -3,12 +3,12 @@
 // unstretched, and the text after it still arrives. Formats without equations get a linear form ("(a+b)/(2c)").
 
 using System.Xml.Linq;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Hwp;
 using Morfa.Converters.Hwp.Hwpx;
 using Morfa.Converters.Hwp.Hwpx.Docx;
 using Morfa.Converters.Infrastructure;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using UglyToad.PdfPig;
 using static Morfa.Converters.Tests.DocxBuilder;
 using static Morfa.Converters.Tests.HwpxAssert;

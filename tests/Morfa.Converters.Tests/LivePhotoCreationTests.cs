@@ -7,10 +7,10 @@ using System.Globalization;
 using System.Text;
 using System.Xml.Linq;
 using ImageMagick;
+using Morfa.Converters.Media;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Media;
 
 namespace Morfa.Converters.Tests;
 

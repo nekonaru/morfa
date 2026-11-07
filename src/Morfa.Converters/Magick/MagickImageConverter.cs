@@ -1,8 +1,8 @@
 // Raster image ↔ raster image conversion with ImageMagick (Magick.NET, Apache-2.0).
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Infrastructure;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Magick;
 

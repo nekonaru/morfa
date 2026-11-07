@@ -1,9 +1,9 @@
 using ImageMagick;
+using Morfa.Converters;
+using Morfa.Converters.Infrastructure;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Settings;
-using Morfa.Converters;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Converters.Tests;
 

@@ -2,10 +2,10 @@
 // multi-page TIFF or GIF, or (PdfOptions.CombinePages) the pages stacked into one tall image.
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Magick;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using PDFtoImage;
 using SkiaSharp;
 

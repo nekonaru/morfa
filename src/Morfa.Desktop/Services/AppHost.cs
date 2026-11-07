@@ -2,6 +2,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Morfa.Converters;
+using Morfa.Converters.Infrastructure;
 using Morfa.Desktop.Services.Triggers;
 using Morfa.Desktop.ViewModels;
 using Morfa.Domain.Conversion;
@@ -9,8 +11,6 @@ using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
 using Morfa.Domain.Settings;
 using Morfa.Domain.Web;
-using Morfa.Converters;
-using Morfa.Converters.Infrastructure;
 using Morfa.Platforms.Linux;
 using Morfa.Platforms.MacOS;
 using Morfa.Platforms.Windows;

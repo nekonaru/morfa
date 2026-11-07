@@ -8,11 +8,11 @@
 // filter splits merged cells) and pictures as ![](…).
 
 using ImageMagick;
+using Morfa.Converters.Infrastructure;
+using Morfa.Converters.Magick;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Infrastructure;
-using Morfa.Converters.Magick;
 
 namespace Morfa.Converters.Office;
 

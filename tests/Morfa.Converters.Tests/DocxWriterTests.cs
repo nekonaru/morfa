@@ -4,10 +4,10 @@
 // the layout the model carries survives (page setup, sections, headers, tables, objects, notes, formatting).
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Hwp.Hwpx;
 using Morfa.Converters.Hwp.Hwpx.Docx;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using static Morfa.Converters.Tests.DocxAssert;
 using static Morfa.Converters.Tests.DocxBuilder;
 

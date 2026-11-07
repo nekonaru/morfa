@@ -2,10 +2,10 @@
 // vector engine. The test designs are written here record by record, as embroidery software writes them.
 
 using ImageMagick;
+using Morfa.Converters.Vector;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Vector;
 
 namespace Morfa.Converters.Tests;
 

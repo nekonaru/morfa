@@ -3,8 +3,8 @@
 // with their name; the datum rules; and the WKT / WKT-geometry parsers' errors. The reference positions below come
 // from pyproj 3.x (PROJ) for the longitude / latitude next to them.
 
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Geo;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Tests;
 

@@ -3,10 +3,10 @@
 // (`pwsh build/fetch-engines.ps1 -Only ffmpeg`).
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Heic;
 using Morfa.Converters.Media;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Tests;
 

@@ -5,9 +5,9 @@ using System.Buffers.Binary;
 using System.Globalization;
 using System.Text;
 using ImageMagick;
+using Morfa.Converters.Magick;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Magick;
 
 namespace Morfa.Converters.Tests;
 

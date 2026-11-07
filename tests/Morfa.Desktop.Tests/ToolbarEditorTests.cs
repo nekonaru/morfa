@@ -13,6 +13,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Morfa.Converters.Infrastructure;
 using Morfa.Desktop.Controls;
 using Morfa.Desktop.Services;
 using Morfa.Desktop.ViewModels;
@@ -25,7 +26,6 @@ using Morfa.Domain.Localization;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Profiles;
 using Morfa.Domain.Settings;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Desktop.Tests;
 

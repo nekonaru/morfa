@@ -3,8 +3,8 @@
 
 using System.Globalization;
 using ImageMagick;
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Magick;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Vector.Tracing;
 

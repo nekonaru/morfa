@@ -12,8 +12,8 @@
 // - The edge is DirectOnly: only a PDF becomes picture slides, and a picture deck is never a step towards another
 //   format (ODP, PPSX, ...).
 
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Infrastructure;
+using Morfa.Domain.Conversion;
 using PDFtoImage;
 using PDFtoImage.Exceptions;
 using SkiaSharp;

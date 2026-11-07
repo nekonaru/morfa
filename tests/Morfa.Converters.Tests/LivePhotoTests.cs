@@ -5,11 +5,11 @@ using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Text;
 using ImageMagick;
+using Morfa.Converters.Infrastructure;
+using Morfa.Converters.Media;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Infrastructure;
-using Morfa.Converters.Media;
 
 namespace Morfa.Converters.Tests;
 

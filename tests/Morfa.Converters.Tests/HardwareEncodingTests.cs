@@ -4,10 +4,10 @@
 
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Media;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Tests;
 

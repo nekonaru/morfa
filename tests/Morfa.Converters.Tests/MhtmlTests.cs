@@ -6,10 +6,10 @@
 using System.IO.Compression;
 using System.Text;
 using ImageMagick;
+using Morfa.Converters.Email;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Email;
 
 namespace Morfa.Converters.Tests;
 

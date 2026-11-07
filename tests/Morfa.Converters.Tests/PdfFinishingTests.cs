@@ -1,10 +1,10 @@
 // Watermark, page numbers and password on real PDFs (PdfFinishing): the stamps are drawn where they belong, any
 // language has outlines, and a locked PDF opens only with its password.
 
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Pdf;
 using Morfa.Converters.Vector;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;

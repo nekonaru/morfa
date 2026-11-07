@@ -2,9 +2,9 @@
 // The container is handled by IcnsFile; ImageMagick resizes and encodes/decodes the PNG and JPEG 2000 entries.
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Magick;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Icns;
 

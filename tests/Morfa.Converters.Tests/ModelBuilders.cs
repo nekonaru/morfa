@@ -3,9 +3,9 @@
 // Y up, counter-clockwise front faces.
 
 using System.Numerics;
+using Morfa.Converters.Models3D;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Models3D;
 using SkiaSharp;
 
 namespace Morfa.Converters.Tests;

@@ -4,10 +4,10 @@
 // the tests: photos (noise, so they don't compress to nothing) drawn small at a high resolution, and Helvetica text.
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Pdf;
 using Morfa.Converters.Vector;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;

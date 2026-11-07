@@ -5,11 +5,11 @@ using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Morfa.Converters.Infrastructure;
 using Morfa.Desktop.Services;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Settings;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Desktop.ViewModels.Pages;
 

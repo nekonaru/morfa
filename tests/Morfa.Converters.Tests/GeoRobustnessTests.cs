@@ -4,9 +4,9 @@
 // their own consistent names, and a cancelled conversion stops.
 
 using System.Text;
+using Morfa.Converters.Geo;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Geo;
 
 namespace Morfa.Converters.Tests;
 

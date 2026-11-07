@@ -4,10 +4,10 @@
 // Works on a clone; Apply() copies the edits back into the original preset (Cancel = just drop the VM).
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using Morfa.Converters.Ocr;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Ocr;
 
 namespace Morfa.Desktop.ViewModels;
 

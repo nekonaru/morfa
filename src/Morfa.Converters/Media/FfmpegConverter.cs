@@ -13,12 +13,12 @@ using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Formats;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Heic;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Magick;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Formats;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Media;
 

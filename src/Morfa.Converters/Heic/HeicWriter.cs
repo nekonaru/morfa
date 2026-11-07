@@ -3,10 +3,10 @@
 
 using System.Globalization;
 using ImageMagick;
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Magick;
 using Morfa.Converters.Media;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Heic;
 

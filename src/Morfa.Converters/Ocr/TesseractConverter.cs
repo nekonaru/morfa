@@ -9,10 +9,10 @@
 // downloaded the first time a language is used, and is copied into the job's folder so Tesseract reads only it.
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Pdf;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using PDFtoImage;

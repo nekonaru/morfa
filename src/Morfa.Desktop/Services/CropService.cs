@@ -4,11 +4,11 @@ using System.IO;
 using Avalonia.Media.Imaging;
 using ImageMagick;
 using Microsoft.Extensions.Logging;
+using Morfa.Converters.Magick;
+using Morfa.Converters.Pdf;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Settings;
-using Morfa.Converters.Magick;
-using Morfa.Converters.Pdf;
 
 namespace Morfa.Desktop.Services;
 

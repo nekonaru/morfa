@@ -3,8 +3,8 @@
 // SAMI files) are recognised. Subtitles inside videos are taken out by FFmpeg (video → SRT / ASS / WebVTT), see
 // docs/ENGINES.md.
 
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Infrastructure;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Subtitles;
 

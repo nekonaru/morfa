@@ -1,10 +1,10 @@
 // PDF → XLSX (#267): each table drawn with lines on its own sheet, with numbers and dates as real values, merged
 // cells and column widths, a table going on over the next page joined, and a clear failure when there is no table.
 
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Office.Sheets;
 using Morfa.Converters.Pdf;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Tests;
 

@@ -3,10 +3,10 @@
 
 using System.Numerics;
 using ImageMagick;
+using Morfa.Converters.Models3D;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Models3D;
 using SharpGLTF.Schema2;
 using static Morfa.Converters.Tests.FbxBuilder;
 

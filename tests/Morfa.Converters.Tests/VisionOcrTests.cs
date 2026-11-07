@@ -4,11 +4,11 @@
 using System.Collections.Concurrent;
 using ImageMagick;
 using ImageMagick.Drawing;
+using Morfa.Converters.Infrastructure;
+using Morfa.Converters.Ocr;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Settings;
-using Morfa.Converters.Infrastructure;
-using Morfa.Converters.Ocr;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using UglyToad.PdfPig.Core;

@@ -13,12 +13,12 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using Morfa.Converters.Media;
 using Morfa.Desktop.Controls;
 using Morfa.Desktop.Services;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Settings;
-using Morfa.Converters.Media;
 
 namespace Morfa.Desktop.ViewModels;
 

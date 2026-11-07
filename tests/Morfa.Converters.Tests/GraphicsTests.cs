@@ -4,11 +4,11 @@
 using System.IO.Compression;
 using System.Text;
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Icns;
 using Morfa.Converters.Magick;
 using Morfa.Converters.Vector;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 

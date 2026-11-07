@@ -2,9 +2,9 @@
 
 using ImageMagick;
 using ImageMagick.Drawing;
+using Morfa.Converters.Magick;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Magick;
 
 namespace Morfa.Converters.Tests;
 

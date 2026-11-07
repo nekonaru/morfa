@@ -1,7 +1,6 @@
 // THE place where conversion engines are registered. Adding an engine = one line in CreateAll.
 
 using Microsoft.Extensions.Logging;
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Archives;
 using Morfa.Converters.Cad;
 using Morfa.Converters.Data;
@@ -23,6 +22,7 @@ using Morfa.Converters.Subtitles;
 using Morfa.Converters.Text;
 using Morfa.Converters.Vector;
 using Morfa.Converters.Wic;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters;
 

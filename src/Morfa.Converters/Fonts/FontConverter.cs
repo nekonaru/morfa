@@ -1,8 +1,8 @@
 // Font conversion between TTF, OTF, WOFF, WOFF2 and EOT, entirely in managed code (zlib and Brotli come with .NET).
 // CFF (PostScript) outlines are converted to TrueType when the target needs them (TTF, EOT). See docs/ENGINES.md.
 
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Infrastructure;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Fonts;
 

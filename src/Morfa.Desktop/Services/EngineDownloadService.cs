@@ -5,10 +5,10 @@ using System.Diagnostics;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Localization;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Office;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Localization;
 
 namespace Morfa.Desktop.Services;
 

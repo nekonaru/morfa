@@ -6,10 +6,10 @@ using System.IO.Compression;
 using System.Text;
 using ImageMagick;
 using ImageMagick.Drawing;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Ocr;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 

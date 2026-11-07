@@ -2,8 +2,8 @@
 // ImageMagick does the rest as for any other picture (preset options, every image format it writes). PDF, ICNS,
 // HEIC and traced SVG follow through PNG.
 
-using Morfa.Domain.Conversion;
 using Morfa.Converters.Magick;
+using Morfa.Domain.Conversion;
 
 namespace Morfa.Converters.Wic;
 

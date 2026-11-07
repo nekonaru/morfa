@@ -1,8 +1,8 @@
 // Command lines of the everyday media tools (no FFmpeg needed): videos and audio files joined into one, pictures as a
 // slideshow, a video's sound copied into M4A, and a copy of a file without its tags.
 
-using Morfa.Domain.Presets;
 using Morfa.Converters.Media;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Tests;
 

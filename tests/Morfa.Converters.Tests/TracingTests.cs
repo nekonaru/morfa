@@ -9,11 +9,11 @@ using ACadSharp.Entities;
 using ACadSharp.IO;
 using ACadSharp.Types.Units;
 using ImageMagick;
+using Morfa.Converters.Vector;
+using Morfa.Converters.Vector.Tracing;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Vector;
-using Morfa.Converters.Vector.Tracing;
 using SkiaSharp;
 
 namespace Morfa.Converters.Tests;

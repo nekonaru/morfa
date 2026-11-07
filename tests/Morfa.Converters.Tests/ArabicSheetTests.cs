@@ -2,9 +2,9 @@
 // with Arabic must go to LibreOffice for PDF, or be refused with that reason when LibreOffice isn't installed, for
 // .xlsx and the older binary .xls alike.
 
+using Morfa.Converters.Infrastructure;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Converters.Tests;
 

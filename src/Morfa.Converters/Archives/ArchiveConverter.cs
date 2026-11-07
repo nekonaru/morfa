@@ -3,10 +3,10 @@
 // Reading uses the bundled 7-Zip (engines/7zip, LGPL, separate process) plus Morfa's own ALZ, EGG and lzip readers;
 // ZIP, TAR and TAR.GZ are written in-process, the other formats by 7-Zip. See docs/ENGINES.md.
 
+using Morfa.Converters.Infrastructure;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Converters.Archives;
 

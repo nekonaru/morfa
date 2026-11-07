@@ -4,10 +4,10 @@
 using System.Buffers.Binary;
 using System.Text;
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Archives;
 using Morfa.Converters.Magick;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Tests;
 

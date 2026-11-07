@@ -11,9 +11,9 @@
 // starts it, as before: Morfa applies them for the signed-in user. After an update Morfa goes back to the tray and
 // shows the new version's "What's new" slides (--background --whats-new).
 
-using Morfa.Platforms.Windows;
 using Morfa.Installer.Payload;
 using Morfa.Installer.Platform;
+using Morfa.Platforms.Windows;
 
 namespace Morfa.Installer.Installation;
 

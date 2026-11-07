@@ -2,10 +2,10 @@
 // files" when several are saved. Amounts and speed use the Engines page's units and the user's decimal separator;
 // the speed is averaged over the last second and only shown once there is enough to tell.
 
+using Morfa.Converters.Infrastructure;
 using Morfa.Desktop.Services;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Localization;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Desktop.ViewModels;
 

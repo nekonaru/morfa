@@ -13,6 +13,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using ImageMagick;
 using ImageMagick.Drawing;
+using Morfa.Converters.Media;
 using Morfa.Desktop.Controls;
 using Morfa.Desktop.Services;
 using Morfa.Desktop.ViewModels;
@@ -20,7 +21,6 @@ using Morfa.Desktop.Views;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Settings;
-using Morfa.Converters.Media;
 using static Morfa.Desktop.Tests.RenderTests;
 
 namespace Morfa.Desktop.Tests;

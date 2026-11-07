@@ -3,10 +3,10 @@
 
 using System.Text;
 using ImageMagick;
+using Morfa.Converters.Vector;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Vector;
 
 namespace Morfa.Converters.Tests;
 

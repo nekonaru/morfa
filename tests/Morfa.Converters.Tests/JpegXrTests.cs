@@ -2,9 +2,9 @@
 // to SDR). The pictures are written in the tests with Windows' own JPEG XR encoder.
 
 using ImageMagick;
+using Morfa.Converters.Wic;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
-using Morfa.Converters.Wic;
 
 namespace Morfa.Converters.Tests;
 

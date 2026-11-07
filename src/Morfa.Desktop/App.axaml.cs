@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Microsoft.Extensions.Logging;
+using Morfa.Converters.Infrastructure;
 using Morfa.Desktop.Controls;
 using Morfa.Desktop.Services;
 using Morfa.Desktop.Services.Triggers;
@@ -13,7 +14,6 @@ using Morfa.Domain.Conversion;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
 using Morfa.Domain.Settings;
-using Morfa.Converters.Infrastructure;
 
 namespace Morfa.Desktop;
 

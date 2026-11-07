@@ -4,11 +4,11 @@
 
 using System.IO.Compression;
 using System.Text;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Formats;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Magick;
 using Morfa.Converters.Vector.Tracing;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Formats;
 
 namespace Morfa.Converters.Vector;
 

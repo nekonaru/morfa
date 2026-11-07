@@ -2,12 +2,12 @@
 // profile warm-up.
 
 using ImageMagick;
-using Morfa.Domain.Conversion;
-using Morfa.Domain.Formats;
-using Morfa.Domain.Presets;
 using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Office;
 using Morfa.Converters.Text;
+using Morfa.Domain.Conversion;
+using Morfa.Domain.Formats;
+using Morfa.Domain.Presets;
 
 namespace Morfa.Converters.Tests;
 
