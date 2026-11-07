@@ -2,7 +2,7 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
-## v0.1.0
+## 0.1.0
 
 ## Fitur baru
 
