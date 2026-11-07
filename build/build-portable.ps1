@@ -98,7 +98,7 @@ if ($Runtime.StartsWith('osx-')) {
     New-Item -ItemType Directory -Path $resources | Out-Null
     $info = Get-Content -LiteralPath (Join-Path $root 'installer/macos/Info.plist') -Raw
     $info.Replace('__VERSION__', $bundleVersion).Replace('__BUNDLE_VERSION__', $bundleVersion) |
-        Set-Content -LiteralPath (Join-Path $contents 'Info.plist') -Encoding utf8NoBOM
+        Set-Content -LiteralPath (Join-Path $contents 'Info.plist') -Encoding utf8
     Invoke-Checked 'Validate Info.plist' { plutil -lint (Join-Path $contents 'Info.plist') }
     $iconset = Join-Path $stage 'morfa.iconset'
     New-Item -ItemType Directory -Path $iconset | Out-Null

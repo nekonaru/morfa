@@ -149,10 +149,12 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 
 ### Opsi A: Unduh paket yang sudah jadi (paling mudah)
 
-v0.1.0 menyediakan paket untuk **Linux dan macOS saja**. Tidak ada installer Windows dan tidak ada `Morfa.exe` portabel di rilis ini (alur build Windows menunggu sertifikat penandatanganan; build Windows tanpa tanda tangan hanya disimpan sebagai artefak CI untuk penandatanganan nanti, dan tidak dipublikasikan).
+v0.1.0 menyediakan paket prebuilt untuk **Linux, macOS dan Windows**.
 
 | Sistem | Unduh | Cara pasang |
 |--------|-------|-------------|
+| **Windows 10/11** | `Morfa-0.1.0-win-Setup.exe` | Jalankan; mode senyap memakai `/VERYSILENT` |
+| **Windows (portable)** | `Morfa-0.1.0-win-Portable.zip` | Ekstrak, jalankan `Morfa.exe` |
 | **Linux x64** | `Morfa-0.1.0-linux-x64.tar.gz` | Ekstrak, jalankan `./install.sh` (butuh Python 3; tanpa root) |
 | **Linux ARM64** | `Morfa-0.1.0-linux-arm64.tar.gz` | Ekstrak, jalankan `./install.sh` (butuh Python 3; tanpa root) |
 | **macOS Apple Silicon** | `Morfa-0.1.0-osx-arm64.dmg` | Buka DMG, seret Morfa ke Applications |
@@ -161,6 +163,8 @@ v0.1.0 menyediakan paket untuk **Linux dan macOS saja**. Tidak ada installer Win
 | **macOS Intel (Alternatif)** | `Morfa-0.1.0-osx-x64.tar.gz` | Ekstrak, jalankan `./install.sh` |
 
 Setiap paket punya `-SHA256SUMS.txt` pendamping kalau kamu ingin memverifikasi unduhannya.
+
+Build Windows belum ditandatangani. Windows SmartScreen akan memperingatkan publisher tidak dikenal; tekan **More info**, lalu **Run anyway**.
 
 Di macOS, aplikasi di-sign ad-hoc dan tidak di-notarize: pada peluncuran pertama, izinkan lewat **Pengaturan Sistem > Privasi & Keamanan > Buka Anyway**.
 

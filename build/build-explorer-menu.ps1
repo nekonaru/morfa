@@ -93,7 +93,7 @@ New-Item -ItemType Directory -Force -Path $obj, $Destination | Out-Null
 # The version resource gets the numbers through a generated header-like prefix (zig's resource compiler has no -D).
 $rc = Join-Path $obj 'MorfaExplorerMenu.rc'
 $defines = "#define MORFA_VERSION_MAJOR $major`r`n#define MORFA_VERSION_MINOR $minor`r`n#define MORFA_VERSION_PATCH $patch`r`n#define MORFA_VERSION_TEXT `"$Version`"`r`n"
-Set-Content -Path $rc -Value ($defines + (Get-Content (Join-Path $source 'MorfaExplorerMenu.rc') -Raw)) -Encoding utf8NoBOM -NoNewline
+Set-Content -Path $rc -Value ($defines + (Get-Content (Join-Path $source 'MorfaExplorerMenu.rc') -Raw)) -Encoding utf8 -NoNewline
 
 Write-Host "build MorfaExplorerMenu.dll $Version"
 $dll = Join-Path $obj 'MorfaExplorerMenu.dll'

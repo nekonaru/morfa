@@ -149,10 +149,12 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 
 ### Option A: Download the prebuilt package (easiest)
 
-v0.1.0 ships prebuilt packages for **Linux and macOS only**. There is no Windows installer and no portable `Morfa.exe` in this release (the Windows build flow waits on a signing certificate; the unsigned Windows build is kept as a CI artifact for later signing, it is not published).
+v0.1.0 ships prebuilt packages for **Linux, macOS and Windows**.
 
 | System | Download | How to install |
 |--------|----------|----------------|
+| **Windows 10/11** | `Morfa-0.1.0-win-Setup.exe` | Run it; silent switches `/VERYSILENT` |
+| **Windows (portable)** | `Morfa-0.1.0-win-Portable.zip` | Unpack, run `Morfa.exe` |
 | **Linux x64** | `Morfa-0.1.0-linux-x64.tar.gz` | Unpack, run `./install.sh` (needs Python 3; no root) |
 | **Linux ARM64** | `Morfa-0.1.0-linux-arm64.tar.gz` | Unpack, run `./install.sh` (needs Python 3; no root) |
 | **macOS Apple Silicon** | `Morfa-0.1.0-osx-arm64.dmg` | Open the DMG, drag Morfa to Applications |
@@ -162,10 +164,12 @@ v0.1.0 ships prebuilt packages for **Linux and macOS only**. There is no Windows
 
 Each package has a matching `-SHA256SUMS.txt` next to it if you want to verify the download.
 
+The Windows build is not code-signed yet. Windows SmartScreen will warn about an unknown publisher; press **More info**, then **Run anyway**.
+
 On macOS, the app is ad-hoc signed and not notarized: on first start, allow it in **System Settings -> Privacy & Security -> Open Anyway**.
 
 > [!IMPORTANT]
-> Drag gestures need X11. On Wayland, use the drop zone and the file manager's right-click menu.
+> On Linux, drag gestures need X11. On Wayland, use the drop zone and the file manager's right-click menu.
 
 ### Option B: Windows, or build from source (for development / to read or change the code)
 
@@ -179,7 +183,7 @@ dotnet build Morfa.slnx
 dotnet run --project src/Morfa.Desktop
 ```
 
-The Windows installer (`Morfa-<version>-win-Setup.exe`) and the portable zip are produced by `build/build-installer.ps1` on Windows but are not part of the v0.1.0 release.
+The Windows installer (`Morfa-<version>-win-Setup.exe`) and the portable zip are shipped as `Morfa-<version>-win-Portable.zip` next to the Setup executable.
 
 ### Option B: Build from source (for development / to read or change the code)
 

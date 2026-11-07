@@ -27,7 +27,7 @@ Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
 ## Penggunaan
 
-Unduh paket untuk sistem kamu dari halaman [Releases](https://github.com/nekonaru/morfa/releases), atau build dari sumber dengan .NET 10 SDK (v0.1.0 tidak menyediakan paket Windows).
+Unduh paket untuk sistem kamu dari halaman [Releases](https://github.com/nekonaru/morfa/releases), atau build dari sumber dengan .NET 10 SDK.
 
 ```bash
 morfa convert photo.heic --to jpg

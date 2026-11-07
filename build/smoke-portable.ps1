@@ -55,7 +55,7 @@ function Convert-Smoke([string]$source, [string]$target) {
 }
 
 $inputFile = Join-Path $smoke 'sample.txt'
-'Morfa 한글 conversion smoke test' | Set-Content -LiteralPath $inputFile -Encoding utf8NoBOM
+'Morfa 한글 conversion smoke test' | Set-Content -LiteralPath $inputFile -Encoding utf8
 $hwpx = Convert-Smoke $inputFile 'hwpx'
 # HWPX -> HWP and HWP -> PDF are rhwp's routes: they run the bundled rhwp from the package.
 $hwp = Convert-Smoke $hwpx 'hwp'
