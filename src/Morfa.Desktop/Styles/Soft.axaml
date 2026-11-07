@@ -22,10 +22,10 @@
           <SolidColorBrush x:Key="SuccessBrush" Color="#0F7A5A" />
           <SolidColorBrush x:Key="WarningBrush" Color="#9A5B0C" />
           <BoxShadows x:Key="CardShadow">0 1 3 0 #12000000, 0 6 18 0 #0D000000</BoxShadows>
-          <SolidColorBrush x:Key="AccentBrush" Color="#7F77DD" />
-          <SolidColorBrush x:Key="AccentSoftBrush" Color="#2E7F77DD" />
-          <SolidColorBrush x:Key="AccentFaintBrush" Color="#177F77DD" />
-          <SolidColorBrush x:Key="AccentStrongBrush" Color="#5F59A6" />
+          <SolidColorBrush x:Key="AccentBrush" Color="#0EA5A4" />
+          <SolidColorBrush x:Key="AccentSoftBrush" Color="#2E0EA5A4" />
+          <SolidColorBrush x:Key="AccentFaintBrush" Color="#170EA5A4" />
+          <SolidColorBrush x:Key="AccentStrongBrush" Color="#0A7C7B" />
           <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
@@ -39,10 +39,10 @@
           <SolidColorBrush x:Key="SuccessBrush" Color="#5DCAA5" />
           <SolidColorBrush x:Key="WarningBrush" Color="#EF9F27" />
           <BoxShadows x:Key="CardShadow">0 1 3 0 #40000000, 0 8 24 0 #33000000</BoxShadows>
-          <SolidColorBrush x:Key="AccentBrush" Color="#7F77DD" />
-          <SolidColorBrush x:Key="AccentSoftBrush" Color="#2E7F77DD" />
-          <SolidColorBrush x:Key="AccentFaintBrush" Color="#177F77DD" />
-          <SolidColorBrush x:Key="AccentStrongBrush" Color="#5F59A6" />
+          <SolidColorBrush x:Key="AccentBrush" Color="#0EA5A4" />
+          <SolidColorBrush x:Key="AccentSoftBrush" Color="#2E0EA5A4" />
+          <SolidColorBrush x:Key="AccentFaintBrush" Color="#170EA5A4" />
+          <SolidColorBrush x:Key="AccentStrongBrush" Color="#0A7C7B" />
           <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF" />
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>

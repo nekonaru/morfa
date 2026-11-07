@@ -1,4 +1,4 @@
-<!-- The sponsors' logos and the backers' names (Services/Supporters.cs), in the Sponsor window and on the About page.
+<!-- The sponsors' logos and the backers' names (Services/Supporters.cs), on the About page and in the README.
      Hidden while the list is empty. -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

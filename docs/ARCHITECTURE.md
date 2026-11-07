@@ -252,7 +252,7 @@ Bump `AppSettings.CurrentSchemaVersion` and add a step to `SettingsMigrations` w
   Windows that can't be resized grow with the zoom (their designed width × the zoom) up to their screen, cap their
   height to it and scroll; the engine setup keeps itself on screen and scrolls its own list (`fitsItself`).
   Tracked: the main window, the preset, group, rename and merge-order editors, the engine setup, LibreOffice options,
-  close, sponsor, what's new and update-progress windows and `WindowService`'s message dialog. Not tracked, so at
+  close, what's new and update-progress windows and `WindowService`'s message dialog. Not tracked, so at
   100 %: the donut (it has its own size), the toast and the corner notices (update, engine update, feedback, format
   request, elevation), which are placed in a screen corner like system notifications, and the crop overlay, whose
   wheel zooms the crop. Drop-down lists, context menus and tooltips open in their own popup windows outside the
@@ -401,7 +401,7 @@ Windows' own UI fonts (Segoe UI, Nirmala UI and the UI language's CJK font first
 have no semibold) instead of the app's embedded Noto fonts.
 
 - **Look**: one borderless 640×420 card (`SetupWindow`, its own window buttons, drag to move) whose states crossfade
-  (`Views/StateViews.axaml`): Welcome (the logo assembling itself, `DonutLogo`; one Install button; an Options sheet
+  (`Views/StateViews.axaml`): Welcome (the logo assembling itself, `MorfaLogo`; one Install button; an Options sheet
   sliding up with the language, folder, options and engines), Progress (the new version's "What's new" slides, a thin
   `ShimmerBar`), Done (`CheckBurst`, "Launch Morfa"), Failed ("Copy details") and the uninstaller's states.
   `SoftBackdrop` draws slowly drifting accent blobs behind it. The slides are the app's (`SlideShow`, `AnimatedImage`,

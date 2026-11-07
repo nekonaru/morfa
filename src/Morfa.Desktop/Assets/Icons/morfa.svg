@@ -4,14 +4,10 @@
       <stop offset="0" stop-color="#0EA5A4"/>
       <stop offset="1" stop-color="#0B6E6E"/>
     </linearGradient>
-    <linearGradient id="stroke" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#D7F5F2"/>
-    </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" ry="112" fill="url(#tile)"/>
-  <path d="M116 344 L116 176" stroke="url(#stroke)" stroke-width="44" stroke-linecap="round"/>
-  <path d="M148 176 C 196 176, 224 224, 240 280" stroke="url(#stroke)" stroke-width="44" stroke-linecap="round" fill="none"/>
+  <path d="M116 344 L116 176" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round"/>
+  <path d="M148 176 C 196 176, 224 224, 240 280" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" fill="none"/>
   <path d="M232 176 C 268 176, 292 214, 308 268" stroke="#FFB454" stroke-width="40" stroke-linecap="round" fill="none"/>
   <circle cx="392" cy="352" r="34" fill="#FFB454"/>
 </svg>

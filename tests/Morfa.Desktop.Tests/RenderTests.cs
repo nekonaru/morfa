@@ -817,33 +817,9 @@ public class RenderTests
     [AvaloniaTheory]
     [InlineData("en")]
     [InlineData("id")]
-    public void Sponsor_window_renders(string language)
+    public void About_page_with_supporters_renders(string language)
     {
         TestServices.EnsureInitialized(language);
-        var window = Morfa.Desktop.Views.SponsorWindow.Create(AppHost.Get<Morfa.Domain.Localization.ILocalizer>());
-        window.Show();
-        Pump();
-        Save(window, $"window-sponsor-{language}.png");
-        window.Close();
-    }
-
-    [AvaloniaTheory]
-    [InlineData("en")]
-    [InlineData("id")]
-    public void Sponsor_window_with_supporters_renders(string language)
-    {
-        TestServices.EnsureInitialized(language);
-        var window = Morfa.Desktop.Views.SponsorWindow.Create(AppHost.Get<Morfa.Domain.Localization.ILocalizer>());
-        var view = window.Supporters;
-        view.Show(new SupporterList(
-            [new Supporter("Acme", "https://acme.example", "acme.png"), new Supporter("Globex", "https://globex.example")],
-            [new("Kim"), new("Lee"), new("Park")]), _ => Logo());
-        window.Show();
-        Pump();
-        CheckAcknowledgement(window);
-        Save(window, $"window-sponsor-supporters-{language}.png");
-        window.Close();
-
         using var vm = new MainWindowViewModel(AppHost.Services, AppHost.Get<Morfa.Domain.Localization.ILocalizer>(), AppHost.Get<UpdateService>());
         vm.Navigate("about");
         var main = new MainWindow { DataContext = vm, Width = 1080, Height = 820 };

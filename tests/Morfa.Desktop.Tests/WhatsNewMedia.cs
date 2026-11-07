@@ -951,7 +951,7 @@ public class WhatsNewMedia
         }
         var drawing = new Drawables()
             .StrokeColor(Colour("#000000", 0)).FillColor(Colour("#000000", 0.14)).RoundRectangle(x, y + 4, x + width, y + 38, 9, 9)
-            .FillColor(Colour("#FFFFFF")).StrokeColor(Colour(down ? "#7F77DD" : "#D6D3CB")).StrokeWidth(down ? 1.6 : 1)
+            .FillColor(Colour("#FFFFFF")).StrokeColor(Colour(down ? "#0EA5A4" : "#D6D3CB")).StrokeWidth(down ? 1.6 : 1)
             .RoundRectangle(x, y, x + width, y + 34, 9, 9);
         if (File.Exists(font))
             drawing.Font(font);

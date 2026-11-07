@@ -7,7 +7,7 @@
   <a href="https://github.com/nekonaru/morfa/releases"><img src="https://img.shields.io/github/v/release/nekonaru/morfa?style=flat-square&color=blue" alt="Release" /></a>
   <a href="https://github.com/nekonaru/morfa/actions/workflows/ci.yml"><img src="https://github.com/nekonaru/morfa/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt=".NET 10" />
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-3C3489?style=flat-square" alt="Platform" />
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-0B6E6E?style=flat-square" alt="Platform" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
   <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square" alt="Status" />
 </div>
@@ -202,7 +202,7 @@ The portable copy does not add shortcuts, the Explorer menu, or the `morfa` comm
 tar xzf Morfa-0.1.0-linux-x64.tar.gz
 ```
 
-4. Run `./install.sh`. It installs for your user into `~/.local/share/filee` (or similar) and adds the `morfa` command.
+4. Run `./install.sh`. It installs for your user into `~/.local/share/morfa` (or similar) and adds the `morfa` command.
 5. The app sits in your tray.
 
 > [!IMPORTANT]

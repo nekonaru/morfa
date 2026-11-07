@@ -21,7 +21,7 @@ public partial class SupportersView : UserControl
     public static readonly StyledProperty<bool> ShowTitleProperty =
         AvaloniaProperty.Register<SupportersView, bool>(nameof(ShowTitle), true);
 
-    /// <summary>Height of the logos: small in the Sponsor window, larger on the About page.</summary>
+    /// <summary>Height of the logos.</summary>
     public double LogoHeight
     {
         get => GetValue(LogoHeightProperty);

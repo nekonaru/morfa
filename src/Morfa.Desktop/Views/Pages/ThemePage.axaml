@@ -196,7 +196,7 @@
                            IsAlphaVisible="False" IsColorSpectrumVisible="True" IsColorPaletteVisible="False"
                            IsColorComponentsVisible="False" IsColorModelVisible="False" IsColorPreviewVisible="True"
                            FlowDirection="LeftToRight" AutomationProperties.Name="{DynamicResource theme.custom_color}" />
-              <TextBox Text="{Binding AccentHex}" Width="120" PlaceholderText="#7F77DD" FlowDirection="LeftToRight"
+              <TextBox Text="{Binding AccentHex}" Width="120" PlaceholderText="#0EA5A4" FlowDirection="LeftToRight"
                        AutomationProperties.Name="{DynamicResource theme.custom_color}" />
             </StackPanel>
 
