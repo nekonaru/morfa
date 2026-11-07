@@ -23,10 +23,10 @@
 
 ## Screenshots (UI changes)
 
-<!-- Drag images into this box. Rendered pages are in tests/Morfa.App.Tests/bin/<config>/net10.0/screenshots -->
+<!-- Drag images into this box. Rendered pages are in tests/Morfa.Desktop.Tests/bin/<config>/net10.0/screenshots -->
 
 ## Checklist
 
-- [ ] New UI strings are in all `src/Morfa.App/Assets/i18n/*.json` files
+- [ ] New UI strings are in all `src/Morfa.Desktop/Assets/i18n/*.json` files
 - [ ] New third-party code or binaries are listed in `THIRD-PARTY-NOTICES.md`
 - [ ] The PR does one thing (unrelated changes go in a separate PR)

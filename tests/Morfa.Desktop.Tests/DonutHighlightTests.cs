@@ -1,0 +1,157 @@
+// The slice under a dragged file lights up even after a frame of the donut's animation loop got lost.
+
+using System.Reflection;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
+using Morfa.Desktop.Controls;
+
+namespace Morfa.Desktop.Tests;
+
+[Collection("Motion")]
+public class DonutHighlightTests
+{
+    [AvaloniaFact]
+    public void A_lost_animation_frame_does_not_keep_the_slice_dark()
+    {
+        TestServices.EnsureInitialized("id");
+        var donut = new DonutMenu
+        {
+            Items = new[] { "PNG", "JPG", "WEBP", "PDF" }.Select(l => new DonutItem { Id = l, Label = l }).ToList(),
+        };
+        var window = new Window { Content = donut, SizeToContent = SizeToContent.WidthAndHeight };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        // As after a frame request that never came back: the loop still counts as running, its last frame long ago.
+        Set(donut, "_animating", true);
+        Set(donut, "_lastTick", Environment.TickCount64 - DonutMenu.StalledLoopMs * 4);
+
+        donut.SetExternalHighlight(2);
+        for (var i = 0; i < 90 && donut.LitAmount(2) < 0.9; i++)
+        {
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        Assert.True(donut.LitAmount(2) > 0.9, $"lit {donut.LitAmount(2):0.00}");
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void An_opening_donut_appears_even_when_no_frame_ever_comes()
+    {
+        TestServices.EnsureInitialized("id");
+        var donut = new DonutMenu
+        {
+            Items = new[] { "PNG", "JPG", "WEBP", "PDF" }.Select(l => new DonutItem { Id = l, Label = l }).ToList(),
+        };
+        var window = new Window { Content = donut, SizeToContent = SizeToContent.WidthAndHeight };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        // Animations on, whatever the machine reports (build servers report Windows animations off).
+        Morfa.Desktop.Services.Motion.Configure(false, () => false);
+        donut.PlayOpenAnimation(); // the render timer never ticks in this test: every frame request is lost
+        Assert.Equal(0, Open(donut).Max());
+        // The watchdog's checks, each after the loop got no frame for a while: two retries, then the donut is drawn open.
+        for (var check = 0; check <= DonutMenu.FrameRetries; check++)
+        {
+            Set(donut, "_lastTick", Environment.TickCount64 - DonutMenu.StalledLoopMs * 2);
+            donut.CheckLoop();
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        Assert.All(Open(donut), open => Assert.Equal(1, open, 3));
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void A_highlight_settles_without_dipping_below_zero()
+    {
+        TestServices.EnsureInitialized("id");
+        var donut = new DonutMenu
+        {
+            Items = new[] { "PNG", "JPG", "WEBP" }.Select(l => new DonutItem { Id = l, Label = l }).ToList(),
+        };
+        donut.SetExternalHighlight(1);
+        for (var i = 0; i < 120; i++)
+            donut.Advance(1 / 60.0);
+        Assert.True(donut.LitAmount(1) > 0.99);
+
+        donut.SetExternalHighlight(2); // the pointer moves on: slice 1 lets go
+        var lowest = double.MaxValue;
+        for (var i = 0; i < 120; i++)
+        {
+            donut.Advance(1 / 60.0);
+            lowest = Math.Min(lowest, donut.LitAmount(1));
+        }
+        Assert.True(lowest >= 0, $"dipped to {lowest:0.000}");
+        Assert.Equal(0, donut.LitAmount(1), 3);
+    }
+
+    [AvaloniaFact]
+    public void Highlights_settle_when_frames_come_late()
+    {
+        TestServices.EnsureInitialized("id");
+        Morfa.Desktop.Services.Motion.Configure(false, () => false);
+        var donut = new DonutMenu
+        {
+            Items = new[] { "PNG", "JPG", "WEBP", "PDF" }.Select(l => new DonutItem { Id = l, Label = l }).ToList(),
+        };
+        // Every frame as late as the loop allows (a busy GPU, a screen recorder): the pointer crosses the slices.
+        const double late = 0.05;
+        for (var slice = 0; slice < 4; slice++)
+        {
+            donut.SetExternalHighlight(slice);
+            for (var i = 0; i < 6; i++)
+                donut.Advance(late);
+        }
+        for (var i = 0; i < 60; i++)
+        {
+            donut.Advance(late);
+            for (var slice = 0; slice < 3; slice++)
+                Assert.InRange(donut.LitAmount(slice), 0, 1);
+        }
+
+        Assert.All(Enumerable.Range(0, 3), slice => Assert.Equal(0, donut.LitAmount(slice), 3));
+        Assert.Equal(1, donut.LitAmount(3), 3);
+    }
+
+    [AvaloniaFact] // switching the setting restyles the open windows, which belong to the UI thread
+    public void Following_the_system_reads_it_again_when_a_window_opens()
+    {
+        var reduced = true;
+        try
+        {
+            Morfa.Desktop.Services.Motion.Configure(null, () => reduced);
+            Assert.False(Morfa.Desktop.Services.Motion.Enabled); // the system reported animations off for a moment
+
+            reduced = false;
+            Morfa.Desktop.Services.Motion.Refresh();
+            Assert.True(Morfa.Desktop.Services.Motion.Enabled);
+
+            Morfa.Desktop.Services.Motion.Configure(true, () => false); // the user's own choice wins over the system
+            Morfa.Desktop.Services.Motion.Refresh();
+            Assert.False(Morfa.Desktop.Services.Motion.Enabled);
+        }
+        finally
+        {
+            Morfa.Desktop.Services.Motion.Configure(false, () => false);
+        }
+    }
+
+    private static double[] Open(DonutMenu donut) =>
+        (double[])typeof(DonutMenu).GetField("_open", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(donut)!;
+
+    private static void Set(DonutMenu donut, string field, object value) =>
+        typeof(DonutMenu).GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(donut, value);
+}
+
+/// <summary>
+/// Tests that switch the global animation setting (<see cref="Morfa.Desktop.Services.Motion"/>) run on their own: run next
+/// to others, the app's start-up in those would switch it back halfway through.
+/// </summary>
+[CollectionDefinition("Motion", DisableParallelization = true)]
+public sealed class MotionCollection;

@@ -1,21 +1,21 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Morfa.Core/Morfa.Core.csproj" />
-    <Project Path="src/Morfa.Engines/Morfa.Engines.csproj" />
-    <Project Path="src/Morfa.Platform.Windows/Morfa.Platform.Windows.csproj" />
-    <Project Path="src/Morfa.Platform.Linux/Morfa.Platform.Linux.csproj" />
-    <Project Path="src/Morfa.Platform.MacOS/Morfa.Platform.MacOS.csproj" />
-    <Project Path="src/Morfa.App/Morfa.App.csproj" />
-    <Project Path="src/Morfa.Cli/Morfa.Cli.csproj" />
-    <Project Path="src/Morfa.Setup/Morfa.Setup.csproj" />
+    <Project Path="src/Morfa.Domain/Morfa.Domain.csproj" />
+    <Project Path="src/Morfa.Converters/Morfa.Converters.csproj" />
+    <Project Path="src/Morfa.Platforms.Windows/Morfa.Platforms.Windows.csproj" />
+    <Project Path="src/Morfa.Platforms.Linux/Morfa.Platforms.Linux.csproj" />
+    <Project Path="src/Morfa.Platforms.MacOS/Morfa.Platforms.MacOS.csproj" />
+    <Project Path="src/Morfa.Desktop/Morfa.Desktop.csproj" />
+    <Project Path="src/Morfa.CommandLine/Morfa.CommandLine.csproj" />
+    <Project Path="src/Morfa.Installer/Morfa.Installer.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Morfa.Core.Tests/Morfa.Core.Tests.csproj" />
-    <Project Path="tests/Morfa.Engines.Tests/Morfa.Engines.Tests.csproj" />
-    <Project Path="tests/Morfa.App.Tests/Morfa.App.Tests.csproj" />
-    <Project Path="tests/Morfa.Cli.Tests/Morfa.Cli.Tests.csproj" />
-    <Project Path="tests/Morfa.Platform.Tests/Morfa.Platform.Tests.csproj" />
-    <Project Path="tests/Morfa.Setup.Tests/Morfa.Setup.Tests.csproj" />
+    <Project Path="tests/Morfa.Domain.Tests/Morfa.Domain.Tests.csproj" />
+    <Project Path="tests/Morfa.Converters.Tests/Morfa.Converters.Tests.csproj" />
+    <Project Path="tests/Morfa.Desktop.Tests/Morfa.Desktop.Tests.csproj" />
+    <Project Path="tests/Morfa.CommandLine.Tests/Morfa.CommandLine.Tests.csproj" />
+    <Project Path="tests/Morfa.Platforms.Tests/Morfa.Platforms.Tests.csproj" />
+    <Project Path="tests/Morfa.Installer.Tests/Morfa.Installer.Tests.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />

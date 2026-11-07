@@ -41,7 +41,7 @@ Out of scope:
 - **Updates:** an installed copy downloads the new package from GitHub Releases and checks it against the release's
   `SHA256SUMS` file before it runs it.
 - **Engines:** every engine comes from the official location pinned in
-  [`engines.json`](src/Morfa.Engines/Infrastructure/engines.json), with its SHA-256 and size. A download that doesn't
+  [`engines.json`](src/Morfa.Converters/Infrastructure/engines.json), with its SHA-256 and size. A download that doesn't
   match is discarded.
 - **Release files:** each release lists the SHA-256 of every package in `Morfa-<version>-SHA256SUMS.txt`.
 

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="src/Morfa.App/Assets/Icons/morfa.png" alt="Logo Morfa" width="120" />
+  <img src="src/Morfa.Desktop/Assets/Icons/morfa.png" alt="Logo Morfa" width="120" />
   <h1>Morfa: Drag. Drop. Converted.</h1>
   <p><b>Tahan sebuah tombol, tarik file kamu dan jatuhkan ke sebuah format di donut yang terbuka di posisi kursor.<br/>
   Morfa mengonversi 263 format secara lokal, tanpa mengunggah apa pun.</b></p>
@@ -36,6 +36,7 @@
 - [Pengujian](#pengujian)
 - [Continuous Integration](#continuous-integration)
 - [FAQ](#faq)
+- [Credits](#credits)
 - [Author](#author)
 - [Lisensi](#lisensi)
 
@@ -44,6 +45,8 @@
 ## Tentang
 
 **Morfa** adalah konverter file gratis dan open-source yang kamu pakai dengan cara men-drag. Tahan sebuah tombol (Ctrl, atau Option di macOS), tarik file kamu dan jatuhkan ke sebuah format di donut yang terbuka di posisi kursor. Morfa mengonversi 263 format secara lokal: gambar, PDF, Word, Excel, PowerPoint, HWP, e-book, arsip, font, CAD, model 3D dan data geospasial berjalan tanpa Office, Hancom Office atau LibreOffice. Tidak ada yang diunggah, dan hasilnya disimpan di samping file aslinya.
+
+Morfa terinspirasi dari, dan membangun atas, [Filee](https://github.com/KnifeLemon/Filee), konverter file open-source yang menjadi dasar reimplementasinya. Ide menu di kursor, pipeline konversi dan perancangan engine berasal dari Filee; morfa mengolah ulang basis kode, struktur proyek dan identitasnya menjadi proyeknya sendiri.
 
 > _"Konverter file gratis dan open-source yang kamu pakai dengan cara men-drag."_
 
@@ -197,7 +200,7 @@ dotnet build Morfa.slnx
 #### 3. Jalankan aplikasi
 
 ```bash
-dotnet run --project src/Morfa.App
+dotnet run --project src/Morfa.Desktop
 ```
 
 ---
@@ -252,15 +255,15 @@ UI aplikasi (menu, tombol, pesan, dan pengaturan) tersedia dalam **English** (de
 ```
 morfa/
 ├── src/
-│   ├── Morfa.Core/               # model domain: conversion, formats, presets, settings
-│   ├── Morfa.Engines/            # implementasi IConverter, satu folder per engine
-│   ├── Morfa.Platform.Windows/   # layanan platform Windows
-│   ├── Morfa.Platform.Linux/     # layanan platform Linux
-│   ├── Morfa.Platform.MacOS/     # layanan platform macOS
-│   ├── Morfa.App/                # aplikasi desktop Avalonia
+│   ├── Morfa.Domain/               # model domain: conversion, formats, presets, settings
+│   ├── Morfa.Converters/            # implementasi IConverter, satu folder per engine
+│   ├── Morfa.Platforms.Windows/   # layanan platform Windows
+│   ├── Morfa.Platforms.Linux/     # layanan platform Linux
+│   ├── Morfa.Platforms.MacOS/     # layanan platform macOS
+│   ├── Morfa.Desktop/                # aplikasi desktop Avalonia
 │   │   └── Assets/i18n/          # string English (en.json) dan Indonesia (id.json)
-│   ├── Morfa.Cli/                # command line morfa
-│   ├── Morfa.Setup/              # installer dan uninstaller Windows
+│   ├── Morfa.CommandLine/                # command line morfa
+│   ├── Morfa.Installer/              # installer dan uninstaller Windows
 │   └── Morfa.ExplorerMenu/       # COM server menu Explorer Windows 11 (C murni)
 ├── tests/                        # satu proyek test per layer
 ├── build/                        # skrip build, packaging dan rilis
@@ -280,7 +283,7 @@ morfa/
 
 ### Menambah converter
 
-1. Implementasikan `IConverter` di file baru di bawah `src/Morfa.Engines`
+1. Implementasikan `IConverter` di file baru di bawah `src/Morfa.Converters`
 2. Deklarasikan edge-nya di `Edges`
 3. Daftarkan di `EngineRegistry.CreateAll`
 
@@ -289,7 +292,7 @@ morfa/
 
 ### Menambah string yang tampil ke pengguna
 
-1. Tambahkan key ke `src/Morfa.App/Assets/i18n/en.json` (English) dan `id.json` (Indonesia)
+1. Tambahkan key ke `src/Morfa.Desktop/Assets/i18n/en.json` (English) dan `id.json` (Indonesia)
 2. Pakai lewat localizer dengan key yang sama
 
 > [!WARNING]
@@ -352,9 +355,16 @@ Settings, bagian **Language**, pilih English atau Bahasa Indonesia. Default-nya 
 
 ---
 
+## Credits
+
+- **Filee** ([KnifeLemon/Filee](https://github.com/KnifeLemon/Filee)), inspirasi morfa. Tahan sebuah tombol dan jatuhkan file ke aksi tipe file dari kursor. Donut toolbar, pipeline konversi dan katalog engine berasal dari rancangan dan source Filee yang berlisensi MIT.
+- **Nicolas Dwi Dharma**, pengelola morfa.
+
+---
+
 ## Author
 
-<!-- sponsors: src/Morfa.App/Assets/Sponsors/sponsors.json -->
+<!-- sponsors: src/Morfa.Desktop/Assets/Sponsors/sponsors.json -->
 
 <div align="center">
 

@@ -2,7 +2,7 @@
 
 What changed in each version of Morfa. Newest version on top.
 
-## v2.1.0
+## v0.1.0
 
 ## New features
 
@@ -14,6 +14,11 @@ What changed in each version of Morfa. Newest version on top.
 - **Watch folders.** Convert every file that lands in a folder you choose.
 - **Two sides to every donut.** Press Tab or turn the mouse wheel while it is open to reach less common formats and tools.
 - **English and Indonesian UI.** English by default; switch to Bahasa Indonesia in Settings.
+
+## Notes
+
+- **Inspired by Filee.** Morfa is a reimplementation inspired by [Filee](https://github.com/KnifeLemon/Filee), reworked into its own project with its own namespaces, structure and identity. The converter engine catalog, pipeline and donut toolbar design come from Filee's MIT-licensed source.
+- **Fresh start.** v0.1.0 is the first release of morfa as a standalone project.
 
 ## Optimizations
 

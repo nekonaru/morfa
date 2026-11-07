@@ -14,7 +14,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Destination = (Join-Path $PSScriptRoot '..\src\Morfa.App\Assets\Fonts')
+    [string]$Destination = (Join-Path $PSScriptRoot '..\src\Morfa.Desktop\Assets\Fonts')
 )
 
 $ErrorActionPreference = 'Stop'

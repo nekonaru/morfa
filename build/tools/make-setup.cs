@@ -1,23 +1,23 @@
 // Makes Morfa-<version>-win-Setup.exe: appends the published app (an LZMA payload with a SHA-256 manifest, see
-// src/Morfa.Setup/Payload/SetupPayload.cs) to the published Setup program. The engines Setup offers on a fresh install
+// src/Morfa.Installer/Payload/SetupPayload.cs) to the published Setup program. The engines Setup offers on a fresh install
 // come from EngineDownloads (engines.json), so Setup offers exactly what Settings → Engines offers.
 // Run by build/build-installer.ps1:
-//   dotnet run build/tools/make-setup.cs -- <Morfa.Setup.exe> <publish folder> <version> <output .exe> [--fast]
+//   dotnet run build/tools/make-setup.cs -- <Morfa.Installer.exe> <publish folder> <version> <output .exe> [--fast]
 // LZMA with a 48 MB dictionary, programs through the x86 branch filter; --fast uses a small dictionary, for checks.
-#:project ../../src/Morfa.Setup/Morfa.Setup.csproj
-#:project ../../src/Morfa.Engines/Morfa.Engines.csproj
+#:project ../../src/Morfa.Installer/Morfa.Installer.csproj
+#:project ../../src/Morfa.Converters/Morfa.Converters.csproj
 #:property PublishAot=false
 
 using System.Diagnostics;
 using System.Reflection;
-using Morfa.Engines.Infrastructure;
-using Morfa.Setup.Payload;
+using Morfa.Converters.Infrastructure;
+using Morfa.Installer.Payload;
 
 var fast = args.Contains("--fast");
 var positional = args.Where(a => a != "--fast").ToArray();
 if (positional.Length != 4)
 {
-    Console.Error.WriteLine("usage: dotnet run build/tools/make-setup.cs -- <Morfa.Setup.exe> <publish folder> <version> <output .exe> [--fast]");
+    Console.Error.WriteLine("usage: dotnet run build/tools/make-setup.cs -- <Morfa.Installer.exe> <publish folder> <version> <output .exe> [--fast]");
     return 2;
 }
 var (program, app, version, output) = (positional[0], positional[1], positional[2], positional[3]);

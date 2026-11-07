@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="src/Morfa.App/Assets/Icons/morfa.png" alt="Morfa logo" width="120" />
+  <img src="src/Morfa.Desktop/Assets/Icons/morfa.png" alt="Morfa logo" width="120" />
   <h1>Morfa: Drag. Drop. Converted.</h1>
   <p><b>Hold a key, drag your files and drop them on a format in the donut that opens at your cursor.<br/>
   Morfa converts 263 formats locally, without uploading anything.</b></p>
@@ -36,6 +36,7 @@
 - [Testing](#testing)
 - [Continuous Integration](#continuous-integration)
 - [FAQ](#faq)
+- [Credits](#credits)
 - [Author](#author)
 - [License](#license)
 
@@ -44,6 +45,8 @@
 ## About
 
 **Morfa** is a free, open-source file converter you use by dragging. Hold a key (Ctrl, Option on macOS), drag your files and drop them on a format in the donut that opens at your cursor. Morfa converts 263 formats locally: images, PDF, Word, Excel, PowerPoint, HWP, e-books, archives, fonts, CAD, 3D models and geospatial data work without Office, Hancom Office or LibreOffice. Nothing is uploaded, and the result is saved next to the original.
+
+Morfa is inspired by, and builds on, [Filee](https://github.com/KnifeLemon/Filee), the open-source file converter it is a reimplementation of. The menu-at-cursor idea, the converter pipeline and the engine design come from Filee; morfa reworks the codebase, structure and identity into its own project.
 
 > _"A free, open-source file converter you use by dragging."_
 
@@ -197,7 +200,7 @@ dotnet build Morfa.slnx
 #### 3. Run the app
 
 ```bash
-dotnet run --project src/Morfa.App
+dotnet run --project src/Morfa.Desktop
 ```
 
 ---
@@ -252,15 +255,15 @@ The app UI (menus, buttons, messages, and settings) is available in **English** 
 ```
 morfa/
 ├── src/
-│   ├── Morfa.Core/               # domain model: conversion, formats, presets, settings
-│   ├── Morfa.Engines/            # IConverter implementations, one folder per engine
-│   ├── Morfa.Platform.Windows/   # Windows platform services
-│   ├── Morfa.Platform.Linux/     # Linux platform services
-│   ├── Morfa.Platform.MacOS/     # macOS platform services
-│   ├── Morfa.App/                # the Avalonia desktop app
+│   ├── Morfa.Domain/               # domain model: conversion, formats, presets, settings
+│   ├── Morfa.Converters/            # IConverter implementations, one folder per engine
+│   ├── Morfa.Platforms.Windows/   # Windows platform services
+│   ├── Morfa.Platforms.Linux/     # Linux platform services
+│   ├── Morfa.Platforms.MacOS/     # macOS platform services
+│   ├── Morfa.Desktop/                # the Avalonia desktop app
 │   │   └── Assets/i18n/          # English (en.json) and Indonesian (id.json) strings
-│   ├── Morfa.Cli/                # the morfa command line
-│   ├── Morfa.Setup/              # the Windows installer and uninstaller
+│   ├── Morfa.CommandLine/                # the morfa command line
+│   ├── Morfa.Installer/              # the Windows installer and uninstaller
 │   └── Morfa.ExplorerMenu/       # Windows 11 Explorer menu COM server (plain C)
 ├── tests/                        # one test project per layer
 ├── build/                        # build, packaging and release scripts
@@ -280,7 +283,7 @@ morfa/
 
 ### Adding a converter
 
-1. Implement `IConverter` in a new file under `src/Morfa.Engines`
+1. Implement `IConverter` in a new file under `src/Morfa.Converters`
 2. Declare its edges in `Edges`
 3. Register it in `EngineRegistry.CreateAll`
 
@@ -289,7 +292,7 @@ morfa/
 
 ### Adding a user-facing string
 
-1. Add the key to `src/Morfa.App/Assets/i18n/en.json` (English) and `id.json` (Indonesian)
+1. Add the key to `src/Morfa.Desktop/Assets/i18n/en.json` (English) and `id.json` (Indonesian)
 2. Use it via the localizer with the same key
 
 > [!WARNING]
@@ -352,9 +355,16 @@ Settings, section **Language**, pick English or Bahasa Indonesia. English is the
 
 ---
 
+## Credits
+
+- **Filee** ([KnifeLemon/Filee](https://github.com/KnifeLemon/Filee)), the inspiration for morfa. Hold a key and drop files on file-type actions from the cursor. The donut toolbar, the converter pipeline and the engine catalog come from Filee's design and MIT-licensed source.
+- **Nicolas Dwi Dharma**, morfa's maintainer.
+
+---
+
 ## Author
 
-<!-- sponsors: src/Morfa.App/Assets/Sponsors/sponsors.json -->
+<!-- sponsors: src/Morfa.Desktop/Assets/Sponsors/sponsors.json -->
 
 <div align="center">
 

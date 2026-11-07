@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Morfa.Platforms.Linux</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Morfa.Domain\Morfa.Domain.csproj" />
+    <InternalsVisibleTo Include="Morfa.Platforms.Tests" />
+  </ItemGroup>
+</Project>

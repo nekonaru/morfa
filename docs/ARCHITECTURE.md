@@ -1,7 +1,11 @@
 # Architecture
 
+> This engine pipeline, the donut toolbar and the project layout are derived from
+> [Filee](https://github.com/KnifeLemon/Filee) (MIT license, by Myeonggu Kim and Filee contributors).
+> Morfa is an independent reimplementation with its own identity, project layout and namespaces.
+
 ```
-            ┌──────────────────────────── Morfa.App (Avalonia) ─────────────────────────────┐
+            ┌──────────────────────────── Morfa.Desktop (Avalonia) ─────────────────────────────┐
  global     │ TriggerService ──► GestureDetector ──► RadialController ──► RadialWindow/DonutMenu │
  mouse/keys │   (SharpHook)        (pure state         (drag / click       (transparent,          │
  ─────────► │                       machine)            mode)               topmost window)       │
@@ -13,12 +17,12 @@
             │ MainWindow (settings pages) ◄──► UserDataStore (JSON in %APPDATA%\Morfa)            │
             └──────────────────────────────────────────────┬──────────────────────────────────────┘
                                                            ▼
-            ┌──────────────────────────── Morfa.Core ───────────────────────────────────────────┐
+            ┌──────────────────────────── Morfa.Domain ───────────────────────────────────────────┐
             │ JobQueue ──► RoutePlanner (Dijkstra over converter edges) ──► IConverter steps    │
             │ FormatRegistry · Preset · OutputPathResolver · ToolbarProfile · ProfileSelector   │
             └──────────────────────────────────────────────┬──────────────────────────────────────┘
                                                            ▼
-            ┌──────────────────────────── Morfa.Engines ────────────────────────────────────────┐
+            ┌──────────────────────────── Morfa.Converters ────────────────────────────────────────┐
             │ Built in: Magick (images, RAW) · PdfSharp · Pdfium · PdfPig · Svg.Skia · ICNS      │
             │ HwpxWriter + DocxWriter over DocumentReaders (DOCX, XLSX, XLS, ODS, PPTX,          │
             │   PDF, HTML, EPUB, MOBI, FB2, HWPX, Markdown) · Spreadsheets · OOXML variants      │
@@ -270,7 +274,7 @@ two). The pieces:
   frame durations (0-10 ms counts as 100 ms, as in browsers) and the loop count. The animation pauses while the
   control is hidden or its window is minimized, shows the first frame with reduced motion (`AutoPlay`), and gives
   the decoder and bitmap back when it leaves the visual tree or its source changes.
-- `SlideShow` is the deck itself (picture, texts, position dots), built in code so `Morfa.Setup` can link the same
+- `SlideShow` is the deck itself (picture, texts, position dots), built in code so `Morfa.Installer` can link the same
   files for a slideshow on its progress page (`AutoAdvance`). All slides' texts sit in one grid cell, only the
   current one visible, so the height is the tallest slide's and the window doesn't jump.
 - `WhatsNewWindow` adds the card, ✕, Previous / Next ("Get started" on the last slide), ←/→ and Esc.
@@ -288,15 +292,15 @@ two). The pieces:
 
 The `<!-- update -->` lines of CHANGELOG.md are the other half: the update card shows them for a version that isn't
 installed yet; the slides introduce the installed one. The demo animations are rendered by
-`tests/Morfa.App.Tests/WhatsNewMedia.cs` from the real windows (see CONTRIBUTING.md, "Releasing").
+`tests/Morfa.Desktop.Tests/WhatsNewMedia.cs` from the real windows (see CONTRIBUTING.md, "Releasing").
 
 ## Command line and watch folders
 
-- `Morfa.Cli` (`morfa-cli.exe`, run as `morfa` through `cli\morfa.cmd`, which Setup can put on PATH) composes the same
+- `Morfa.CommandLine` (`morfa-cli.exe`, run as `morfa` through `cli\morfa.cmd`, which Setup can put on PATH) composes the same
   pipeline as the app without any UI (`CliHost`: `UserDataStore`, `EngineRegistry`, `ConverterCatalog`, `JobQueue`)
   and reads the app's presets and engine order. It is published into the app folder, so both share one runtime and
   the bundled engines; its name can't be `morfa.exe` next to `Morfa.exe` on a case-insensitive file system.
-- `Morfa.Core/Watching/FolderWatcher` watches one `WatchRule` with a `FileSystemWatcher` and converts a file once it
+- `Morfa.Domain/Watching/FolderWatcher` watches one `WatchRule` with a `FileSystemWatcher` and converts a file once it
   has kept its size and time for a moment and opens without sharing (downloads and copies in progress are skipped).
   Temporary files, unknown formats and dedicated output and originals folders are ignored. A rule may also write
   into the watched folder itself. In that case, generated file versions (path, size and modification time) and
@@ -309,8 +313,8 @@ installed yet; the slides introduce the installed one. The demo animations are r
 
 ## Platform code
 
-Everything OS-specific goes through `IPlatformServices` (`Morfa.Core/Platform`). Windows lives in
-`Morfa.Platform.Windows`; macOS will get its own project. Global input uses SharpHook on both.
+Everything OS-specific goes through `IPlatformServices` (`Morfa.Domain/Platform`). Windows lives in
+`Morfa.Platforms.Windows`; macOS will get its own project. Global input uses SharpHook on both.
 
 Home → Recent conversions opens a result with `OpenFile` (the shell on Windows, `open` on macOS, `xdg-open` on Linux,
 so a file is handed to its app and never started itself; only formats Morfa knows are offered) and, where
@@ -356,7 +360,7 @@ applied by `WindowsPlatformServices.SetContextMenu` at start-up and whenever set
   - The package is **unsigned** (publisher contains `OID.2.25.311729368913984317654407730594956997722=1`; Morfa has no
     code-signing certificate). Windows only registers an unsigned package with executable content **with
     administrator rights** (it installs it for all users); a per-user attempt fails with 0x80073D2B "an unsigned
-    package cannot include Executable activations". Setup (`src/Morfa.Setup`) has those rights anyway and
+    package cannot include Executable activations". Setup (`src/Morfa.Installer`) has those rights anyway and
     registers it on Windows 11 x64 while its option is ticked. Later the General page offers "Add to the main menu",
     which runs `Add-AppxPackage -Path … -ExternalLocation … -AllowUnsigned` in Windows PowerShell through one UAC
     prompt (`ExplorerMenuRegistration`). A signed package would register per user without a prompt.
@@ -389,7 +393,7 @@ the entry up for new menus; if not, restart Explorer. To remove it by hand:
 
 ## Windows installer
 
-`Morfa-<version>-win-Setup.exe` is Morfa's own installer, `src/Morfa.Setup` (it replaced the Inno Setup script of
+`Morfa-<version>-win-Setup.exe` is Morfa's own installer, `src/Morfa.Installer` (it replaced the Inno Setup script of
 1.x). It is an Avalonia program with the app's look and translations: it links `Styles/Soft.axaml` (which therefore
 styles only Avalonia's own controls; Morfa's controls are in `Controls.axaml`), `SoftPalette` (accent, radii, font
 order), `AppLanguages` and `Assets/i18n/*.json` (Setup's texts are the `installer.*` keys). To stay small it uses
@@ -440,7 +444,7 @@ have no semibold) instead of the app's embedded Noto fonts.
 - **Command line**: Inno Setup's switches (`SetupOptions`, documented at the top of the file), because Morfa 1.x
   updates itself with `/SILENT /NORESTART` and winget passes `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`. Exit codes as
   Inno Setup's: 0 done, 1 could not start, 2 cancelled before installing (also a declined UAC prompt), 4 failed.
-- **Testing**: `Morfa.Setup.Tests` runs installs, updates (also over a simulated 1.x installation) and uninstalls
+- **Testing**: `Morfa.Installer.Tests` runs installs, updates (also over a simulated 1.x installation) and uninstalls
   against `MemoryRegistry`, a fake `ISetupSystem` and scratch folders, and renders every page. `/SANDBOX=<folder>`
   runs the real Setup with a registry file and all folders inside `<folder>`; `build-installer.ps1 -CheckOnly` (CI)
   installs, updates and uninstalls that way.

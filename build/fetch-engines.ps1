@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
   Downloads and prepares conversion engines for development and for the installer (which bundles rhwp and 7-Zip
-  only; the app downloads the large engines on demand, see src/Morfa.Engines/Infrastructure/EngineInstaller.cs).
+  only; the app downloads the large engines on demand, see src/Morfa.Converters/Infrastructure/EngineInstaller.cs).
 
 .DESCRIPTION
   Produces this layout (next to Morfa.exe in a published build, or in the repo root for development):
@@ -21,7 +21,7 @@
       tesseract/     Tesseract OCR (Apache-2.0, separate program), UB Mannheim's Windows build unpacked from its
                      installer with 7-Zip (never run); the language data is downloaded by the app when needed
 
-  Every download is pinned to a version and verified with SHA-256 (src/Morfa.Engines/Infrastructure/engines.json,
+  Every download is pinned to a version and verified with SHA-256 (src/Morfa.Converters/Infrastructure/engines.json,
   shared with the app). Downloads are cached in build/.cache.
 
   The Microsoft C++ runtime (the "vcruntime" component: MSVCP140.dll, VCRUNTIME140.dll, ...) is copied next to the
@@ -55,7 +55,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Invoke-WebRequest is ~10x faster without the progress bar
 
 # Versions, URLs and hashes come from the same list the app uses for on-demand downloads.
-$manifest = Get-Content (Join-Path $PSScriptRoot '..\src\Morfa.Engines\Infrastructure\engines.json') -Raw | ConvertFrom-Json
+$manifest = Get-Content (Join-Path $PSScriptRoot '..\src\Morfa.Converters\Infrastructure\engines.json') -Raw | ConvertFrom-Json
 $engines = [ordered]@{}
 foreach ($component in $manifest.components.PSObject.Properties) {
     $engines[$component.Name] = @{ Url = $component.Value.url; Sha256 = $component.Value.sha256 }

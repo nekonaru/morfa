@@ -87,7 +87,7 @@ The installer contains only the small engines. On first start Morfa asks which o
 they can be installed or removed later in Settings → *Engines*. A conversion that needs a missing engine shows
 "Needs LibreOffice …" on its donut slice.
 
-- Downloads are pinned in `src/Morfa.Engines/Infrastructure/engines.json` (URL, SHA-256, size). The same file is
+- Downloads are pinned in `src/Morfa.Converters/Infrastructure/engines.json` (URL, SHA-256, size). The same file is
   read by `build/fetch-engines.ps1`, so development and the app always use the same versions. A macOS download can
   name the oldest macOS it runs on (`minimumMacOS`); an older Mac isn't offered it.
 - `EngineInstaller` verifies the SHA-256 before unpacking and unpacks into a staging folder that replaces the
@@ -400,7 +400,7 @@ Element order and attribute values follow files saved by 한글 where the schema
 - layout caches (table row heights, inline tab widths) are estimated, because simpler readers use them as-is.
 
 Every generated file is checked in the tests with three independent readers: rhwp (renders it), Unhwp (reads the
-text) and LibreOffice + H2Orestart (opens it), see `tests/Morfa.Engines.Tests/DocxToHwpxTests.cs` and
+text) and LibreOffice + H2Orestart (opens it), see `tests/Morfa.Converters.Tests/DocxToHwpxTests.cs` and
 `OfficeTests.cs`.
 
 Not converted: Word charts, SmartArt, free-form shapes, tracked changes and comments.
@@ -460,7 +460,7 @@ built-in XLSX route reads the workbook into Morfa's document model.
 
 ## Fonts
 
-Fonts are converted in-process (`Morfa.Engines/Fonts`); zlib and Brotli come with .NET. The input format is
+Fonts are converted in-process (`Morfa.Converters/Fonts`); zlib and Brotli come with .NET. The input format is
 recognised by content, so a mislabelled file still converts.
 
 - **WOFF 1.0**: every table zlib-compressed (stored as-is when that isn't smaller). Lossless both ways.
@@ -484,8 +484,8 @@ recognised by content, so a mislabelled file still converts.
 - Not supported: CFF2 (variable) outlines to TTF or EOT (to WOFF, WOFF2 and OTF they convert), writing font
   collections, and WOFF/WOFF2 extended metadata (dropped).
 
-`tests/Morfa.Engines.Tests/FontTests.cs` checks every conversion with small OFL fonts in
-`tests/Morfa.Engines.Tests/Fonts` (see `OFL.txt` there): round trips keep every table byte for byte, a WOFF2 made
+`tests/Morfa.Converters.Tests/FontTests.cs` checks every conversion with small OFL fonts in
+`tests/Morfa.Converters.Tests/Fonts` (see `OFL.txt` there): round trips keep every table byte for byte, a WOFF2 made
 by Google's encoder decodes to the source font, and converted CFF glyphs are compared with the originals in Skia.
 
 ## DOCX writer
@@ -514,7 +514,7 @@ Pandoc. It writes:
 Parts, relationships and content types are written per part (pictures and links in headers and notes are related
 from their own part), children in schema order. The tests validate every file with the Open XML SDK schema
 validator, read it back with DocxReader (DOCX → model → DOCX → model keeps the layout) and convert it with
-LibreOffice as an independent reader, see `tests/Morfa.Engines.Tests/DocxWriterTests.cs`.
+LibreOffice as an independent reader, see `tests/Morfa.Converters.Tests/DocxWriterTests.cs`.
 
 Its edges cost 8, less than Pandoc's and LibreOffice's direct conversions, so Markdown → DOCX, PDF → DOCX, ... use
 it. DOCX → DOCX is no edge; the Word variants are the Office Open XML engine's job.
@@ -866,7 +866,7 @@ the other HTML targets go on from the page.
 - **Limits**: archives over 256 MB are refused; a picture over 32 MB (decoded) is left out, as is any picture once
   the page's data URIs reach 192 MB (a picture used many times counts each time); 8 MB of style sheet text per page.
 
-Tests (`tests/Morfa.Engines.Tests/MhtmlTests.cs`) write archives in code: a Chrome-style one (quoted-printable page
+Tests (`tests/Morfa.Converters.Tests/MhtmlTests.cs`) write archives in code: a Chrome-style one (quoted-printable page
 with the charset only in its meta tag, a `cid:` style sheet, pictures by absolute and relative URL and from CSS, one
 saved as octet-stream, and scripts, frames, remote pictures, fonts and style sheets that must go), a Word `.mht`
 (windows-1252, `file:///C:/` locations, VML fallbacks), a `cid:`-only page in EUC-KR, a picture on disk named by a
@@ -921,7 +921,7 @@ VALARM, X-properties, VJOURNAL, VFREEBUSY, binary attachments and other unsuppor
 
 ## CAD drawings (DWG, DXF)
 
-Built in, no AutoCAD or ODA software (`Morfa.Engines/Cad`). [ACadSharp](https://github.com/DomCR/ACadSharp) reads
+Built in, no AutoCAD or ODA software (`Morfa.Converters/Cad`). [ACadSharp](https://github.com/DomCR/ACadSharp) reads
 and writes the files; Morfa's own renderer draws them with SkiaSharp (one drawing routine for PDF, SVG and images).
 
 - **Reading**: DWG from R14 (AC1014) to the AutoCAD 2018 format (AC1032, still current in AutoCAD 2026); DXF R12 to
@@ -990,7 +990,7 @@ and writes the files; Morfa's own renderer draws them with SkiaSharp (one drawin
 
 ## 3D models
 
-`Morfa.Engines/Models3D` converts GLB, glTF, STL, OBJ, 3MF and PLY into each other, and FBX into any of them, in
+`Morfa.Converters/Models3D` converts GLB, glTF, STL, OBJ, 3MF and PLY into each other, and FBX into any of them, in
 managed code: every reader
 fills one in-memory model (`Model3D`: parts with positions, normals, UVs, vertex colours and triangles; materials
 with a base colour and a base colour texture) and every writer takes it, so each pair is one step. glTF and GLB are
@@ -1044,7 +1044,7 @@ with one light and flat shading per triangle, vertex colours or the texture inte
 at 2048 px and scaled down to 1024 px for smooth edges, on a transparent background. The preset's image options
 (resize, background for JPG, quality) apply as for other pictures.
 
-Tests (`tests/Morfa.Engines.Tests/ModelTests.cs`) build a cube, a sphere and a fan of coloured triangles in code and
+Tests (`tests/Morfa.Converters.Tests/ModelTests.cs`) build a cube, a sphere and a fan of coloured triangles in code and
 convert each through every format pair, checking triangle counts, bounds, signed volume (winding), normals, UVs,
 colours and materials where both formats keep them; hand-written STL, OBJ, PLY, 3MF and glTF files cover the reading
 details, and a generated 1,000,000-triangle STL the speed. `FbxTests.cs` writes FBX files in code (`FbxBuilder`:
@@ -1054,7 +1054,7 @@ materials by polygon, and every cut or flipped byte of a file, which must read o
 
 ## Geospatial data (GeoJSON, KML / KMZ, GPX, Shapefile, CSV)
 
-`Morfa.Engines/Geo` converts geospatial **vector** data between GeoJSON, KML, KMZ, GPX, Shapefile and CSV in managed
+`Morfa.Converters/Geo` converts geospatial **vector** data between GeoJSON, KML, KMZ, GPX, Shapefile and CSV in managed
 code, with no GDAL and no download. Every reader fills one in-memory model (`GeoModel`: features, each with an optional
 geometry and its attributes in file order) and every writer takes it, so each pair is one step; through CSV the data
 also reaches the spreadsheet and data engines (Shapefile → XLSX, GeoJSON → JSON, KML → HWPX, …).
@@ -1131,7 +1131,7 @@ Morfa can't convert, a CSV with no coordinates (`error.geo_*` in the language fi
 conversion fails.
 
 Tests: `GeoFormatTests`, `GeoShapefileTests`, `GeoCrsTests`, `GeoHostileInputTests`, `GeoZipTests` and
-`GeoRobustnessTests` in `tests/Morfa.Engines.Tests`. The Shapefiles in `tests/Morfa.Engines.Tests/Geo` were written by
+`GeoRobustnessTests` in `tests/Morfa.Converters.Tests`. The Shapefiles in `tests/Morfa.Converters.Tests/Geo` were written by
 GDAL (synthetic data; `Geo/make-test-geo.py` recreates them), so Morfa's reader and writer are not only checked against
 each other. Everything else is written in the tests: `GeoBuilders.cs` has GeoJSON, KML and GPX text and a Shapefile and
 dBASE builder that follows the ESRI specification for the cases GDAL won't write, and the Shapefiles Morfa writes are
@@ -1174,7 +1174,7 @@ Password-protected (encrypted) HWPX and DRM-wrapped files stop with a clear erro
 
 ## E-books
 
-The built-in e-book engine (`src/Morfa.Engines/Ebooks`) reads books into the same document model as the HWPX
+The built-in e-book engine (`src/Morfa.Converters/Ebooks`) reads books into the same document model as the HWPX
 writer, so every e-book also reaches HWPX, PDF and images. The document model is written back out by
 `XhtmlWriter` (EPUB chapters, HTMLZ, single-page HTML), `PlainTextWriter`, `MarkdownWriter` and `Fb2Writer`.
 
@@ -1459,7 +1459,7 @@ format, and FFmpeg reads what the file holds, so a `.dat` with no video in it fa
   320 kbit/s); *RemoveAudio* drops the sound; *AudioChannels* (0 source, 1 mono, 2 stereo) applies to every audio
   target but AMR; *AudioSampleRate* (8 to 48 kHz) and *WavFormat* (bit depth) apply to WAV and W64.
 - *VideoCodec* (Default, HEVC, AV1) and *AudioCodec* (Default, ALAC) pick another codec where the target takes it
-  (`MediaCodecs` in Morfa.Core: HEVC for MP4/M4V/MKV/MOV, AV1 for MP4/M4V/MKV/WEBM, ALAC for M4A/M4B); for any other
+  (`MediaCodecs` in Morfa.Domain: HEVC for MP4/M4V/MKV/MOV, AV1 for MP4/M4V/MKV/WEBM, ALAC for M4A/M4B); for any other
   target the usual codec is written. The presets "MP4 HEVC" (on the video donut), "MP4 AV1" and "ALAC" use them. A
   video already in the chosen codec is copied (the rules above, with AV1 also into MP4); HEVC and AV1 keep 10 bits
   (`yuv420p10le`, Main 10) for 10-bit and HDR sources and write their colour tags (BT.2020, PQ or HLG), 8-bit 4:2:0

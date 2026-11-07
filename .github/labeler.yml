@@ -14,4 +14,4 @@ documentation:
 translation:
   - changed-files:
       - all-globs-to-all-files:
-          - src/Morfa.App/Assets/i18n/**
+          - src/Morfa.Desktop/Assets/i18n/**

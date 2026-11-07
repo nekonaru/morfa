@@ -1,7 +1,7 @@
 # Builds the Windows installer and publishes it to GitHub Releases.
 # Trigger: push a tag like v1.0.0  (git tag v1.0.0 && git push origin v1.0.0)
 #
-# Output (build/build-installer.ps1): Morfa-<version>-win-Setup.exe (Morfa's own installer, src/Morfa.Setup),
+# Output (build/build-installer.ps1): Morfa-<version>-win-Setup.exe (Morfa's own installer, src/Morfa.Installer),
 # Morfa-<version>-win-Portable.zip and Morfa-<version>-SHA256SUMS.txt.
 # The release is a draft with the Linux and macOS packages: the Windows files are signed on a PC signed in to Certum's
 # SimplySign cloud (its key needs a phone token), so this run keeps the tested, unsigned build as the artifact
@@ -70,10 +70,10 @@ jobs:
         run: dotnet build Morfa.slnx -c Release
 
       - name: Test UI on its own
-        run: dotnet test tests/Morfa.App.Tests --no-build -c Release --blame-crash --blame-hang-timeout 5m --logger "console;verbosity=normal" --results-directory TestResults/app
+        run: dotnet test tests/Morfa.Desktop.Tests --no-build -c Release --blame-crash --blame-hang-timeout 5m --logger "console;verbosity=normal" --results-directory TestResults/app
 
       - name: Test
-        run: dotnet test Morfa.slnx --no-build -c Release --filter "FullyQualifiedName!~Morfa.App.Tests"
+        run: dotnet test Morfa.slnx --no-build -c Release --filter "FullyQualifiedName!~Morfa.Desktop.Tests"
 
       - name: Upload test results
         if: failure()
@@ -97,7 +97,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path unsigned | Out-Null
           Move-Item publish/win-x64 unsigned/app
-          Copy-Item build/.cache/setup/Morfa.Setup.exe unsigned/
+          Copy-Item build/.cache/setup/Morfa.Installer.exe unsigned/
 
       - uses: actions/upload-artifact@v7
         with:

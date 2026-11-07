@@ -1,0 +1,33 @@
+<!--
+  Morfa.CommandLine: the "morfa" command line. Converts files and watches folders without the tray app, with the same
+  engines, presets and settings. Published next to Morfa.exe as morfa-cli.exe (one runtime for both); the installer
+  puts a "morfa" shim on PATH (cli\morfa.cmd).
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>morfa-cli</AssemblyName>
+    <RootNamespace>Morfa.CommandLine</RootNamespace>
+    <ApplicationIcon>..\Morfa.Desktop\Assets\Icons\morfa.ico</ApplicationIcon>
+    <!-- The Recycle Bin is IFileOperation, a COM interface (Morfa.Platforms.Windows). -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Morfa.Domain\Morfa.Domain.csproj" />
+    <ProjectReference Include="..\Morfa.Converters\Morfa.Converters.csproj" />
+    <!-- "Replace the original" moves originals to the Recycle Bin / Trash (MoveToTrash), as the app does. -->
+    <ProjectReference Include="..\Morfa.Platforms.Windows\Morfa.Platforms.Windows.csproj" />
+    <ProjectReference Include="..\Morfa.Platforms.Linux\Morfa.Platforms.Linux.csproj" />
+    <ProjectReference Include="..\Morfa.Platforms.MacOS\Morfa.Platforms.MacOS.csproj" />
+  </ItemGroup>
+
+  <!-- Error messages and built-in preset names, in English (the app's translation file). -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\Morfa.Desktop\Assets\i18n\en.json" LogicalName="Morfa.CommandLine.en.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Morfa.CommandLine.Tests" />
+  </ItemGroup>
+</Project>

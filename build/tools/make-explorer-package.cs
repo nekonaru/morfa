@@ -3,13 +3,13 @@
 // Uses the Windows packaging API (AppxPackaging.dll, part of Windows 10/11): it validates the manifest and writes the
 // block map and content types exactly like MakeAppx, so no Windows SDK is needed. The manifest comes from
 // ExplorerMenuPackage.CreateManifest (unit tested).
-#:project ../../src/Morfa.Platform.Windows/Morfa.Platform.Windows.csproj
+#:project ../../src/Morfa.Platforms.Windows/Morfa.Platforms.Windows.csproj
 #:property AllowUnsafeBlocks=true
 #:property PublishAot=false
 
 using System.Runtime.InteropServices;
 using System.Text;
-using Morfa.Platform.Windows;
+using Morfa.Platforms.Windows;
 
 if (args.Length != 1)
 {
@@ -29,7 +29,7 @@ try
     var manifestPath = Path.Combine(work.FullName, "AppxManifest.xml");
     File.WriteAllText(manifestPath, ExplorerMenuPackage.CreateManifest(), new UTF8Encoding(false));
     var packagePath = Path.Combine(output, ExplorerMenuPackage.PackageFileName);
-    var logo = Path.Combine(repo, "src", "Morfa.App", "Assets", "Icons", "morfa.png");
+    var logo = Path.Combine(repo, "src", "Morfa.Desktop", "Assets", "Icons", "morfa.png");
     Appx.Pack(packagePath, manifestPath, [(ExplorerMenuPackage.LogoPath, logo, "image/png")]);
     Console.WriteLine($"Wrote {packagePath} ({new FileInfo(packagePath).Length:N0} bytes, manifest {ExplorerMenuPackage.ManifestVersion})");
 }

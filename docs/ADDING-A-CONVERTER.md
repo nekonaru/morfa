@@ -1,12 +1,12 @@
 # Adding a converter
 
-A converter is one class implementing `IConverter` (`src/Morfa.Core/Conversion/IConverter.cs`).
+A converter is one class implementing `IConverter` (`src/Morfa.Domain/Conversion/IConverter.cs`).
 The route planner combines converters automatically, so a new edge can unlock many conversions at once
 (for example, adding `epub → pdf` also gives `epub → png` through PDFium).
 
 ## 1. New format? Register it
 
-If the format is new, add one line to `FormatRegistry.Known` (`src/Morfa.Core/Formats/FormatRegistry.cs`):
+If the format is new, add one line to `FormatRegistry.Known` (`src/Morfa.Domain/Formats/FormatRegistry.cs`):
 
 ```csharp
 new("epub", "EPUB", FormatCategory.Document, ["epub"]),
@@ -14,14 +14,14 @@ new("epub", "EPUB", FormatCategory.Document, ["epub"]),
 
 ## 2. Write the converter
 
-Create `src/Morfa.Engines/<Area>/<Name>Converter.cs`:
+Create `src/Morfa.Converters/<Area>/<Name>Converter.cs`:
 
 ```csharp
 // EPUB → PDF with the (hypothetical) SuperEpub library (MIT).
 
-using Morfa.Core.Conversion;
+using Morfa.Domain.Conversion;
 
-namespace Morfa.Engines.Documents;
+namespace Morfa.Converters.Documents;
 
 public sealed class SuperEpubConverter : IConverter
 {
@@ -67,12 +67,12 @@ Rules:
 
 ## 3. Register it
 
-Add one line to `EngineRegistry.CreateAll` (`src/Morfa.Engines/EngineRegistry.cs`).
+Add one line to `EngineRegistry.CreateAll` (`src/Morfa.Converters/EngineRegistry.cs`).
 If it should be preferred over existing engines by default, add its id to `AppSettings.EnginePriority`.
 
 ## 4. Test it
 
-Add a test to `tests/Morfa.Engines.Tests`. Generate the input files in the test (see `EngineFixture`) so the test
+Add a test to `tests/Morfa.Converters.Tests`. Generate the input files in the test (see `EngineFixture`) so the test
 runs everywhere without sample documents, and skip when the engine is not available:
 
 ```csharp
@@ -86,7 +86,7 @@ public async Task Epub_to_pdf()
 
 ## 5. Ship it (optional)
 
-Command line tools are pinned in `src/Morfa.Engines/Infrastructure/engines.json` (URL, SHA-256, size, archive kind),
+Command line tools are pinned in `src/Morfa.Converters/Infrastructure/engines.json` (URL, SHA-256, size, archive kind),
 which both `build/fetch-engines.ps1` and the app read. Small tools can be bundled with the installer (add the id to
 the `fetch-engines.ps1 -Only` list in `.github/workflows/release.yml`); large ones become an optional download by
 adding an `EnginePackage` to `EngineDownloads.Packages` plus its name and description in the three `i18n/*.json`

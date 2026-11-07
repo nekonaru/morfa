@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Builds the Windows installer Morfa-<version>-win-Setup.exe (Morfa's own, src/Morfa.Setup) and, with -Portable, the
+  Builds the Windows installer Morfa-<version>-win-Setup.exe (Morfa's own, src/Morfa.Installer) and, with -Portable, the
   portable zip, into -OutputDir.
 
 .DESCRIPTION
@@ -9,7 +9,7 @@
   small engines rhwp and 7-Zip and the Microsoft C++ runtime DLLs next to rhwp.exe and Morfa.exe
   (fetch-engines.ps1); the large engines are downloaded by the app (engines.json).
 
-  Setup itself (src/Morfa.Setup) is published as one self-contained, trimmed program (no .NET needed on the PC);
+  Setup itself (src/Morfa.Installer) is published as one self-contained, trimmed program (no .NET needed on the PC);
   build/tools/make-setup.cs appends the publish folder to it as an LZMA payload with a SHA-256 manifest, and the
   engines Setup offers from EngineDownloads. The portable zip is the publish folder as it is: without Setup's
   uninstall.exe next to Morfa.exe, Morfa knows it is a portable copy.
@@ -26,7 +26,7 @@
 .EXAMPLE
   pwsh build/build-installer.ps1
   pwsh build/build-installer.ps1 -Version 2.0.0 -Portable
-  pwsh build/build-installer.ps1 -Version 2.0.0 -Portable -PublishDir app -SetupProgram Morfa.Setup.exe -CertificateThumbprint <sha1>
+  pwsh build/build-installer.ps1 -Version 2.0.0 -Portable -PublishDir app -SetupProgram Morfa.Installer.exe -CertificateThumbprint <sha1>
   pwsh build/build-installer.ps1 -CheckOnly
 #>
 [CmdletBinding()]
@@ -35,7 +35,7 @@ param(
     [string]$Version,
     # A finished publish folder (Morfa.exe, MorfaExplorerMenu.dll/.msix, engines\); skips publishing.
     [string]$PublishDir,
-    # A finished Setup program (Morfa.Setup.exe from an earlier run); skips publishing src/Morfa.Setup.
+    # A finished Setup program (Morfa.Installer.exe from an earlier run); skips publishing src/Morfa.Installer.
     [string]$SetupProgram,
     [string]$OutputDir = (Join-Path $PSScriptRoot '..\Releases'),
     [switch]$Portable,
@@ -73,17 +73,17 @@ elseif (-not $PublishDir) {
     $PublishDir = Join-Path $root 'publish\win-x64'
     Remove-Item $PublishDir -Recurse -Force -ErrorAction SilentlyContinue
     Invoke-Checked 'dotnet publish' {
-        dotnet publish (Join-Path $root 'src\Morfa.App\Morfa.App.csproj') -c Release -r win-x64 --self-contained `
+        dotnet publish (Join-Path $root 'src\Morfa.Desktop\Morfa.Desktop.csproj') -c Release -r win-x64 --self-contained `
             "-p:Version=$Version" -p:PublishReadyToRun=true -p:MorfaRelease=true -o $PublishDir
     }
     # The command line, in the same folder so it shares the runtime and the engines (morfa-cli.exe). Its name can't
     # be morfa.exe next to Morfa.exe, so the "morfa" command is cli\morfa.cmd, which Setup can put on PATH.
     Invoke-Checked 'dotnet publish (cli)' {
-        dotnet publish (Join-Path $root 'src\Morfa.Cli\Morfa.Cli.csproj') -c Release -r win-x64 --self-contained `
+        dotnet publish (Join-Path $root 'src\Morfa.CommandLine\Morfa.CommandLine.csproj') -c Release -r win-x64 --self-contained `
             "-p:Version=$Version" -p:PublishReadyToRun=true -p:MorfaRelease=true -o $PublishDir
     }
     # Native debug symbols from NuGet packages (libSkiaSharp.pdb, libHarfBuzzSharp.pdb: ~105 MB) are useless to users.
-    # Morfa.App's publish removes them, but publishing the command line into the same folder brings them back.
+    # Morfa.Desktop's publish removes them, but publishing the command line into the same folder brings them back.
     Get-ChildItem $PublishDir -Filter 'lib*.pdb' | Remove-Item
     New-Item -ItemType Directory -Force -Path (Join-Path $PublishDir 'cli') | Out-Null
     Set-Content (Join-Path $PublishDir 'cli\morfa.cmd') "@`"%~dp0..\morfa-cli.exe`" %*" -Encoding ascii
@@ -108,15 +108,15 @@ if (-not $CheckOnly) {
     }
 }
 
-# Setup: one self-contained, trimmed program (src/Morfa.Setup).
+# Setup: one self-contained, trimmed program (src/Morfa.Installer).
 if (-not $SetupProgram) {
     $setupFolder = Join-Path $cache 'setup'
     Remove-Item $setupFolder -Recurse -Force -ErrorAction SilentlyContinue
     Invoke-Checked 'dotnet publish (setup)' {
-        dotnet publish (Join-Path $root 'src\Morfa.Setup\Morfa.Setup.csproj') -c Release -r win-x64 -p:MorfaSetupPublish=true `
+        dotnet publish (Join-Path $root 'src\Morfa.Installer\Morfa.Installer.csproj') -c Release -r win-x64 -p:MorfaSetupPublish=true `
             "-p:Version=$Version" -o $setupFolder
     }
-    $SetupProgram = Join-Path $setupFolder 'Morfa.Setup.exe'
+    $SetupProgram = Join-Path $setupFolder 'Morfa.Installer.exe'
 }
 $SetupProgram = (Resolve-Path $SetupProgram).Path
 

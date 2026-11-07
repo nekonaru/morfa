@@ -1,4 +1,4 @@
-// Generates src/Morfa.App/Assets/Icons/morfa.ico and morfa.png (the donut logo).
+// Generates src/Morfa.Desktop/Assets/Icons/morfa.ico and morfa.png (the donut logo).
 // Run from the repository root:  dotnet run build/tools/make-icon.cs
 #:package Magick.NET-Q8-AnyCPU
 
@@ -37,7 +37,7 @@ svg.Append($"<path fill='#3C3489' d='M{F(C - 34)} {F(C - 44)} h44 l24 24 v64 h-6
 svg.Append($"<path fill='#AFA9EC' d='M{F(C + 10)} {F(C - 44)} v24 h24 z'/>");
 svg.Append("</svg>");
 
-var outDir = Path.Combine("src", "Morfa.App", "Assets", "Icons");
+var outDir = Path.Combine("src", "Morfa.Desktop", "Assets", "Icons");
 Directory.CreateDirectory(outDir);
 File.WriteAllText(Path.Combine(outDir, "morfa.svg"), svg.ToString());
 

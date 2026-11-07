@@ -64,7 +64,7 @@ Invoke-Checked 'git worktree add' { git -C $root worktree add --detach $source $
 try {
     $out = Join-Path $work 'out'
     & (Join-Path $source 'build\build-installer.ps1') -Version $Version -Portable -OutputDir $out `
-        -PublishDir (Join-Path $work 'unsigned\app') -SetupProgram (Join-Path $work 'unsigned\Morfa.Setup.exe') `
+        -PublishDir (Join-Path $work 'unsigned\app') -SetupProgram (Join-Path $work 'unsigned\Morfa.Installer.exe') `
         -CertificateThumbprint $CertificateThumbprint
 }
 finally {

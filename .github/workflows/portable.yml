@@ -148,19 +148,19 @@ jobs:
         uses: actions/cache@v5
         with:
           path: build/.cache/portable-downloads
-          key: portable-engines-${{ matrix.rid }}-${{ hashFiles('src/Morfa.Engines/Infrastructure/engines.json') }}
+          key: portable-engines-${{ matrix.rid }}-${{ hashFiles('src/Morfa.Converters/Infrastructure/engines.json') }}
 
       - name: Build and test native projects
         run: |
           ./build/fetch-portable-engines.ps1 -Runtime '${{ matrix.rid }}' -Destination engines
           dotnet build Morfa.slnx -c Release
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $projects = @('Morfa.Core.Tests', 'Morfa.Platform.Tests', 'Morfa.Engines.Tests', 'Morfa.Cli.Tests', 'Morfa.App.Tests')
+          $projects = @('Morfa.Domain.Tests', 'Morfa.Platforms.Tests', 'Morfa.Converters.Tests', 'Morfa.CommandLine.Tests', 'Morfa.Desktop.Tests')
           foreach ($project in $projects) {
             $testArguments = @('test', "tests/$project/$project.csproj", '--no-build', '-c', 'Release', '--logger', 'trx', '--results-directory', "TestResults/${{ matrix.rid }}",
-              '--filter', 'FullyQualifiedName!=Morfa.App.Tests.ExplorerMenuTests.Every_native_import_exists_in_the_dll_it_names&FullyQualifiedName!=Morfa.App.Tests.ExplorerMenuTests.Reading_the_registered_package_never_throws')
+              '--filter', 'FullyQualifiedName!=Morfa.Desktop.Tests.ExplorerMenuTests.Every_native_import_exists_in_the_dll_it_names&FullyQualifiedName!=Morfa.Desktop.Tests.ExplorerMenuTests.Reading_the_registered_package_never_throws')
             # As on Windows, capture the running UI test and a dump if it stalls. A job timeout alone loses both.
-            if ($project -eq 'Morfa.App.Tests') {
+            if ($project -eq 'Morfa.Desktop.Tests') {
               $testArguments += @('--blame-crash', '--blame-hang-timeout', '5m', '--logger', 'console;verbosity=normal')
             }
             if ($IsLinux) {
@@ -220,7 +220,7 @@ jobs:
           name: unix-test-results-${{ matrix.rid }}
           path: |
             TestResults/${{ matrix.rid }}/
-            tests/Morfa.App.Tests/bin/Release/net10.0/screenshots/
+            tests/Morfa.Desktop.Tests/bin/Release/net10.0/screenshots/
             ${{ runner.temp }}/morfa-startup.log
             ${{ runner.temp }}/morfa-screens/
           if-no-files-found: ignore

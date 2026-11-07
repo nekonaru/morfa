@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
-$manifestPath = Join-Path $PSScriptRoot '../src/Morfa.Engines/Infrastructure/engines.json'
+$manifestPath = Join-Path $PSScriptRoot '../src/Morfa.Converters/Infrastructure/engines.json'
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable
 $components = $manifest.platforms[$Runtime].components
 $cache = Join-Path $PSScriptRoot '.cache/portable-downloads'

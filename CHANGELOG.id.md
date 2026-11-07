@@ -2,7 +2,7 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
-## v2.1.0
+## v0.1.0
 
 ## Fitur baru
 
@@ -14,6 +14,11 @@ Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 - **Watch folder.** Konversi setiap file yang masuk ke folder yang kamu pilih.
 - **Dua sisi di setiap donut.** Tekan Tab atau putar roda mouse saat donut terbuka untuk menjangkau format dan alat yang lebih jarang.
 - **UI English dan Indonesia.** Default English; ganti ke Bahasa Indonesia di Settings.
+
+## Catatan
+
+- **Terinspirasi Filee.** Morfa adalah reimplementasi yang terinspirasi dari [Filee](https://github.com/KnifeLemon/Filee), digarap ulang menjadi proyeknya sendiri dengan namespace, struktur dan identitasnya sendiri. Katalog engine converter, pipeline dan desain toolbar donut berasal dari source Filee yang berlisensi MIT.
+- **Mulai dari awal.** v0.1.0 adalah rilis pertama morfa sebagai proyek yang berdiri sendiri.
 
 ## Optimisasi
 

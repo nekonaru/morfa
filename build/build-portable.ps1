@@ -65,7 +65,7 @@ function Invoke-Checked([string]$name, [scriptblock]$command) {
 }
 
 if (-not $SkipFonts) { & (Join-Path $PSScriptRoot 'fetch-fonts.ps1') }
-foreach ($project in @('Morfa.App', 'Morfa.Cli')) {
+foreach ($project in @('Morfa.Desktop', 'Morfa.CommandLine')) {
     Invoke-Checked "Publish $project" {
         dotnet publish (Join-Path $root "src/$project/$project.csproj") -c Release -r $Runtime --self-contained true `
             "-p:Version=$Version" -p:MorfaRelease=true -p:PublishReadyToRun=false -o $publish
@@ -102,7 +102,7 @@ if ($Runtime.StartsWith('osx-')) {
     Invoke-Checked 'Validate Info.plist' { plutil -lint (Join-Path $contents 'Info.plist') }
     $iconset = Join-Path $stage 'morfa.iconset'
     New-Item -ItemType Directory -Path $iconset | Out-Null
-    $sourceIcon = Join-Path $root 'src/Morfa.App/Assets/Icons/morfa.png'
+    $sourceIcon = Join-Path $root 'src/Morfa.Desktop/Assets/Icons/morfa.png'
     foreach ($size in @(16, 32, 128, 256, 512)) {
         foreach ($scale in @(1, 2)) {
             $pixels = $size * $scale
@@ -138,7 +138,7 @@ if ($Runtime.StartsWith('osx-')) {
     Copy-Item -LiteralPath (Join-Path $root 'installer/macos/INSTALL.txt') -Destination $package
 }
 else {
-    Copy-Item -LiteralPath (Join-Path $root 'src/Morfa.App/Assets/Icons/morfa.png') -Destination $package
+    Copy-Item -LiteralPath (Join-Path $root 'src/Morfa.Desktop/Assets/Icons/morfa.png') -Destination $package
     Copy-Item -LiteralPath (Join-Path $root 'installer/linux/install.sh') -Destination $package
     Copy-Item -LiteralPath (Join-Path $root 'installer/linux/uninstall.sh') -Destination $package
     Copy-Item -LiteralPath (Join-Path $root 'installer/linux/INSTALL.txt') -Destination $package

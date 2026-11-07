@@ -75,7 +75,7 @@ jobs:
             code=true
             if [ "$macos" = true ]; then continue; fi
             case "$f" in
-              .github/workflows/*|build/*|installer/macos/*|*MacOS*|*.csproj|*.props|*.targets|*.slnx|global.json|src/Morfa.Engines/Infrastructure/engines.json)
+              .github/workflows/*|build/*|installer/macos/*|*MacOS*|*.csproj|*.props|*.targets|*.slnx|global.json|src/Morfa.Converters/Infrastructure/engines.json)
                 macos=true ;;
               *.cs|*.axaml)
                 # Shared code with a macOS branch. A deleted file has no content and only counts by its name.
@@ -149,12 +149,12 @@ jobs:
       # The UI tests on their own first, as the release runs them (there they crashed with 0xC0000005): a crash
       # names the test that was running and leaves a dump in TestResults.
       - name: Test UI on its own
-        run: dotnet test tests/Morfa.App.Tests --no-build -c Release --blame-crash --blame-hang-timeout 5m --logger "console;verbosity=normal" --results-directory TestResults/app
+        run: dotnet test tests/Morfa.Desktop.Tests --no-build -c Release --blame-crash --blame-hang-timeout 5m --logger "console;verbosity=normal" --results-directory TestResults/app
 
       - name: Test
-        run: dotnet test Morfa.slnx --no-build -c Release --filter "FullyQualifiedName!~Morfa.App.Tests" --logger "trx" --results-directory TestResults
+        run: dotnet test Morfa.slnx --no-build -c Release --filter "FullyQualifiedName!~Morfa.Desktop.Tests" --logger "trx" --results-directory TestResults
 
-      # Builds Setup (src/Morfa.Setup) around a stub app and runs it in a sandbox: install, update and uninstall into a
+      # Builds Setup (src/Morfa.Installer) around a stub app and runs it in a sandbox: install, update and uninstall into a
       # scratch folder with a registry file of its own, without administrator rights.
       - name: Check the installer
         shell: pwsh
@@ -174,6 +174,6 @@ jobs:
         with:
           name: ui-screenshots
           path: |
-            tests/Morfa.App.Tests/bin/Release/net10.0/screenshots/
-            tests/Morfa.Setup.Tests/bin/Release/net10.0/screenshots/
+            tests/Morfa.Desktop.Tests/bin/Release/net10.0/screenshots/
+            tests/Morfa.Installer.Tests/bin/Release/net10.0/screenshots/
           if-no-files-found: ignore

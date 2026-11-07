@@ -46,7 +46,7 @@ def run(command, cwd=None, env=None, capture=False):
 
 
 def linux_rhwp_versions():
-    path = os.path.join(ROOT, "src", "Morfa.Engines", "Infrastructure", "engines.json")
+    path = os.path.join(ROOT, "src", "Morfa.Converters", "Infrastructure", "engines.json")
     with open(path, encoding="utf-8") as stream:
         manifest = json.load(stream)
     return {rid: manifest["platforms"][rid]["components"]["rhwp"]["version"] for rid in ("linux-x64", "linux-arm64")}
