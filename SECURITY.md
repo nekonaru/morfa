@@ -33,7 +33,7 @@ Out of scope:
 
 - Bugs in the engines (FFmpeg, LibreOffice, Ghostscript, Pandoc, rhwp, 7-Zip and others). Report those to their
   projects. Tell us too if Morfa should update the pinned version.
-- SmartScreen or Gatekeeper warnings: Windows and macOS builds are not code-signed yet.
+- SmartScreen warnings: Windows builds are not code-signed yet. macOS builds are ad-hoc signed but not notarized; Gatekeeper can still warn.
 - Attacks that need someone who can already run programs as you on your computer.
 
 ## How downloads are checked

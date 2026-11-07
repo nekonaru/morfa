@@ -85,6 +85,9 @@ elseif (-not $PublishDir) {
     # Native debug symbols from NuGet packages (libSkiaSharp.pdb, libHarfBuzzSharp.pdb: ~105 MB) are useless to users.
     # Morfa.Desktop's publish removes them, but publishing the command line into the same folder brings them back.
     Get-ChildItem $PublishDir -Filter 'lib*.pdb' | Remove-Item
+    # Managed debug symbols and API docs are useful in the stack but not in the package.
+    Get-ChildItem $PublishDir -Recurse -Filter '*.pdb' | Remove-Item -Force
+    Get-ChildItem $PublishDir -Recurse -Filter '*.xml' | Remove-Item -Force
     New-Item -ItemType Directory -Force -Path (Join-Path $PublishDir 'cli') | Out-Null
     Set-Content (Join-Path $PublishDir 'cli\morfa.cmd') "@`"%~dp0..\morfa-cli.exe`" %*" -Encoding ascii
     # Next to Morfa.exe: the Explorer menu package's external location is the install folder.

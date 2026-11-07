@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Dependency updates: NuGet packages (central versions) and GitHub Actions,
+  # so vulnerable or stale versions surface as pull requests.
+  - package-ecosystem: nuget
+    directory: /
+    schedule: { interval: monthly }
+    labels: [dependencies]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    labels: [dependencies]

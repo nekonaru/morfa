@@ -72,6 +72,9 @@ foreach ($project in @('Morfa.Desktop', 'Morfa.CommandLine')) {
     }
 }
 $engines = Join-Path $publish 'engines'
+# Managed debug symbols and API docs are useful in the stack but not in the package.
+Get-ChildItem $publish -Recurse -Filter '*.pdb' | Remove-Item -Force
+Get-ChildItem $publish -Recurse -Filter '*.xml' | Remove-Item -Force
 if ($RhwpOverride) {
     & (Join-Path $PSScriptRoot 'fetch-portable-engines.ps1') -Runtime $Runtime -Destination $engines -Only 7zip
     Copy-Item -LiteralPath $RhwpOverride -Destination (Join-Path $engines 'rhwp') -Recurse
