@@ -152,7 +152,7 @@ jobs:
 
 ## Install / Update
 
-v0.1.0 ships prebuilt packages for Linux, macOS and Windows (unsigned). The Windows package shows a SmartScreen warning; press More info, then Run anyway. build_installer.ps1 builds the Windows installer and portable zip that ship as Morfa-<version>-win-Setup.exe and Morfa-<version>-win-Portable.zip.
+v$version ships prebuilt packages for Linux, macOS and Windows (unsigned). The Windows package shows a SmartScreen warning; press More info, then Run anyway. build_installer.ps1 builds the Windows installer and portable zip that ship as Morfa-<version>-win-Setup.exe and Morfa-<version>-win-Portable.zip.
 
 Windows
 - Setup: Morfa-<version>-win-Setup.exe. Run it, optionally add the Explorer menu, start at sign-in, the morfa command and engines. Silent installs take Setup's switches (/SILENT, /VERYSILENT).
