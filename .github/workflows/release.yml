@@ -122,49 +122,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $version = '${{ steps.version.outputs.value }}'
-          # Windows is unsigned: the release notes below warn about SmartScreen. Include all packages; a signed build
-          # is published with build/sign-release.ps1 on a PC signed in to SimplySign.
+          # Windows packages are unsigned here; the signed build is published with build/sign-release.ps1 on a PC
+          # signed in to SimplySign. Linux/macOS packages belong to this draft.
           $files = Get-ChildItem Releases -File -Filter "Morfa-$version-*" | ForEach-Object FullName
-          # "## 1.4.0" up to the next version heading of CHANGELOG.md, without the heading itself.
-          # Subsections ("## Changes", "## New features", ...) belong to the section; a new version starts "## <digit>".
-          $changes = ''
-          $changelog = Get-Content CHANGELOG.md -Raw -Encoding utf8
-          if ($changelog -match "(?ms)^## $([regex]::Escape($version))[ \t]*\r?\n(.*?)(?=^## \d|\z)") {
-            # One line per list item: GitHub shows the line breaks of the 120-column file in release notes. Indented
-            # lines continue the item above, unless they start a nested item ("  - "), which keeps its own line.
-            $changes = $Matches[1].Trim() -replace '\r?\n +(?!- |\* |\d+\. )(?=\S)', ' '
-          }
-          if (-not $changes) { Write-Warning "CHANGELOG.md has no section for $version" }
-
-          # GitHub's generated notes: the merged pull requests (one list instead of its label headings, which would
-          # repeat the CHANGELOG's), new contributors and the full changelog link.
-          $generated = (gh api -X POST "repos/${{ github.repository }}/releases/generate-notes" -f tag_name='${{ github.ref_name }}' | ConvertFrom-Json).body
-          $prs = @()
-          if ($generated -match "(?ms)^## What's Changed[ \t]*\r?\n(.*?)(?=^## |^\*\*Full Changelog|\z)") {
-            $prs = @($Matches[1] -split '\r?\n' | Where-Object { $_ -match '^\* ' })
-          }
-          $tail = if ($generated -match "(?ms)(^## New Contributors.*|^\*\*Full Changelog.*)") { $Matches[1].Trim() } else { '' }
-
-          $parts = @("## What's Changed")
-          if ($changes) { $parts += $changes }
-          if ($prs.Count) { $parts += "### Pull requests`n`n" + ($prs -join "`n") }
-          if ($tail) { $parts += $tail }
-          $parts += @"
-
-          ## Install / Update
-
-          v$version ships prebuilt packages for Linux, macOS and Windows (unsigned). The Windows package shows a SmartScreen warning; press More info, then Run anyway. build_installer.ps1 builds the Windows installer and portable zip that ship as Morfa-<version>-win-Setup.exe and Morfa-<version>-win-Portable.zip.
-
-          Windows
-          - Setup: Morfa-<version>-win-Setup.exe. Run it, optionally add the Explorer menu, start at sign-in, the morfa command and engines. Silent installs take Setup's switches (/SILENT, /VERYSILENT).
-          - Portable: unpack Morfa-<version>-win-Portable.zip and run Morfa.exe.
-
-          Linux (Ubuntu 22.04+)
-          - Unpack Morfa-<version>-<rid>.tar.gz and run ./install.sh (needs Python 3; no root). Drag gestures need X11; on Wayland use the drop zone and the file manager's menu.
-
-          macOS 13+
-          - Open Morfa-<version>-<rid>.dmg and drag Morfa to Applications, or unpack Morfa-<version>-<rid>.tar.gz and run ./install.sh. Ad-hoc signed, not notarized; on first start allow it in System Settings > Privacy & Security > Open Anyway.
-          "@
+          # The release body is generated from CHANGELOG.md and CHANGELOG.id.md by header,
+          # and the title is the version tag only.
           $notesFile = Join-Path $env:RUNNER_TEMP 'notes.md'
-          Set-Content $notesFile ($parts -join "`n`n") -Encoding utf8
-          gh release create '${{ github.ref_name }}' --draft --title "Morfa $version" --notes-file $notesFile --verify-tag @files
+          & (Join-Path $PWD 'build/tools/make-release-notes.ps1') -Version $version -Output $notesFile
+          if ($LASTEXITCODE -ne 0) { throw "make-release-notes failed with exit code $LASTEXITCODE" }
+          gh release create '${{ github.ref_name }}' --draft --title '${{ github.ref_name }}' --notes-file $notesFile --verify-tag @files

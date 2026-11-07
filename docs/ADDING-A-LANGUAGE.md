@@ -50,7 +50,7 @@ their list of UI languages.
 A slide may supply `localizedMedia` entries, for example
 `"pt-PT": { "media": "pt-PT/crop.webp", "poster": 57 }`. The code uses the exact UI language, otherwise the shared
 recording; regional variants do not borrow each other's recordings. Poster indices belong to each recording.
-The optional `MORFA_WHATSNEW_LANGUAGE` environment variable makes `WhatsNewMedia.Generate_2_0_0` generate a
+The optional `MORFA_WHATSNEW_LANGUAGE` environment variable makes `WhatsNewMedia.Generate_1_0_0` generate a
 language's recordings and register them in the shared manifest. Rebuild App and Setup after generating them.
 The language-showcase slide intentionally demonstrates several languages and stays shared. Browser and flip
 are desktop recordings made outside the headless generator: retain the shared recordings until localized desktop

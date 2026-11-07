@@ -2,14 +2,16 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
-## 0.1.1
+## v0.1.1
 
-## Perubahan
+Logo, ikon jendela, Setup, dan warna aksen kini memakai identitas produk ini sendiri.
 
-- **Identitas morfa sendiri, di mana-mana.** Logo aplikasi, ikon jendela dan Setup sekarang memakai tanda morfa (tile teal dengan garis putih dan amber) dan aksen teal, menggantikan logo donut dan aksen ungu yang diwarisi morfa. Klip "Apa yang baru" dibuat ulang dengan tampilan baru.
-- **Sponsor langsung ke GitHub.** Tombol Sponsor sekarang membuka GitHub Sponsors secara langsung. Jendela yang menampilkan Patreon, Ko-fi, PayPal dan Buy Me a Coffee sudah dihapus.
+## Peningkatan
 
-## 0.1.0
+- **Identitas sendiri, di mana-mana.** Logo, ikon jendela, Setup, dan warna aksen berpindah dari donut dan ungu warisan ke tanda morfa berwarna teal.
+- **Sponsor langsung ke GitHub.** Tombol Sponsor sekarang membuka GitHub Sponsors secara langsung, tanpa jendela berisi layanan lain.
+
+## v0.1.0
 
 ## Fitur baru
 

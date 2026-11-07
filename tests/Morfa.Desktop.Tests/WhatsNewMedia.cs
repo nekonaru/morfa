@@ -44,7 +44,7 @@ public class WhatsNewMedia
     /// <summary>The light theme's PageBrush: the canvas behind every clip.</summary>
     private const string Page = "#F6F5F1";
 
-    /// <summary>Where the 2.0.0 slides live in the repository.</summary>
+    /// <summary>Where the 1.0.0 slides live in the repository.</summary>
     internal static string Folder(string version) =>
         Path.Combine(RepositoryRoot, "src", "Morfa.Desktop", "Assets", "WhatsNew", version);
 
@@ -60,12 +60,12 @@ public class WhatsNewMedia
     }
 
     [AvaloniaFact(Explicit = true)]
-    public void Generate_2_0_0()
+    public void Generate_1_0_0()
     {
         var language = Environment.GetEnvironmentVariable("MORFA_WHATSNEW_LANGUAGE") ?? "en";
         Assert.Contains(language, AppLanguages.All.Select(l => l.Code));
         TestServices.EnsureInitialized(language);
-        var folder = language == "en" ? Folder("2.0.0") : Path.Combine(Folder("2.0.0"), language);
+        var folder = language == "en" ? Folder("1.0.0") : Path.Combine(Folder("1.0.0"), language);
         Directory.CreateDirectory(folder);
         var theme = AppHost.Get<ThemeService>();
         // Animations on whatever this machine prefers: every theme applied here says ReduceMotion = false, since
@@ -84,11 +84,11 @@ public class WhatsNewMedia
             Write(folder, "flip.webp", DonutFlip, onRequestOnly: true);
             Write(folder, "formats.webp", FormatDonuts);
             Write(folder, "crop.webp", Crop);
-            Write(folder, "theme.webp", () => Theme("2.0.0"));
+            Write(folder, "theme.webp", () => Theme("1.0.0"));
             // This slide intentionally demonstrates several languages, rather than the reader's UI language.
             if (language == "en")
-                Write(folder, "languages.webp", () => Languages("2.0.0"));
-            Write(folder, "more.webp", () => More("2.0.0"));
+                Write(folder, "languages.webp", () => Languages("1.0.0"));
+            Write(folder, "more.webp", () => More("1.0.0"));
         }
         finally
         {

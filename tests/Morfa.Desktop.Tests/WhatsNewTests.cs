@@ -27,6 +27,7 @@ namespace Morfa.Desktop.Tests;
 public class WhatsNewTests
 {
     private static readonly Version V2 = new(2, 0, 0);
+    private static readonly Version V100 = new(1, 0, 0);
 
     private static SlideDeck Deck(string version) =>
         new(SlideDeck.TryParseVersion(version)!, [new Slide("a", new Uri("avares://Morfa/a.webp"), "t", "x")]);
@@ -34,18 +35,18 @@ public class WhatsNewTests
     // ───────────────────────── Manifests ─────────────────────────
 
     [AvaloniaFact]
-    public void The_2_0_0_deck_ships_with_its_media_and_texts()
+    public void The_1_0_0_deck_ships_with_its_media_and_texts()
     {
         TestServices.EnsureInitialized("en");
         var decks = SlideDeck.LoadAll("Morfa");
-        var deck = Assert.Single(decks, d => d.Version == V2);
+        var deck = Assert.Single(decks, d => d.Version == V100);
         Assert.InRange(deck.Slides.Count, 5, 7);
         Assert.Equal(deck.Slides.Count, deck.Slides.Select(s => s.Id).Distinct().Count());
         var english = LoadStrings("en");
         foreach (var slide in deck.Slides)
         {
             Assert.True(AssetLoader.Exists(slide.Media), $"{slide.Media} is missing");
-            Assert.StartsWith("avares://Morfa/Assets/WhatsNew/2.0.0/", slide.Media.ToString(), StringComparison.Ordinal);
+            Assert.StartsWith("avares://Morfa/Assets/WhatsNew/1.0.0/", slide.Media.ToString(), StringComparison.Ordinal);
             Assert.Contains(slide.TitleKey, english.Keys);
             Assert.Contains(slide.TextKey, english.Keys);
         }
@@ -73,9 +74,9 @@ public class WhatsNewTests
     [InlineData(null, "crop.webp", 2)]
     public void Localized_media_use_an_exact_variant_and_their_own_poster(string? language, string path, int poster)
     {
-        var folder = new Uri("avares://Morfa/Assets/WhatsNew/2.0.0/");
+        var folder = new Uri("avares://Morfa/Assets/WhatsNew/1.0.0/");
         var deck = SlideDeck.Parse("""
-            { "version": "2.0.0", "slides": [
+            { "version": "1.0.0", "slides": [
               { "id": "crop", "media": "crop.webp", "poster": 2, "title": "t", "text": "x",
                 "localizedMedia": { "id": { "media": "id/crop.webp", "poster": 4 },
                   "other": { "media": "other/crop.webp", "poster": 7 },
@@ -94,7 +95,7 @@ public class WhatsNewTests
     public void Every_slide_uses_the_shared_recording()
     {
         TestServices.EnsureInitialized("id");
-        var deck = Assert.Single(SlideDeck.LoadAll("Morfa"), d => d.Version == V2);
+        var deck = Assert.Single(SlideDeck.LoadAll("Morfa"), d => d.Version == V100);
         foreach (var slide in deck.Slides)
         {
             var media = slide.MediaFor("id");
@@ -233,13 +234,13 @@ public class WhatsNewTests
         var (seen, firstRun, version) = (store.Settings.WhatsNewSeenVersion, store.Settings.FirstRunCompleted, service.CurrentVersion);
         try
         {
-            service.CurrentVersion = V2;
+            service.CurrentVersion = V100;
             store.Settings.FirstRunCompleted = true;
             store.Settings.WhatsNewSeenVersion = null;
 
             service.CheckAtStartup(background: true);
             Pump();
-            Assert.Equal(V2, service.Pending?.Version);
+            Assert.Equal(V100, service.Pending?.Version);
             Assert.Null(windows.WhatsNew);
             Assert.Null(store.Settings.WhatsNewSeenVersion); // not seen yet: a quit now shows them next time
 
@@ -248,7 +249,7 @@ public class WhatsNewTests
             var window = Assert.IsType<WhatsNewWindow>(windows.WhatsNew);
             Assert.True(window.IsVisible);
             Assert.Null(service.Pending);
-            Assert.Equal("2.0.0", store.Settings.WhatsNewSeenVersion);
+            Assert.Equal("1.0.0", store.Settings.WhatsNewSeenVersion);
             window.Close();
 
             // Shown once: the next start has nothing to show.
@@ -273,14 +274,14 @@ public class WhatsNewTests
         var (seen, firstRun, version) = (store.Settings.WhatsNewSeenVersion, store.Settings.FirstRunCompleted, service.CurrentVersion);
         try
         {
-            service.CurrentVersion = V2;
+            service.CurrentVersion = V100;
             store.Settings.FirstRunCompleted = false;
             store.Settings.WhatsNewSeenVersion = null;
             service.CheckAtStartup(background: false);
             Pump();
             Assert.Null(windows.WhatsNew);
             Assert.Null(service.Pending);
-            Assert.Equal("2.0.0", store.Settings.WhatsNewSeenVersion);
+            Assert.Equal("1.0.0", store.Settings.WhatsNewSeenVersion);
         }
         finally
         {
@@ -316,7 +317,7 @@ public class WhatsNewTests
     {
         TestServices.EnsureInitialized(language);
         beforeOpening?.Invoke();
-        var deck = SlideDeck.LoadAll("Morfa").Single(d => d.Version == V2);
+        var deck = SlideDeck.LoadAll("Morfa").Single(d => d.Version == V100);
         var window = new WhatsNewWindow(deck, AppHost.Get<ILocalizer>());
         window.Show();
         window.Activate();
@@ -354,7 +355,7 @@ public class WhatsNewTests
             Assert.False(previous.IsEnabled);
             Assert.Equal(0, previous.Opacity);
             Assert.Equal(loc["whats_new.next"], primary.Content);
-            Assert.Equal(loc.Format("whats_new.title", "2.0"), window.Title);
+            Assert.Equal(loc.Format("whats_new.title", "1.0"), window.Title);
 
             Click(primary);
             Assert.Equal(1, slides.Index);
@@ -527,14 +528,14 @@ public class WhatsNewTests
         var (version, seen) = (service.CurrentVersion, store.Settings.WhatsNewSeenVersion);
         try
         {
-            service.CurrentVersion = new Version(2, 0, 3);
+            service.CurrentVersion = new Version(1, 0, 0);
             var vm = new MainWindowViewModel(AppHost.Services, AppHost.Get<ILocalizer>(), AppHost.Get<UpdateService>());
             vm.Navigate("about");
             var window = new MainWindow { DataContext = vm, Width = 1080, Height = 820 };
             window.Show();
             Pump();
             var about = (AboutPageViewModel)vm.CurrentPage!;
-            Assert.Equal(AppHost.Get<ILocalizer>().Format("whats_new.about_link", "2.0"), about.WhatsNewText);
+            Assert.Equal(AppHost.Get<ILocalizer>().Format("whats_new.about_link", "1.0"), about.WhatsNewText);
             var link = Named(window, "WhatsNewLink");
             Assert.True(link.IsEffectivelyVisible);
             Save(window, "page-about-whats-new-en.png");
@@ -542,12 +543,12 @@ public class WhatsNewTests
             link.Command!.Execute(null);
             Pump();
             Assert.IsType<WhatsNewWindow>(AppHost.Get<WindowService>().WhatsNew);
-            Assert.Equal("2.0.3", store.Settings.WhatsNewSeenVersion);
+            Assert.Equal("1.0.0", store.Settings.WhatsNewSeenVersion);
             AppHost.Get<WindowService>().WhatsNew!.Close();
             window.Close();
 
             // A version older than every deck has nothing to offer.
-            service.CurrentVersion = new Version(1, 12, 0);
+            service.CurrentVersion = new Version(0, 9, 0);
             using var older = new AboutPageViewModel(AppHost.Get<ILocalizer>(), store, AppHost.Get<UpdateService>(), service);
             Assert.False(older.HasWhatsNew);
         }

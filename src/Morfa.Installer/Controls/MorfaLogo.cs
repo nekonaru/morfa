@@ -1,11 +1,10 @@
 // Morfa's logo (src/Morfa.Desktop/Assets/Icons/morfa.svg) drawn from the same paths, so it can assemble itself: the tile
-// swells into place, then the strokes rise one after the other and the amber dot pops in. Without animations (or after
-// 1.4 s) it is simply the logo.
+// swells into place, the M rises, and the amber conversion chevron pops in. Without animations (or after 1.4 s) it is
+// simply the logo.
 
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 
 namespace Morfa.Installer.Controls;
 
@@ -18,11 +17,9 @@ public sealed class MorfaLogo : Control
     private const double ViewBox = 512;
     private static readonly TimeSpan Duration = TimeSpan.FromMilliseconds(1400);
 
-    // morfa.svg: the tile, the white strokes (a vertical bar and the rising arc), the amber arc, the amber dot.
-    private static readonly Geometry VerticalBar = Geometry.Parse("M116 344 L116 176");
-    private static readonly Geometry WhiteArc = Geometry.Parse("M148 176 C 196 176, 224 224, 240 280");
-    private static readonly Geometry AmberArc = Geometry.Parse("M232 176 C 268 176, 292 214, 308 268");
-    private static readonly Geometry Dot = Geometry.Parse("M358 352 a34 34 0 1 0 68 0 a34 34 0 1 0 -68 0");
+    // morfa.svg: the white M, the amber conversion chevron and the tile.
+    private static readonly Geometry MarkStroke = Geometry.Parse("M132 344 V172 L224 260 L316 172 V344");
+    private static readonly Geometry Chevron = Geometry.Parse("M220 216 L266 256 L220 296");
 
     private static readonly IBrush TileBrush = new LinearGradientBrush
     {
@@ -30,17 +27,13 @@ public sealed class MorfaLogo : Control
         EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
         GradientStops =
         {
-            new GradientStop(Color.Parse("#0EA5A4"), 0),
-            new GradientStop(Color.Parse("#0B6E6E"), 1),
+            new GradientStop(Color.Parse("#11B3A6"), 0),
+            new GradientStop(Color.Parse("#0A6E6E"), 1),
         },
     };
 
-    private static readonly IBrush WhiteBrush = Brush("#FFFFFF");
-
-    private static readonly IBrush AmberBrush = Brush("#FFB454");
-
-    private static readonly Pen WhitePen = new(WhiteBrush, 44) { LineCap = PenLineCap.Round };
-    private static readonly Pen AmberPen = new(AmberBrush, 40) { LineCap = PenLineCap.Round };
+    private static readonly Pen MarkPen = new(Brushes.White, 56) { LineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
+    private static readonly Pen ChevronPen = new(new SolidColorBrush(Color.Parse("#FFB454")), 46) { LineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
 
     private readonly FrameLoop _loop;
     private double _progress;
@@ -74,8 +67,6 @@ public sealed class MorfaLogo : Control
         _loop.Restart();
     }
 
-    private static IBrush Brush(string color) => new ImmutableSolidColorBrush(Color.Parse(color));
-
     private static double Part(double progress, double start, double length) =>
         Math.Clamp((progress - start) / length, 0, 1);
 
@@ -106,26 +97,22 @@ public sealed class MorfaLogo : Control
                      * Matrix.CreateTranslation(center.X, center.Y);
             using (context.PushTransform(grow * view))
             using (context.PushOpacity(Math.Min(1, tile * 1.6)))
-                context.DrawRectangle(TileBrush, null, new Rect(0, 0, ViewBox, ViewBox), 112, 112);
+                context.DrawRectangle(TileBrush, null, new Rect(0, 0, ViewBox, ViewBox), 116, 116);
         }
 
-        // Then the strokes rise, one after the other.
-        Rise(context, view, VerticalBar, WhitePen, progress, 0.18);
-        Rise(context, view, WhiteArc, WhitePen, progress, 0.32);
-        Rise(context, view, AmberArc, AmberPen, progress, 0.44);
-
-        // The amber dot pops in last.
-        var dot = Part(progress, 0.58, 0.36);
-        if (dot > 0)
+        // The M rises next, then the chevron pops in as "what to convert".
+        Rise(context, view, MarkStroke, MarkPen, progress, 0.15);
+        var chevron = Part(progress, 0.45, 0.4);
+        if (chevron > 0)
         {
-            var pop = Math.Max(0.001, BackOut(dot));
-            var dotCenter = new Point(392, 352);
-            var grow = Matrix.CreateTranslation(-dotCenter.X, -dotCenter.Y)
+            var pop = Math.Max(0.001, BackOut(chevron));
+            var chevronCenter = new Point(243, 256);
+            var grow = Matrix.CreateTranslation(-chevronCenter.X, -chevronCenter.Y)
                      * Matrix.CreateScale(pop, pop)
-                     * Matrix.CreateTranslation(dotCenter.X, dotCenter.Y);
+                     * Matrix.CreateTranslation(chevronCenter.X, chevronCenter.Y);
             using (context.PushTransform(grow * view))
-            using (context.PushOpacity(Math.Min(1, dot * 1.6)))
-                context.DrawGeometry(AmberBrush, null, Dot);
+            using (context.PushOpacity(Math.Min(1, chevron * 1.6)))
+                context.DrawGeometry(null, ChevronPen, Chevron);
         }
     }
 

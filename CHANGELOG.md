@@ -2,14 +2,16 @@
 
 What changed in each version of Morfa. Newest version on top.
 
-## 0.1.1
+## v0.1.1
 
-## Changes
+The logo, window icons, Setup and accent colours now use the product's own identity.
 
-- **Morfa's own identity, everywhere.** The app logo, the window icons and Setup now use the morfa mark (a teal tile with white and amber strokes) and the teal accent, replacing the donut logo and purple accent that morfa had inherited. The "What's new" clips are re-rendered with the new look.
-- **Sponsor goes straight to GitHub.** The Sponsor button now opens GitHub Sponsors directly. The window that listed Patreon, Ko-fi, PayPal and Buy Me a Coffee is gone.
+## Improvements
 
-## 0.1.0
+- **Own identity, everywhere.** The logo, window icons, Setup and accent colour switched from the inherited donut and purple to the teal morfa mark.
+- **Sponsor goes straight to GitHub.** The Sponsor button now opens GitHub Sponsors directly instead of a window listing outside services.
+
+## v0.1.0
 
 ## New features
 
