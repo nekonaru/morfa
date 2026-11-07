@@ -22,12 +22,15 @@ permissions:
 
 jobs:
   portable:
+    # Only run this workflow on tag pushes, not on pushes that modify the file to the default branch.
+    if: ${{ github.ref_type == 'tag' }}
     uses: ./.github/workflows/portable.yml
     with:
       version: ${{ github.ref_name }}
 
   windows:
     needs: portable
+    if: ${{ github.ref_type == 'tag' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
