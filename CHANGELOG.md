@@ -27,7 +27,7 @@ What changed in each version of Morfa. Newest version on top.
 
 ## Usage
 
-Download the package for your system from the [Releases](https://github.com/nekonaru/morfa/releases) page, or build from source with the .NET 10 SDK.
+Download the Linux or macOS package for your system from the [Releases](https://github.com/nekonaru/morfa/releases) page, or build from source with the .NET 10 SDK (v0.1.0 has no Windows package).
 
 ```bash
 morfa convert photo.heic --to jpg

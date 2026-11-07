@@ -147,17 +147,39 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 
 ## Installation
 
-### Option A: Download the package (easiest)
+### Option A: Download the prebuilt package (easiest)
 
-1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page
-2. Download the package for your system
-3. Install it:
-   - **Windows 10/11**: run `Morfa-<version>-win-Setup.exe`, or unzip the `win-Portable.zip` and run `Morfa.exe`
-   - **macOS 13+**: unpack the `osx-arm64` or `osx-x64` package and run `./install.sh`
-   - **Linux x64/ARM64**: unpack the package and run `./install.sh` (no root, needs Python 3)
+v0.1.0 ships prebuilt packages for **Linux and macOS only**. There is no Windows installer and no portable `Morfa.exe` in this release (the Windows build flow waits on a signing certificate; the unsigned Windows build is kept as a CI artifact for later signing, it is not published).
+
+| System | Download | How to install |
+|--------|----------|----------------|
+| **Linux x64** | `Morfa-0.1.0-linux-x64.tar.gz` | Unpack, run `./install.sh` (needs Python 3; no root) |
+| **Linux ARM64** | `Morfa-0.1.0-linux-arm64.tar.gz` | Unpack, run `./install.sh` (needs Python 3; no root) |
+| **macOS Apple Silicon** | `Morfa-0.1.0-osx-arm64.dmg` | Open the DMG, drag Morfa to Applications |
+| **macOS Apple Silicon (Alt)** | `Morfa-0.1.0-osx-arm64.tar.gz` | Unpack, run `./install.sh` |
+| **macOS Intel** | `Morfa-0.1.0-osx-x64.dmg` | Open the DMG, drag Morfa to Applications |
+| **macOS Intel (Alt)** | `Morfa-0.1.0-osx-x64.tar.gz` | Unpack, run `./install.sh` |
+
+Each package has a matching `-SHA256SUMS.txt` next to it if you want to verify the download.
+
+On macOS, the app is ad-hoc signed and not notarized: on first start, allow it in **System Settings -> Privacy & Security -> Open Anyway**.
 
 > [!IMPORTANT]
-> On Linux, drag gestures need X11. On Wayland, use the drop zone and the file manager's right-click menu.
+> Drag gestures need X11. On Wayland, use the drop zone and the file manager's right-click menu.
+
+### Option B: Windows, or build from source (for development / to read or change the code)
+
+Windows is not in this release. Build it yourself with .NET 10:
+
+```bash
+git clone https://github.com/nekonaru/morfa.git
+cd morfa
+dotnet restore
+dotnet build Morfa.slnx
+dotnet run --project src/Morfa.Desktop
+```
+
+The Windows installer (`Morfa-<version>-win-Setup.exe`) and the portable zip are produced by `build/build-installer.ps1` on Windows but are not part of the v0.1.0 release.
 
 ### Option B: Build from source (for development / to read or change the code)
 

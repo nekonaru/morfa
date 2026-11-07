@@ -147,17 +147,39 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 
 ## Instalasi
 
-### Opsi A: Unduh paketnya (paling mudah)
+### Opsi A: Unduh paket yang sudah jadi (paling mudah)
 
-1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases)
-2. Unduh paket untuk sistem kamu
-3. Pasang:
-   - **Windows 10/11**: jalankan `Morfa-<version>-win-Setup.exe`, atau unzip `win-Portable.zip` dan jalankan `Morfa.exe`
-   - **macOS 13+**: ekstrak paket `osx-arm64` atau `osx-x64` lalu jalankan `./install.sh`
-   - **Linux x64/ARM64**: ekstrak paketnya lalu jalankan `./install.sh` (tanpa root, butuh Python 3)
+v0.1.0 menyediakan paket untuk **Linux dan macOS saja**. Tidak ada installer Windows dan tidak ada `Morfa.exe` portabel di rilis ini (alur build Windows menunggu sertifikat penandatanganan; build Windows tanpa tanda tangan hanya disimpan sebagai artefak CI untuk penandatanganan nanti, dan tidak dipublikasikan).
+
+| Sistem | Unduh | Cara pasang |
+|--------|-------|-------------|
+| **Linux x64** | `Morfa-0.1.0-linux-x64.tar.gz` | Ekstrak, jalankan `./install.sh` (butuh Python 3; tanpa root) |
+| **Linux ARM64** | `Morfa-0.1.0-linux-arm64.tar.gz` | Ekstrak, jalankan `./install.sh` (butuh Python 3; tanpa root) |
+| **macOS Apple Silicon** | `Morfa-0.1.0-osx-arm64.dmg` | Buka DMG, seret Morfa ke Applications |
+| **macOS Apple Silicon (Alternatif)** | `Morfa-0.1.0-osx-arm64.tar.gz` | Ekstrak, jalankan `./install.sh` |
+| **macOS Intel** | `Morfa-0.1.0-osx-x64.dmg` | Buka DMG, seret Morfa ke Applications |
+| **macOS Intel (Alternatif)** | `Morfa-0.1.0-osx-x64.tar.gz` | Ekstrak, jalankan `./install.sh` |
+
+Setiap paket punya `-SHA256SUMS.txt` pendamping kalau kamu ingin memverifikasi unduhannya.
+
+Di macOS, aplikasi di-sign ad-hoc dan tidak di-notarize: pada peluncuran pertama, izinkan lewat **Pengaturan Sistem > Privasi & Keamanan > Buka Anyway**.
 
 > [!IMPORTANT]
-> Di Linux, gestur drag butuh X11. Di Wayland, pakai drop zone dan menu klik-kanan file manager.
+> Gestur drag butuh X11. Di Wayland, pakai drop zone dan menu klik-kanan file manager.
+
+### Opsi B: Windows, atau build dari sumber (untuk pengembangan / membaca atau mengubah kode)
+
+Windows tidak ada di rilis ini. Build sendiri dengan .NET 10:
+
+```bash
+git clone https://github.com/nekonaru/morfa.git
+cd morfa
+dotnet restore
+dotnet build Morfa.slnx
+dotnet run --project src/Morfa.Desktop
+```
+
+Installer Windows (`Morfa-<version>-win-Setup.exe`) dan zip portabel dihasilkan oleh `build/build-installer.ps1` di Windows tetapi bukan bagian dari rilis v0.1.0.
 
 ### Opsi B: Build dari sumber (untuk pengembangan / membaca atau mengubah kode)
 
