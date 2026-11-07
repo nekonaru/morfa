@@ -147,45 +147,77 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 
 ## Instalasi
 
-### Opsi A: Unduh paket yang sudah jadi (paling mudah)
+### Opsi A: Installer Windows (paling mudah)
 
-v0.1.0 menyediakan paket prebuilt untuk **Linux, macOS dan Windows**.
+1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
+2. Download `Morfa-0.1.0-win-Setup.exe`.
+3. Klik dua kali file yang di-download.
+4. Windows SmartScreen akan menampilkan **"Windows protected your PC"**. Build ini belum ditandatangani, jadi ini normal. Klik **More info**, lalu **Run anyway**.
+5. Jendela Morfa Setup muncul.
 
-| Sistem | Unduh | Cara pasang |
-|--------|-------|-------------|
-| **Windows 10/11** | `Morfa-0.1.0-win-Setup.exe` | Jalankan; mode senyap memakai `/VERYSILENT` |
-| **Windows (portable)** | `Morfa-0.1.0-win-Portable.zip` | Ekstrak, jalankan `Morfa.exe` |
-| **Linux x64** | `Morfa-0.1.0-linux-x64.tar.gz` | Ekstrak, jalankan `./install.sh` (butuh Python 3; tanpa root) |
-| **Linux ARM64** | `Morfa-0.1.0-linux-arm64.tar.gz` | Ekstrak, jalankan `./install.sh` (butuh Python 3; tanpa root) |
-| **macOS Apple Silicon** | `Morfa-0.1.0-osx-arm64.dmg` | Buka DMG, seret Morfa ke Applications |
-| **macOS Apple Silicon (Alternatif)** | `Morfa-0.1.0-osx-arm64.tar.gz` | Ekstrak, jalankan `./install.sh` |
-| **macOS Intel** | `Morfa-0.1.0-osx-x64.dmg` | Buka DMG, seret Morfa ke Applications |
-| **macOS Intel (Alternatif)** | `Morfa-0.1.0-osx-x64.tar.gz` | Ekstrak, jalankan `./install.sh` |
+   **Install baru:** halaman Welcome menampilkan versi yang akan dipasang. Klik **Install**. Halaman progress menyelingi dengan catatan versi baru.
 
-Setiap paket punya `-SHA256SUMS.txt` pendamping kalau kamu ingin memverifikasi unduhannya.
+   **Update dari versi sebelumnya:** halaman akan memberi tahu versi lama akan diganti. Pengaturan, preset dan engine kamu tetap sama. Klik **Update**.
 
-Build Windows belum ditandatangani. Windows SmartScreen akan memperingatkan publisher tidak dikenal; tekan **More info**, lalu **Run anyway**.
+6. Halaman **Done** menampilkan "Morfa is ready". Klik **Launch Morfa**.
+7. Morfa terbuka dan berjalan di tray. Pemakaiannya sama seperti platform lain: tahan Ctrl, tarik file, jatuhkan ke format.
+8. Peluncuran pertama menanyakan engine konversi yang ingin di-download (hanya untuk video/audio dan format yang jarang). Kalau mau, lewati dulu.
 
-Di macOS, aplikasi di-sign ad-hoc dan tidak di-notarize: pada peluncuran pertama, izinkan lewat **Pengaturan Sistem > Privasi & Keamanan > Buka Anyway**.
+Install senyap (untuk skrip dan manifest seperti winget):
+
+```powershell
+Morfa-0.1.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+```
+
+Switch berguna:
+
+| Switch | Fungsi |
+|--------|--------|
+| `/VERYSILENT` | Sembunyikan UI; hanya tampilkan progress |
+| `/SUPPRESSMSGBOXES` | Lewati kotak pesan opsional |
+| `/NORESTART` | Jangan pernah reboot setelah install |
+| `/DIR="D:\Morfa"` | Tentukan folder instalasi |
+| `/MERGETASKS="desktopicon,cli"` | Buat shortcut desktop dan tambah `morfa` ke PATH |
+| `/NORESTART` | Jangan pernah reboot |
+
+Setup memasang untuk all users (`%ProgramFiles%\Morfa`), membuat entry di menu Start dan shortcut desktop (kalau diminta), serta menambahkan perintah `morfa` ke PATH. Untuk menghapus, pakai **Pengaturan > Aplikasi > Aplikasi terinstal > Morfa > Uninstall**.
+
+Jika installer tidak melakukan apa-apa atau menampilkan error, jalankan sebagai administrator.
+
+### Opsi B: Windows portable (tanpa installer)
+
+1. Download `Morfa-0.1.0-win-Portable.zip`.
+2. Ekstrak ke folder pilihanmu (misalnya `D:\Morfa`).
+3. Klik dua kali `Morfa.exe`.
+
+Copy portable ini tidak menambahkan shortcut, menu konteks Explorer, dan commandline `morfa` ke PATH. Simpan di satu folder; memindahkannya tidak apa-apa. Untuk uninstall, cukup hapus foldernya (atau shortcut kalau kamu membuatnya).
+
+### Opsi C: Linux (x64 / ARM64)
+
+1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
+2. Download `Morfa-0.1.0-linux-x64.tar.gz` (atau `-arm64.tar.gz` untuk ARM64).
+3. Ekstrak:
+
+```bash
+tar xzf Morfa-0.1.0-linux-x64.tar.gz
+```
+
+4. Jalankan `./install.sh`. Script ini memasang untuk user kamu ke `~/.local/share/filee` (atau lokasi serupa) dan menambahkan commandline `morfa`.
+5. Aplikasi ini berjalan di tray.
 
 > [!IMPORTANT]
 > Gestur drag butuh X11. Di Wayland, pakai drop zone dan menu klik-kanan file manager.
 
-### Opsi B: Windows, atau build dari sumber (untuk pengembangan / membaca atau mengubah kode)
+### Opsi D: macOS (Apple Silicon / Intel)
 
-Windows tidak ada di rilis ini. Build sendiri dengan .NET 10:
+1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
+2. Download `Morfa-0.1.0-osx-arm64.dmg` (Apple Silicon) atau `Morfa-0.1.0-osx-x64.dmg` (Intel).
+3. Buka DMG dan seret Morfa ke Applications.
+4. Pada peluncuran pertama, izinkan lewat **Pengaturan Sistem > Privasi & Keamanan > Buka Anyway**. Aplikasi tidak di-notarize.
 
-```bash
-git clone https://github.com/nekonaru/morfa.git
-cd morfa
-dotnet restore
-dotnet build Morfa.slnx
-dotnet run --project src/Morfa.Desktop
-```
+Atau download `osx-...tar.gz` dan jalankan `./install.sh` dari folder hasil ekstrak.
 
-Installer Windows (`Morfa-<version>-win-Setup.exe`) dan zip portabel dihasilkan oleh `build/build-installer.ps1` di Windows tetapi bukan bagian dari rilis v0.1.0.
-
-### Opsi B: Build dari sumber (untuk pengembangan / membaca atau mengubah kode)
+### Opsi E: Build dari sumber (untuk pengembangan / membaca atau mengubah kode)
 
 #### 1. Ambil kode proyek
 

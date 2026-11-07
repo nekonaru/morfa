@@ -147,47 +147,77 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 
 ## Installation
 
-### Option A: Download the prebuilt package (easiest)
+### Option A: Windows installer (easiest)
 
-v0.1.0 ships prebuilt packages for **Linux, macOS and Windows**.
+1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
+2. Download `Morfa-0.1.0-win-Setup.exe`.
+3. Double-click the downloaded file.
+4. Windows SmartScreen opens **"Windows protected your PC"**. The build is not code-signed yet, so this is expected. Click **More info**, then **Run anyway**.
+5. The Morfa Setup window appears.
 
-| System | Download | How to install |
-|--------|----------|----------------|
-| **Windows 10/11** | `Morfa-0.1.0-win-Setup.exe` | Run it; silent switches `/VERYSILENT` |
-| **Windows (portable)** | `Morfa-0.1.0-win-Portable.zip` | Unpack, run `Morfa.exe` |
-| **Linux x64** | `Morfa-0.1.0-linux-x64.tar.gz` | Unpack, run `./install.sh` (needs Python 3; no root) |
-| **Linux ARM64** | `Morfa-0.1.0-linux-arm64.tar.gz` | Unpack, run `./install.sh` (needs Python 3; no root) |
-| **macOS Apple Silicon** | `Morfa-0.1.0-osx-arm64.dmg` | Open the DMG, drag Morfa to Applications |
-| **macOS Apple Silicon (Alt)** | `Morfa-0.1.0-osx-arm64.tar.gz` | Unpack, run `./install.sh` |
-| **macOS Intel** | `Morfa-0.1.0-osx-x64.dmg` | Open the DMG, drag Morfa to Applications |
-| **macOS Intel (Alt)** | `Morfa-0.1.0-osx-x64.tar.gz` | Unpack, run `./install.sh` |
+   **Installing fresh:** the Welcome page shows which version is being installed. Click **Install**. The progress page slides through what's new in the release, with a thin progress bar.
 
-Each package has a matching `-SHA256SUMS.txt` next to it if you want to verify the download.
+   **Updating from an earlier version:** the page says the current version is being replaced. Your settings, presets and engines stay as they are. Click **Update**.
 
-The Windows build is not code-signed yet. Windows SmartScreen will warn about an unknown publisher; press **More info**, then **Run anyway**.
+6. The **Done** page shows "Morfa is ready". Click **Launch Morfa**.
+7. Morfa opens, the donut toolbar works the same way as on any platform: hold Ctrl, drag files, drop them on a format.
+8. The first launch asks which conversion engines to download (only video/audio and rare formats). Skip it for now if you want.
 
-On macOS, the app is ad-hoc signed and not notarized: on first start, allow it in **System Settings -> Privacy & Security -> Open Anyway**.
+Silent install (for scripts and winget-style manifests):
 
-> [!IMPORTANT]
-> On Linux, drag gestures need X11. On Wayland, use the drop zone and the file manager's right-click menu.
-
-### Option B: Windows, or build from source (for development / to read or change the code)
-
-Windows is not in this release. Build it yourself with .NET 10:
-
-```bash
-git clone https://github.com/nekonaru/morfa.git
-cd morfa
-dotnet restore
-dotnet build Morfa.slnx
-dotnet run --project src/Morfa.Desktop
+```powershell
+Morfa-0.1.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
-The Windows installer (`Morfa-<version>-win-Setup.exe`) and the portable zip are shipped as `Morfa-<version>-win-Portable.zip` next to the Setup executable.
+Useful switches:
 
-### Option B: Build from source (for development / to read or change the code)
+| Switch | Purpose |
+|--------|---------|
+| `/VERYSILENT` | Hide all UI; show progress only |
+| `/SUPPRESSMSGBOXES` | Skip optional message boxes |
+| `/NORESTART` | Never reboot after install |
+| `/DIR="D:\Morfa"` | Install to a specific folder |
+| `/MERGETASKS="desktopicon,cli"` | Also create a desktop shortcut and add the `morfa` command |
+| `/NORESTART` | Never reboot |
 
-#### 1. Get the project code
+Setup installs for all users (`%ProgramFiles%\Morfa`), creates the Start menu entry and the desktop shortcut (if asked), and adds the `morfa` command to PATH. To remove it, use **Settings > Apps > Installed apps > Morfa > Uninstall**.
+
+If the installer does nothing or shows an error, run it as administrator.
+
+### Option B: Windows portable (no installer)
+
+1. Download `Morfa-0.1.0-win-Portable.zip`.
+2. Extract it to a folder of your choice (for example `D:\Morfa`).
+3. Double-click `Morfa.exe`.
+
+The portable copy does not add shortcuts, the Explorer menu, or the `morfa` command to PATH. Keep it in one folder; moving it around is fine. To uninstall, just delete the folder (or the shortcut if you made one).
+
+### Option C: Linux (x64 / ARM64)
+
+1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
+2. Download `Morfa-0.1.0-linux-x64.tar.gz` (or `-arm64.tar.gz` for ARM64).
+3. Extract it:
+
+```bash
+tar xzf Morfa-0.1.0-linux-x64.tar.gz
+```
+
+4. Run `./install.sh`. It installs for your user into `~/.local/share/filee` (or similar) and adds the `morfa` command.
+5. The app sits in your tray.
+
+> [!IMPORTANT]
+> Drag gestures need X11. On Wayland, use the drop zone and the file manager's right-click menu.
+
+### Option D: macOS (Apple Silicon / Intel)
+
+1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
+2. Download `Morfa-0.1.0-osx-arm64.dmg` (Apple Silicon) or `Morfa-0.1.0-osx-x64.dmg` (Intel).
+3. Open the DMG and drag Morfa to Applications.
+4. On first start, allow it in **System Settings > Privacy & Security > Open Anyway**. The app is not notarized.
+
+Alternatively download the `osx-...tar.gz` and run `./install.sh` from the unpacked folder.
+
+### Option E: Build from source (for development / to read or change the code)
 
 <details>
 <summary><b>I have Git installed</b></summary>
