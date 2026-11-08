@@ -112,6 +112,15 @@
     <Setter Property="BoxShadow" Value="none" />
   </Style>
 
+  <!-- Gallery panels (preset list, engines grid): flatter than a floating card. -->
+  <Style Selector="Border.panel">
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SoftRadius}" />
+    <Setter Property="Padding" Value="12,10" />
+  </Style>
+
   <!-- ───────── Cards ───────── -->
   <Style Selector="Border.card">
     <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />

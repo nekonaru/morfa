@@ -16,6 +16,10 @@ public static class StackBelow
     public static readonly AttachedProperty<double> ThresholdProperty =
         AvaloniaProperty.RegisterAttached<Grid, double>("Threshold", typeof(StackBelow), 0);
 
+    /// <summary>The stacked rows share the available height (for pages whose panels scroll internally).</summary>
+    public static readonly AttachedProperty<bool> EquallyProperty =
+        AvaloniaProperty.RegisterAttached<Grid, bool>("Equally", typeof(StackBelow), false);
+
     /// <summary>Space the stacked layout puts between two children.</summary>
     public static readonly AttachedProperty<double> GapProperty =
         AvaloniaProperty.RegisterAttached<Grid, double>("Gap", typeof(StackBelow), 16);
@@ -23,6 +27,10 @@ public static class StackBelow
     public static double GetThreshold(Grid grid) => grid.GetValue(ThresholdProperty);
 
     public static void SetThreshold(Grid grid, double value) => grid.SetValue(ThresholdProperty, value);
+
+    public static bool GetEqually(Grid grid) => grid.GetValue(EquallyProperty);
+
+    public static void SetEqually(Grid grid, bool value) => grid.SetValue(EquallyProperty, value);
 
     public static double GetGap(Grid grid) => grid.GetValue(GapProperty);
 
@@ -96,9 +104,22 @@ public static class StackBelow
         {
             var gap = _grid.GetValue(GapProperty);
             var span = Math.Max(1, _grid.ColumnDefinitions.Count);
+            // Either the first child stays natural and the rest share the remaining height, or all but the last stay
+            // natural and the last keeps the leftover. Internal scrollers then always have a bounded height.
+            var equally = _grid.GetValue(EquallyProperty);
             _grid.RowDefinitions.Clear();
-            for (var i = 0; i < _order.Count; i++)
+            if (equally)
+            {
                 _grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                for (var i = 1; i < _order.Count; i++)
+                    _grid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            }
+            else
+            {
+                for (var i = 0; i < _order.Count - 1; i++)
+                    _grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                _grid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            }
             for (var i = 0; i < _order.Count; i++)
             {
                 var child = _order[i].Control;
