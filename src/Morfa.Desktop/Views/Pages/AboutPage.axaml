@@ -5,13 +5,24 @@
              xmlns:v="using:Morfa.Desktop.Views"
              x:Class="Morfa.Desktop.Views.Pages.AboutPage"
              x:DataType="vm:AboutPageViewModel">
-  <StackPanel Spacing="18">
+  <UserControl.Styles>
+    <Style Selector="Expander#NoticesToggle">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+  </UserControl.Styles>
+
+  <StackPanel Spacing="16">
     <TextBlock Classes="h1" Text="{DynamicResource about.title}" />
-    <Border Classes="card">
-      <StackPanel Orientation="Horizontal" Spacing="18">
-        <Image Source="avares://Morfa/Assets/Icons/morfa.png" Width="72" Height="72" />
+
+    <!-- Hero: what Morfa is, in one band. -->
+    <Border Classes="tray" Padding="24,20">
+      <StackPanel Orientation="Horizontal" Spacing="22">
+        <Image Source="avares://Morfa/Assets/Icons/morfa.png" Width="84" Height="84" />
         <StackPanel VerticalAlignment="Center" Spacing="4">
-          <TextBlock Text="Morfa" FontSize="24" FontWeight="Bold" />
+          <TextBlock Text="Morfa" FontSize="28" FontWeight="Bold" />
           <TextBlock Classes="muted" Text="{Binding Version}" />
           <TextBlock Classes="muted" Text="{DynamicResource about.license}" />
           <Button Classes="ghost" Padding="0" Click="OnOpenRepository" Margin="0,4,0,0">
@@ -30,13 +41,7 @@
         </StackPanel>
       </StackPanel>
     </Border>
-    <!-- The sponsors right below Morfa itself, while there are any -->
-    <Border Classes="card" IsVisible="{Binding #Supporters.IsVisible}">
-      <StackPanel Spacing="12">
-        <TextBlock Classes="h2" Text="{DynamicResource sponsor.thanks}" />
-        <v:SupportersView x:Name="Supporters" ShowTitle="False" LogoHeight="40" />
-      </StackPanel>
-    </Border>
+
     <Border Classes="card">
       <StackPanel Spacing="12">
         <TextBlock Classes="h2" Text="{DynamicResource about.updates}" />
@@ -53,28 +58,41 @@
         </WrapPanel>
       </StackPanel>
     </Border>
-    <Border Classes="card">
-      <StackPanel Spacing="10">
-        <TextBlock Classes="h2" Text="{DynamicResource about.support_title}" />
-        <TextBlock Classes="muted" TextWrapping="Wrap" Text="{DynamicResource about.support_text}" />
-        <WrapPanel>
-          <Button Classes="accent" Click="OnStar" Margin="0,0,8,0" Content="{DynamicResource feedback.star}" />
-          <Button Click="OnIssue" Content="{DynamicResource feedback.issue}" Margin="0,0,8,0" />
-          <Button Click="OnSponsor">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <PathIcon Width="13" Height="13" Data="{StaticResource Icon.Heart}" Foreground="#D4537E" />
-              <TextBlock Text="{DynamicResource about.sponsor}" />
-            </StackPanel>
-          </Button>
-        </WrapPanel>
-      </StackPanel>
-    </Border>
-    <Border Classes="card">
-      <StackPanel Spacing="8">
-        <TextBlock Classes="h2" Text="{DynamicResource about.notices}" />
+
+    <!-- The three sections, left to right: sponsors, support, and the third-party notices. -->
+    <WrapPanel>
+      <!-- The sponsors right below Morfa itself, while there are any -->
+      <Border Classes="card" IsVisible="{Binding #Supporters.IsVisible}" Width="300" Margin="0,0,14,14" VerticalAlignment="Stretch">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="h2" Text="{DynamicResource sponsor.thanks}" TextWrapping="Wrap" />
+          <v:SupportersView x:Name="Supporters" ShowTitle="False" LogoHeight="40" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card" Width="300" Margin="0,0,14,14" VerticalAlignment="Stretch">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="h2" Text="{DynamicResource about.support_title}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{DynamicResource about.support_text}" />
+          <WrapPanel>
+            <Button Classes="accent" Click="OnStar" Margin="0,0,8,8" Content="{DynamicResource feedback.star}" />
+            <Button Click="OnIssue" Content="{DynamicResource feedback.issue}" Margin="0,0,8,8" />
+            <Button Click="OnSponsor" Margin="0,0,8,8">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Width="13" Height="13" Data="{StaticResource Icon.Heart}" Foreground="#D4537E" />
+                <TextBlock Text="{DynamicResource about.sponsor}" />
+              </StackPanel>
+            </Button>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+      <Border Classes="card" Width="300" Margin="0,0,14,14" VerticalAlignment="Stretch">
         <!-- The notices are in English: left to right in every language. -->
-        <c:MarkdownView Markdown="{Binding Notices}" SkipTitle="True" FlowDirection="LeftToRight" />
-      </StackPanel>
-    </Border>
+        <Expander x:Name="NoticesToggle" IsExpanded="False">
+          <Expander.Header>
+            <TextBlock Classes="h2" Text="{DynamicResource about.notices}" />
+          </Expander.Header>
+          <c:MarkdownView Markdown="{Binding Notices}" SkipTitle="True" FlowDirection="LeftToRight" />
+        </Expander>
+      </Border>
+    </WrapPanel>
   </StackPanel>
 </UserControl>

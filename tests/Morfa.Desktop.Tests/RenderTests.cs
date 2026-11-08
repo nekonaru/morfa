@@ -72,8 +72,9 @@ public class RenderTests
                     Pump();
                     var dock = page.FindControl<ToggleSwitch>("ShowInDockSwitch")!;
                     var menu = page.FindControl<ToggleSwitch>("ShowMenuBarIconSwitch")!;
-                    Assert.Equal(supported, dock.IsVisible);
-                    Assert.Equal(supported, menu.IsVisible);
+                    // The support gate hides the whole row (label and switch).
+                    Assert.Equal(supported, dock.FindAncestorOfType<DockPanel>()!.IsVisible);
+                    Assert.Equal(supported, menu.FindAncestorOfType<DockPanel>()!.IsVisible);
                     Assert.False(dock.IsChecked);
                     Assert.True(menu.IsChecked);
                     Assert.Empty(platform.DockCalls);

@@ -310,10 +310,10 @@ public class BrowserDropTests
         try
         {
             var page = (Morfa.Desktop.ViewModels.Pages.GeneralPageViewModel)vm.CurrentPage;
-            var title = window.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == loc["general.browser_drops"]);
+            var title = window.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == loc["general.browser_drops"] && t.Classes.Contains("h2"));
             var card = title.FindAncestorOfType<Border>()!;
             var folderBox = card.GetVisualDescendants().OfType<TextBox>().Single();
-            var check = card.GetVisualDescendants().OfType<CheckBox>().Single();
+            var check = card.GetVisualDescendants().OfType<ToggleSwitch>().Single();
 
             // Nothing chosen: the Downloads folder shows as the placeholder.
             Assert.Equal("", folderBox.Text ?? "");
