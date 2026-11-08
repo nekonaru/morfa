@@ -116,7 +116,7 @@ public sealed class SetupBench : IDisposable
 {
     private readonly TempFolder _temp = new();
 
-    public SetupBench(string version = "2.0.0", Action<TempFolder, string>? app = null)
+    public SetupBench(string version = "1.0.0", Action<TempFolder, string>? app = null)
     {
         Paths = SetupPaths.Sandbox(_temp.Sub("pc"));
         Directory.CreateDirectory(Paths.Temp);

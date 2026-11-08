@@ -124,7 +124,7 @@ public class UninstallerTests
     public void Install_record_round_trip_and_bad_records()
     {
         using var temp = new TempFolder();
-        var record = new InstallRecord("2.0.0", InstallScope.User, ["Morfa.exe", @"cli\morfa.cmd"]);
+        var record = new InstallRecord("1.0.0", InstallScope.User, ["Morfa.exe", @"cli\morfa.cmd"]);
         File.WriteAllBytes(InstallRecord.PathIn(temp.Path), record.ToJson());
         var read = InstallRecord.Read(temp.Path)!;
         Assert.Equal(record.Version, read.Version);
@@ -132,7 +132,7 @@ public class UninstallerTests
         Assert.Equal(record.Files, read.Files);
 
         // A record that points outside the folder is no record (the uninstaller then refuses).
-        File.WriteAllText(InstallRecord.PathIn(temp.Path), """{"version":"2.0.0","scope":"machine","files":["..\\..\\Windows\\notepad.exe"]}""");
+        File.WriteAllText(InstallRecord.PathIn(temp.Path), """{"version":"1.0.0","scope":"machine","files":["..\\..\\Windows\\notepad.exe"]}""");
         Assert.Null(InstallRecord.Read(temp.Path));
         File.WriteAllText(InstallRecord.PathIn(temp.Path), "not json");
         Assert.Null(InstallRecord.Read(temp.Path));

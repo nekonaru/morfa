@@ -24,7 +24,7 @@ public class InstallerTests
             Assert.True(File.Exists(Path.Combine(folder, file)), file);
         Assert.Empty(Directory.EnumerateDirectories(folder, FileSwap.WorkFolderPrefix + "*"));
         var record = InstallRecord.Read(folder)!;
-        Assert.Equal("2.0.0", record.Version);
+        Assert.Equal("1.0.0", record.Version);
         Assert.Contains("uninstall.exe", record.Files);
         Assert.Contains(@"engines\rhwp\rhwp.exe", record.Files);
 
@@ -32,7 +32,7 @@ public class InstallerTests
         var registry = bench.Registry;
         string? Value(string name) => registry.Get(Hive.LocalMachine, Key, name)?.Text;
         Assert.Equal("Morfa", Value("DisplayName"));
-        Assert.Equal("2.0.0", Value("DisplayVersion"));
+        Assert.Equal("1.0.0", Value("DisplayVersion"));
         Assert.Equal("Morfa contributors", Value("Publisher"));
         Assert.Equal(Path.Combine(folder, "Morfa.exe"), Value("DisplayIcon"));
         Assert.Equal(folder + "\\", Value("InstallLocation"));
@@ -40,7 +40,7 @@ public class InstallerTests
         Assert.Equal($"\"{folder}\\uninstall.exe\" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART", Value("QuietUninstallString"));
         Assert.Equal(1, registry.Get(Hive.LocalMachine, Key, "NoModify")?.Value);
         Assert.True((int)registry.Get(Hive.LocalMachine, Key, "EstimatedSize")!.Value > 0);
-        Assert.Equal(2, registry.Get(Hive.LocalMachine, Key, "VersionMajor")?.Value);
+        Assert.Equal(1, registry.Get(Hive.LocalMachine, Key, "VersionMajor")?.Value);
         Assert.Equal(@"contextmenu,contextmenu\top,startup,cli", Value(SetupNames.TasksValue));
 
         // Start menu, PATH (REG_EXPAND_SZ), no desktop shortcut by default.
@@ -151,7 +151,7 @@ public class InstallerTests
         Assert.True(File.Exists(Path.Combine(folder, "uninstall.exe")));
         // One uninstall entry, now ours: no "Inno Setup: …" values left.
         Assert.DoesNotContain(registry.ValueNames(Hive.LocalMachine, Key), n => n.StartsWith("Inno Setup", StringComparison.Ordinal));
-        Assert.Equal("2.0.0", registry.Get(Hive.LocalMachine, Key, "DisplayVersion")?.Text);
+        Assert.Equal("1.0.0", registry.Get(Hive.LocalMachine, Key, "DisplayVersion")?.Text);
         Assert.Equal($"\"{folder}\\uninstall.exe\"", registry.Get(Hive.LocalMachine, Key, "UninstallString")?.Text);
         // The user's choices stay: PATH once, the desktop shortcut, the top menu refreshed in place.
         var path = registry.Get(Hive.LocalMachine, SetupNames.MachineEnvironmentKey, "Path")!.Text!;
@@ -165,7 +165,7 @@ public class InstallerTests
     [Fact]
     public void Updating_our_own_install_replaces_exactly_its_files()
     {
-        using var bench = new SetupBench(version: "2.0.0", app: (temp, _) => temp.Write(@"app\Removed.dll", "only in 2.0.0"));
+        using var bench = new SetupBench(version: "1.0.0", app: (temp, _) => temp.Write(@"app\Removed.dll", "only in 1.0.0"));
         Assert.True(bench.Install().Succeeded);
         var folder = bench.InstallFolder;
         // Something of the user's in the folder stays.
@@ -224,7 +224,7 @@ public class InstallerTests
 
         var after = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).ToDictionary(f => f, File.ReadAllText);
         Assert.Equal(before, after);
-        Assert.Equal("2.0.0", bench.Registry.Get(Hive.LocalMachine, Key, "DisplayVersion")?.Text);
+        Assert.Equal("1.0.0", bench.Registry.Get(Hive.LocalMachine, Key, "DisplayVersion")?.Text);
         Assert.Equal(entryBefore.Keys.Order(), bench.Registry.ValueNames(Hive.LocalMachine, Key).Order());
     }
 

@@ -74,7 +74,7 @@ public class SetupWindowTests
             : null;
         var choices = new InstallChoices(@"C:\Program Files\Morfa", InstallScope.Machine, SetupTasks.Defaults, ["pandoc"], texts.Language);
         var engines = update || uninstall ? [] : Offers.Select(o => (o, o.Id == "ffmpeg")).ToList();
-        var model = new SetupViewModel(texts, runner, "2.0.0", choices, previous, engines, modernMenuSupported: true,
+        var model = new SetupViewModel(texts, runner, "1.0.0", choices, previous, engines, modernMenuSupported: true,
             neededSpace: 420_000_000, uninstall: uninstall)
         {
             LogFile = @"C:\Users\me\AppData\Local\Temp\Morfa-Setup-20261020-101500.log",
@@ -208,7 +208,7 @@ public class SetupWindowTests
     public void The_whats_new_slides_take_turns_while_installing()
     {
         var (model, texts, runner) = Model("en");
-        Assert.Equal(new Version(2, 0, 0), model.Deck!.Version);
+        Assert.Equal(new Version(1, 0, 0), model.Deck!.Version);
         var window = Show(model);
         runner.Hold = new TaskCompletionSource();
         _ = model.InstallAsync();
@@ -278,7 +278,7 @@ public class SetupWindowTests
         // Picking Arabic mirrors the card at once.
         Assert.Equal(FlowDirection.LeftToRight, window.FlowDirection);
         Assert.Equal(texts["installer.install"], model.PrimaryText);
-        Assert.Contains("2.0.0", model.WelcomeText);
+        Assert.Contains("1.0.0", model.WelcomeText);
         var choices = model.Choices();
         Assert.Equal(language, choices.Language);
         Assert.True(choices.LanguagePicked);

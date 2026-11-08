@@ -13,7 +13,7 @@ public class PayloadTests
     {
         using var bench = new SetupBench(app: (temp, _) => temp.Write(@"app\data\big.bin", new string('z', 3_000_000)));
         using var payload = SetupPayload.Open(bench.SetupExe)!;
-        Assert.Equal("2.0.0", payload.Manifest.Version);
+        Assert.Equal("1.0.0", payload.Manifest.Version);
         Assert.Contains(payload.Manifest.Files, f => f.Path == "Morfa.exe");
         Assert.Contains(payload.Manifest.Files, f => f.Path == @"engines\rhwp\rhwp.exe");
         Assert.Equal("pandoc", Assert.Single(payload.Manifest.Engines).Id);
@@ -183,7 +183,7 @@ public class PayloadTests
         var program = temp.Sub("program.exe");
         File.WriteAllBytes(program, MinimalPe(0, 0));
         var unsigned = temp.Sub("unsigned.exe");
-        SetupPayload.Write(program, app, unsigned, "2.0.0", [], "", fast: true);
+        SetupPayload.Write(program, app, unsigned, "1.0.0", [], "", fast: true);
 
         var body = File.ReadAllBytes(unsigned);
         var signed = new byte[body.Length + 512];
@@ -217,7 +217,7 @@ public class PayloadTests
         File.WriteAllBytes(program, signed);
 
         var setup = temp.Sub("setup.exe");
-        SetupPayload.Write(program, temp.Sub("app"), setup, "2.0.0", [], "", fast: true);
+        SetupPayload.Write(program, temp.Sub("app"), setup, "1.0.0", [], "", fast: true);
         var written = File.ReadAllBytes(setup);
         Assert.Equal(0u, BinaryPrimitives.ReadUInt64LittleEndian(written.AsSpan(security)));
         // signtool adds the certificate table at the end without padding in front of it.
