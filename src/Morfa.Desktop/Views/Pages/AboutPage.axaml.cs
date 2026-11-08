@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Morfa.Desktop.Services;
 using Morfa.Desktop.ViewModels.Pages;
+using Morfa.Domain.Localization;
 
 namespace Morfa.Desktop.Views.Pages;
 
@@ -20,8 +21,8 @@ public partial class AboutPage : UserControl
 
     private async void OnSponsor(object? sender, RoutedEventArgs e)
     {
-        if (TopLevel.GetTopLevel(this) is { } top)
-            await top.Launcher.LaunchUriAsync(new Uri(Services.UpdateService.SponsorsUrl));
+        if (TopLevel.GetTopLevel(this) is Window owner)
+            await SponsorWindow.Create(AppHost.Get<ILocalizer>()).ShowDialog(owner);
     }
 
     private async void OnIssue(object? sender, RoutedEventArgs e)

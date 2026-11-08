@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Morfa.Desktop.Services;
 using Morfa.Desktop.ViewModels;
+using Morfa.Domain.Localization;
 using Morfa.Domain.Settings;
 
 namespace Morfa.Desktop.Views;
@@ -29,7 +30,7 @@ public partial class MainWindow : Window
     }
 
     private async void OnSponsor(object? sender, RoutedEventArgs e) =>
-        await Launcher.LaunchUriAsync(new Uri(Services.UpdateService.SponsorsUrl));
+        await SponsorWindow.Create(AppHost.Get<ILocalizer>()).ShowDialog(this);
 
     /// <summary>
     /// Closing the window keeps Morfa running in the tray, quits, or asks which (<see cref="AppSettings.CloseAction"/>).

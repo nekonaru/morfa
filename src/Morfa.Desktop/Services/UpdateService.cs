@@ -83,9 +83,6 @@ public sealed partial class UpdateService : ObservableObject
     /// <summary>GitHub's "new issue" page (bug report or feature request template).</summary>
     public static string NewIssueUrl => RepositoryUrl.TrimEnd('/') + "/issues/new/choose";
 
-    /// <summary>The project's GitHub Sponsors page: where "Sponsor" leads.</summary>
-    public const string SponsorsUrl = "https://github.com/sponsors/nekonaru";
-
     /// <summary>Release page with every file, including the portable zip.</summary>
     public static string LatestReleaseUrl => RepositoryUrl.TrimEnd('/') + "/releases/latest";
 
