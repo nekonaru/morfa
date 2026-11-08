@@ -11,6 +11,10 @@
   "nav.theme": "Tema",
   "nav.engines": "Mesin",
   "nav.about": "Tentang",
+  "nav.group.home": "Beranda",
+  "nav.group.donut": "Donat",
+  "nav.group.conversion": "Konversi",
+  "nav.group.app": "Aplikasi",
 
   "tray.open": "Buka Morfa",
   "tray.pause": "Jeda pintasan",

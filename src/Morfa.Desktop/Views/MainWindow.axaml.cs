@@ -23,6 +23,20 @@ public partial class MainWindow : Window
         UiZoom.Track(this);
     }
 
+    /// <summary>Opens the last visited sub-page of the pill row (explicitly needed for two-level navigation).</summary>
+    private void OnGroupSelected(object? sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm && Groups.SelectedItem is NavGroup group)
+            vm.SelectGroup(group);
+    }
+
+    /// <summary>The sub-page pills drive the navigation (the VM stays the source of truth, so the binding is one-way).</summary>
+    private void OnSubPageSelected(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is ListBox { SelectedItem: NavItem item } && DataContext is MainWindowViewModel vm && !ReferenceEquals(item, vm.SelectedItem))
+            vm.SelectedItem = item;
+    }
+
     private async void OnOpenGitHub(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm)

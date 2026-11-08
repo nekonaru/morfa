@@ -214,6 +214,38 @@
     <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
   </Style>
 
+  <!-- Pill rows (top-bar groups, sub-page pills): horizontal siblings of the vertical nav. -->
+  <Style Selector="ListBox.pill">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <StackPanel Orientation="Horizontal" />
+      </ItemsPanelTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ListBox.pill ListBoxItem">
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="14,7" />
+    <Setter Property="Margin" Value="0,0,6,0" />
+    <Setter Property="RenderTransform" Value="none" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="{StaticResource SoftEase}" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="ListBox.pill ListBoxItem:pointerover">
+    <Setter Property="RenderTransform" Value="scale(1.03)" />
+  </Style>
+  <Style Selector="ListBox.pill ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentStrongBrush}" />
+  </Style>
+  <Style Selector="ListBox.pill ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+  </Style>
+
   <!-- Generic rounded list items (profiles, presets) -->
   <Style Selector="ListBox.soft">
     <Setter Property="Background" Value="Transparent" />
@@ -525,7 +557,7 @@
   <Style Selector="Window.reduced-motion :is(Button), Window.reduced-motion :is(ToggleButton), Window.reduced-motion Border.chip, Window.reduced-motion ListBoxItem, Window.reduced-motion Slider /template/ Thumb#PART_Thumb, Window.reduced-motion ToggleSwitch, Window.reduced-motion ToggleSwitch /template/ Border#SwitchKnobBounds, Window.reduced-motion ToggleSwitch /template/ Ellipse#SwitchKnob, Window.reduced-motion CheckBox /template/ Border#NormalRectangle, Window.reduced-motion CheckBox /template/ Path#CheckGlyph, Window.reduced-motion Button.choice-card, Window.reduced-motion Button.preset-pill">
     <Setter Property="Transitions" Value="{x:Null}" />
   </Style>
-  <Style Selector="Window.reduced-motion Button:pressed, Window.reduced-motion ToggleButton:pressed, Window.reduced-motion Border.chip:pointerover, Window.reduced-motion ListBox.nav ListBoxItem:pointerover, Window.reduced-motion Slider /template/ Thumb#PART_Thumb:pointerover, Window.reduced-motion Slider /template/ Thumb#PART_Thumb:pressed, Window.reduced-motion ToggleSwitch:pointerover, Window.reduced-motion Button.choice-card:pointerover, Window.reduced-motion Button.preset-pill:pointerover, Window.reduced-motion Button.preset-pill:pressed">
+  <Style Selector="Window.reduced-motion Button:pressed, Window.reduced-motion ToggleButton:pressed, Window.reduced-motion Border.chip:pointerover, Window.reduced-motion ListBox.nav ListBoxItem:pointerover, Window.reduced-motion ListBox.pill ListBoxItem:pointerover, Window.reduced-motion Slider /template/ Thumb#PART_Thumb:pointerover, Window.reduced-motion Slider /template/ Thumb#PART_Thumb:pressed, Window.reduced-motion ToggleSwitch:pointerover, Window.reduced-motion Button.choice-card:pointerover, Window.reduced-motion Button.preset-pill:pointerover, Window.reduced-motion Button.preset-pill:pressed">
     <Setter Property="RenderTransform" Value="none" />
   </Style>
   <Style Selector="Window.reduced-motion ContentControl.page > :is(Control), Window.reduced-motion Border.history-card">

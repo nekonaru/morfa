@@ -36,28 +36,31 @@ public class LocalizationResourceTests
         try
         {
             RenderTests.Pump();
-            var navigation = window.GetVisualDescendants().OfType<ListBox>().Single(l => l.Classes.Contains("nav"));
             var page = window.FindControl<ScrollViewer>("PageScroller")!;
+            // The version text sits at the top-bar right edge, so it mirrors all the way across.
+            var version = window.FindControl<TextBlock>("VersionLabel")!;
             double Left(Visual visual) => new Rect(visual.Bounds.Size).TransformToAABB(visual.TransformToVisual(window)!.Value).Left;
-            double Center(Visual visual) =>
-                new Rect(visual.Bounds.Size).TransformToAABB(visual.TransformToVisual(window)!.Value).Center.X;
+            double Top(Visual visual) => new Rect(visual.Bounds.Size).TransformToAABB(visual.TransformToVisual(window)!.Value).Top;
             Assert.Equal(FlowDirection.LeftToRight, window.FlowDirection);
-            Assert.True(Center(navigation) < Center(page));
-            var englishNavigationLeft = Left(navigation);
+            // The top bar sits above the page, version hugging the right edge.
+            Assert.True(Top(version) < Top(page));
+            Assert.True(Left(version) > window.Bounds.Width / 2);
+            var englishLeft = Left(version);
 
             // The flow direction follows the UI culture's script, applied through the same palette the app uses.
             SoftPalette.ApplyFlowDirection(Application.Current!.Resources, "ar");
             RenderTests.Pump();
             Assert.Equal(FlowDirection.RightToLeft, window.FlowDirection);
             Assert.Equal(FlowDirection.RightToLeft, page.FlowDirection);
-            // The sidebar moves to the right edge, the page to its left.
-            Assert.True(Center(navigation) > Center(page));
-            Assert.Equal(window.Bounds.Width - englishNavigationLeft, Left(navigation) + navigation.Bounds.Width, 1);
+            // The tools mirror to the left edge, still above the page.
+            Assert.True(Top(version) < Top(page));
+            Assert.True(Left(version) < window.Bounds.Width / 2);
+            Assert.Equal(window.Bounds.Width - englishLeft - version.Bounds.Width, Left(version), 1);
 
             SoftPalette.ApplyFlowDirection(Application.Current!.Resources, "en");
             RenderTests.Pump();
             Assert.Equal(FlowDirection.LeftToRight, window.FlowDirection);
-            Assert.Equal(englishNavigationLeft, Left(navigation), 1);
+            Assert.Equal(englishLeft, Left(version), 1);
         }
         finally
         {

@@ -145,7 +145,10 @@ public class SelectionGuardTests
         Pump();
         try
         {
-            var nav = window.GetVisualDescendants().OfType<ListBox>().First(l => l.Classes.Contains("nav"));
+            // The sub-page pill row of the top bar: a group with several pages to pick from.
+            vm.Navigate("toolbar");
+            Pump();
+            var nav = window.FindControl<ListBox>("SubNav")!;
             var home = vm.SelectedItem;
             var page = vm.CurrentPage;
             var changes = 0;
@@ -158,12 +161,13 @@ public class SelectionGuardTests
             Assert.Same(page, vm.CurrentPage);
             Assert.Equal(0, changes);
 
-            // Ctrl+clicking another page still opens it.
-            at = Middle(nav.ContainerFromItem(vm.Items[1])!, window);
+            // Ctrl+clicking another page of the row still opens it.
+            var other = vm.SubItems.First(i => !ReferenceEquals(i, home));
+            at = Middle(nav.ContainerFromItem(other)!, window);
             window.MouseDown(at, MouseButton.Left, Toggle(window));
             window.MouseUp(at, MouseButton.Left, Toggle(window));
             Pump();
-            Assert.Same(vm.Items[1], vm.SelectedItem);
+            Assert.Same(other, vm.SelectedItem);
         }
         finally
         {

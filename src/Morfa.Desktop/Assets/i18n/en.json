@@ -11,6 +11,10 @@
   "nav.theme": "Theme",
   "nav.engines": "Engines",
   "nav.about": "About",
+  "nav.group.home": "Home",
+  "nav.group.donut": "Donut",
+  "nav.group.conversion": "Convert",
+  "nav.group.app": "App",
 
   "tray.open": "Open Morfa",
   "tray.pause": "Pause shortcuts",
