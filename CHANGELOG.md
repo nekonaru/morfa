@@ -22,6 +22,8 @@ The logo, window icons, Setup and accent colours now use the product's own ident
 
 ## v0.1.0
 
+Morfa's first standalone release: the drag-and-drop file converter, reworked from Filee's source.
+
 ## New features
 
 - **A donut at the cursor.** Hold a key, drag your files and drop them on a format; only formats that fit the files appear.
@@ -33,21 +35,8 @@ The logo, window icons, Setup and accent colours now use the product's own ident
 - **Two sides to every donut.** Press Tab or turn the mouse wheel while it is open to reach less common formats and tools.
 - **English and Indonesian UI.** English by default; switch to Bahasa Indonesia in Settings.
 
-## Notes
+## Improvements
 
 - **Inspired by Filee.** Morfa is a reimplementation inspired by [Filee](https://github.com/KnifeLemon/Filee), reworked into its own project with its own namespaces, structure and identity. The converter engine catalog, pipeline and donut toolbar design come from Filee's MIT-licensed source.
-- **Fresh start.** v0.1.0 is the first release of morfa as a standalone project.
-
-## Optimizations
-
 - **Parallel conversions.** Many files convert at once, and multi-step routes (HWP to HWPX to DOCX) are found automatically.
 - **Recent conversions.** Every result shows on Home with a thumbnail.
-
-## Usage
-
-Download the package for your system from the [Releases](https://github.com/nekonaru/morfa/releases) page, or build from source with the .NET 10 SDK.
-
-```bash
-morfa convert photo.heic --to jpg
-morfa watch D:\Inbox --to pdf --move-originals
-```

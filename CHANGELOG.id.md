@@ -22,6 +22,8 @@ Logo, ikon jendela, Setup, dan warna aksen kini memakai identitas produk ini sen
 
 ## v0.1.0
 
+Rilis mandiri pertama Morfa: konverter file drag-and-drop, digarap ulang dari source Filee.
+
 ## Fitur baru
 
 - **Donut di kursor.** Tahan sebuah tombol, tarik file kamu dan jatuhkan ke sebuah format; hanya format yang cocok untuk file itu yang muncul.
@@ -33,21 +35,8 @@ Logo, ikon jendela, Setup, dan warna aksen kini memakai identitas produk ini sen
 - **Dua sisi di setiap donut.** Tekan Tab atau putar roda mouse saat donut terbuka untuk menjangkau format dan alat yang lebih jarang.
 - **UI English dan Indonesia.** Default English; ganti ke Bahasa Indonesia di Settings.
 
-## Catatan
+## Peningkatan
 
 - **Terinspirasi Filee.** Morfa adalah reimplementasi yang terinspirasi dari [Filee](https://github.com/KnifeLemon/Filee), digarap ulang menjadi proyeknya sendiri dengan namespace, struktur dan identitasnya sendiri. Katalog engine converter, pipeline dan desain toolbar donut berasal dari source Filee yang berlisensi MIT.
-- **Mulai dari awal.** v0.1.0 adalah rilis pertama morfa sebagai proyek yang berdiri sendiri.
-
-## Optimisasi
-
 - **Konversi paralel.** Banyak file dikonversi sekaligus, dan rute multi-langkah (HWP ke HWPX ke DOCX) ditemukan otomatis.
 - **Konversi terbaru.** Setiap hasil muncul di Home dengan thumbnail.
-
-## Penggunaan
-
-Unduh paket untuk sistem kamu dari halaman [Releases](https://github.com/nekonaru/morfa/releases), atau build dari sumber dengan .NET 10 SDK.
-
-```bash
-morfa convert photo.heic --to jpg
-morfa watch D:\Inbox --to pdf --move-originals
-```
