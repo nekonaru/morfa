@@ -126,8 +126,8 @@ jobs:
           # signed in to SimplySign. Linux/macOS packages belong to this draft.
           $files = Get-ChildItem Releases -File -Filter "Morfa-$version-*" | ForEach-Object FullName
           # The release body is generated from CHANGELOG.md and CHANGELOG.id.md by header,
-          # and the title is the version tag only.
+          # and the title is the project name plus the version tag only.
           $notesFile = Join-Path $env:RUNNER_TEMP 'notes.md'
           # Throws on its own when the changelog is malformed.
           & (Join-Path $PWD 'build/tools/make-release-notes.ps1') -Version $version -Output $notesFile
-          gh release create '${{ github.ref_name }}' --draft --title '${{ github.ref_name }}' --notes-file $notesFile --verify-tag @files
+          gh release create '${{ github.ref_name }}' --draft --title 'Morfa ${{ github.ref_name }}' --notes-file $notesFile --verify-tag @files
