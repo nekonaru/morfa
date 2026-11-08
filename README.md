@@ -150,7 +150,7 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 ### Option A: Windows installer (easiest)
 
 1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
-2. Download `Morfa-1.0.0-win-Setup.exe`.
+2. Download `Morfa-1.1.0-win-Setup.exe`.
 3. Double-click the downloaded file.
 4. Windows SmartScreen opens **"Windows protected your PC"**. The build is not code-signed yet, so this is expected. Click **More info**, then **Run anyway**.
 5. The Morfa Setup window appears.
@@ -166,7 +166,7 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 Silent install (for scripts and winget-style manifests):
 
 ```powershell
-Morfa-1.0.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+Morfa-1.1.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
 Useful switches:
@@ -186,7 +186,7 @@ If the installer does nothing or shows an error, run it as administrator.
 
 ### Option B: Windows portable (no installer)
 
-1. Download `Morfa-1.0.0-win-Portable.zip`.
+1. Download `Morfa-1.1.0-win-Portable.zip`.
 2. Extract it to a folder of your choice (for example `D:\Morfa`).
 3. Double-click `Morfa.exe`.
 
@@ -195,11 +195,11 @@ The portable copy does not add shortcuts, the Explorer menu, or the `morfa` comm
 ### Option C: Linux (x64 / ARM64)
 
 1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
-2. Download `Morfa-1.0.0-linux-x64.tar.gz` (or `-arm64.tar.gz` for ARM64).
+2. Download `Morfa-1.1.0-linux-x64.tar.gz` (or `-arm64.tar.gz` for ARM64).
 3. Extract it:
 
 ```bash
-tar xzf Morfa-1.0.0-linux-x64.tar.gz
+tar xzf Morfa-1.1.0-linux-x64.tar.gz
 ```
 
 4. Run `./install.sh`. It installs for your user into `~/.local/share/morfa` (or similar) and adds the `morfa` command.
@@ -211,7 +211,7 @@ tar xzf Morfa-1.0.0-linux-x64.tar.gz
 ### Option D: macOS (Apple Silicon / Intel)
 
 1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
-2. Download `Morfa-1.0.0-osx-arm64.dmg` (Apple Silicon) or `Morfa-1.0.0-osx-x64.dmg` (Intel).
+2. Download `Morfa-1.1.0-osx-arm64.dmg` (Apple Silicon) or `Morfa-1.1.0-osx-x64.dmg` (Intel).
 3. Open the DMG and drag Morfa to Applications.
 4. On first start, allow it in **System Settings > Privacy & Security > Open Anyway**. The app is not notarized.
 

@@ -150,7 +150,7 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 ### Opsi A: Installer Windows (paling mudah)
 
 1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
-2. Download `Morfa-1.0.0-win-Setup.exe`.
+2. Download `Morfa-1.1.0-win-Setup.exe`.
 3. Klik dua kali file yang di-download.
 4. Windows SmartScreen akan menampilkan **"Windows protected your PC"**. Build ini belum ditandatangani, jadi ini normal. Klik **More info**, lalu **Run anyway**.
 5. Jendela Morfa Setup muncul.
@@ -166,7 +166,7 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 Install senyap (untuk skrip dan manifest seperti winget):
 
 ```powershell
-Morfa-1.0.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+Morfa-1.1.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
 Switch berguna:
@@ -186,7 +186,7 @@ Jika installer tidak melakukan apa-apa atau menampilkan error, jalankan sebagai 
 
 ### Opsi B: Windows portable (tanpa installer)
 
-1. Download `Morfa-1.0.0-win-Portable.zip`.
+1. Download `Morfa-1.1.0-win-Portable.zip`.
 2. Ekstrak ke folder pilihanmu (misalnya `D:\Morfa`).
 3. Klik dua kali `Morfa.exe`.
 
@@ -195,11 +195,11 @@ Copy portable ini tidak menambahkan shortcut, menu konteks Explorer, dan command
 ### Opsi C: Linux (x64 / ARM64)
 
 1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
-2. Download `Morfa-1.0.0-linux-x64.tar.gz` (atau `-arm64.tar.gz` untuk ARM64).
+2. Download `Morfa-1.1.0-linux-x64.tar.gz` (atau `-arm64.tar.gz` untuk ARM64).
 3. Ekstrak:
 
 ```bash
-tar xzf Morfa-1.0.0-linux-x64.tar.gz
+tar xzf Morfa-1.1.0-linux-x64.tar.gz
 ```
 
 4. Jalankan `./install.sh`. Script ini memasang untuk user kamu ke `~/.local/share/morfa` (atau lokasi serupa) dan menambahkan commandline `morfa`.
@@ -211,7 +211,7 @@ tar xzf Morfa-1.0.0-linux-x64.tar.gz
 ### Opsi D: macOS (Apple Silicon / Intel)
 
 1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
-2. Download `Morfa-1.0.0-osx-arm64.dmg` (Apple Silicon) atau `Morfa-1.0.0-osx-x64.dmg` (Intel).
+2. Download `Morfa-1.1.0-osx-arm64.dmg` (Apple Silicon) atau `Morfa-1.1.0-osx-x64.dmg` (Intel).
 3. Buka DMG dan seret Morfa ke Applications.
 4. Pada peluncuran pertama, izinkan lewat **Pengaturan Sistem > Privasi & Keamanan > Buka Anyway**. Aplikasi tidak di-notarize.
 

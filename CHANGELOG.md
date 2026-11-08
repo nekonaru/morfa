@@ -2,6 +2,17 @@
 
 What changed in each version of Morfa. Newest version on top.
 
+## v1.1.0
+
+New users can try Morfa with a bundled sample, skip the engine step without any fuss, and move their presets between PCs.
+
+## New features
+
+- **First run with something to try.** A built-in sample picture waits on Home: one click converts it to JPEG, so the first conversion needs no file of your own.
+- **Engines on your terms.** The engine step now leads with skipping; most formats already work, and the engines stay optional until a format actually needs one.
+- **Several ways to sponsor.** The Sponsor window returns with five options: GitHub Sponsors, Saweria, SociaBuzz, Bagibagi and Buy Me a Coffee.
+- **Safer preset imports.** A preset bundle saved by a newer format is now refused with a clear message.
+
 ## v1.0.0
 
 Morfa now looks and behaves like its own product instead of its Filee ancestor.

@@ -2,6 +2,17 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
+## v1.1.0
+
+Pengguna baru bisa mencoba Morfa dengan contoh bawaan, melewati langkah engine tanpa ribet, dan memindahkan preset mereka antar PC.
+
+## Fitur baru
+
+- **Jalankan pertama dengan sesuatu untuk dicoba.** Sebuah gambar contoh bawaan menunggu di Home: satu klik mengonversinya ke JPEG, sehingga konversi pertama tidak butuh file sendiri.
+- **Engine dengan caramu.** Langkah engine kini mengutamakan melewatkannya; kebanyakan format sudah bekerja, dan engine tetap opsional sampai sebuah format benar-benar membutuhkannya.
+- **Beberapa cara mensponsori.** Jendela Sponsor kembali dengan lima opsi: GitHub Sponsors, Saweria, SociaBuzz, Bagibagi, dan Buy Me a Coffee.
+- **Impor preset yang lebih aman.** Bundle preset simpanan berformat lebih baru kini ditolak dengan pesan yang jelas.
+
 ## v1.0.0
 
 Morfa kini tampil dan berperilaku seperti produknya sendiri, bukan seperti leluhur Filee-nya.
