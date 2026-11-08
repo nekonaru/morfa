@@ -1,10 +1,10 @@
 <!--
   Donut toolbar editor.
-  1. Pick a profile on the left.   2. Arrange its presets on the live donut, front or back face (the switch above it):
+  1. Pick a profile on the pill row up top.   2. Arrange its presets on the live donut, front or back face (the switch above it):
      chip → donut = add · slice → palette = remove · slice → slice = reorder · right-click / ✎ = edit.
-  Drag & drop is implemented in ToolbarPage.axaml.cs.
-  The profile card edits a normal profile's extensions as chips (TagEditor) or, for a mixed-selection profile, which
-  extensions a mix may contain (check list grouped by the normal profiles).
+   Drag & drop is implemented in ToolbarPage.axaml.cs.
+   The profile card edits a normal profile's extensions as chips (TagEditor) or, for a mixed-selection profile, which
+   extensions a mix may contain (check list grouped by the normal profiles).
 -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -168,48 +168,57 @@
     </Style>
   </UserControl.Styles>
 
-  <ScrollViewer x:Name="EditorScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-    <Grid x:Name="Root" RowDefinitions="Auto,*" MinWidth="786" Width="{Binding #EditorScroller.Viewport.Width}" HorizontalAlignment="Left">
-      <StackPanel Spacing="4" Margin="0,0,0,18">
+  <ScrollViewer x:Name="EditorScroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+    <Grid x:Name="Root" RowDefinitions="Auto,Auto,*,Auto" Width="{Binding #EditorScroller.Viewport.Width}">
+      <StackPanel Spacing="4" Margin="0,0,0,14">
         <TextBlock Classes="h1" Text="{DynamicResource toolbar.title}" />
       </StackPanel>
 
-      <Grid Grid.Row="1" ColumnDefinitions="200,20,*,20,230">
-        <!-- 1. Profiles -->
-        <StackPanel Spacing="8">
-          <TextBlock Classes="label" Text="{DynamicResource toolbar.step_profile}" />
-          <TextBox Classes="search clearButton" Text="{Binding ProfileSearch}" Watermark="{DynamicResource common.search}">
-            <TextBox.InnerLeftContent>
-              <PathIcon Width="14" Height="14" Margin="10,0,0,0" Data="{StaticResource Icon.Search}" Foreground="{DynamicResource TextSecondaryBrush}" />
-            </TextBox.InnerLeftContent>
-          </TextBox>
-          <ListBox Classes="soft" ItemsSource="{Binding VisibleProfiles}" SelectedItem="{Binding SelectedProfile}">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:ProfileItemViewModel">
-                <DockPanel>
-                  <Border DockPanel.Dock="Right" Classes="badge" ToolTip.Tip="{Binding CountTip}">
-                    <TextBlock Classes="caption" Text="{Binding Count}" />
-                  </Border>
-                  <PathIcon DockPanel.Dock="Right" Width="13" Height="13" Margin="0,0,8,0" Data="{StaticResource Icon.Shapes}"
-                            Foreground="{DynamicResource TextSecondaryBrush}" IsVisible="{Binding IsMixed}"
-                            ToolTip.Tip="{DynamicResource toolbar.mixed_badge}" />
-                  <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                </DockPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-          <Button HorizontalAlignment="Stretch" Command="{Binding AddProfileCommand}">
+      <!-- Profiles: the list across the top as pills -->
+      <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,14">
+        <DockPanel>
+          <Button DockPanel.Dock="Right" VerticalAlignment="Center" Margin="8,0,0,0" Command="{Binding AddProfileCommand}">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <PathIcon Width="12" Height="12" Data="{StaticResource Icon.Plus}" />
               <TextBlock Text="{DynamicResource toolbar.add_profile}" />
             </StackPanel>
           </Button>
-        </StackPanel>
+          <TextBox DockPanel.Dock="Right" Classes="search clearButton" VerticalAlignment="Center" Width="180"
+                   Text="{Binding ProfileSearch}" Watermark="{DynamicResource common.search}">
+            <TextBox.InnerLeftContent>
+              <PathIcon Width="14" Height="14" Margin="10,0,0,0" Data="{StaticResource Icon.Search}" Foreground="{DynamicResource TextSecondaryBrush}" />
+            </TextBox.InnerLeftContent>
+          </TextBox>
+          <TextBlock Classes="label" VerticalAlignment="Center" Text="{DynamicResource toolbar.step_profile}" />
+        </DockPanel>
+        <ListBox Classes="pill" ItemsSource="{Binding VisibleProfiles}" SelectedItem="{Binding SelectedProfile}">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ProfileItemViewModel">
+              <DockPanel>
+                <Border DockPanel.Dock="Right" Classes="badge" ToolTip.Tip="{Binding CountTip}">
+                  <TextBlock Classes="caption" Text="{Binding Count}" />
+                </Border>
+                <PathIcon DockPanel.Dock="Right" Width="13" Height="13" Margin="0,0,8,0" Data="{StaticResource Icon.Shapes}"
+                          Foreground="{DynamicResource TextSecondaryBrush}" IsVisible="{Binding IsMixed}"
+                          ToolTip.Tip="{DynamicResource toolbar.mixed_badge}" />
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+              </DockPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </StackPanel>
 
-        <!-- 2. Donut -->
-        <StackPanel Grid.Column="2" Spacing="12">
+      <!-- Donut stage (left) and the profile inspector (right); the inspector stacks below the stage when narrow. -->
+      <Grid Grid.Row="2" ColumnDefinitions="*,20,380" c:StackBelow.Threshold="900" c:StackBelow.Gap="20">
+        <!-- Donut -->
+        <StackPanel Grid.Column="0" Spacing="12">
           <TextBlock Classes="label" Text="{DynamicResource toolbar.step_arrange}" />
-          <Border Classes="card" Padding="8">
+          <Border Classes="card" Padding="16,12">
             <StackPanel>
               <!-- Which face of the donut the slices below are: the front, or the back Tab flips the open donut to. -->
               <Border x:Name="FaceSwitch" Classes="faces" HorizontalAlignment="Center" Margin="0,6,0,0">
@@ -240,7 +249,10 @@
             </StackPanel>
           </Border>
           <TextBlock Classes="caption danger" Text="{Binding Message}" HorizontalAlignment="Center" />
+        </StackPanel>
 
+        <!-- Inspector -->
+        <StackPanel Grid.Column="2" Spacing="12">
           <Border x:Name="ProfileCard" Classes="card">
             <StackPanel Spacing="12">
               <StackPanel>
@@ -364,49 +376,56 @@
             </StackPanel>
           </Border>
         </StackPanel>
+      </Grid>
 
-        <!-- Palette -->
-        <StackPanel x:Name="PaletteColumn" Grid.Column="4" Spacing="8">
-          <TextBlock Classes="label" Text="{DynamicResource toolbar.available}" />
-          <!-- Keep complete action labels; longer translations can move the second action to the next row. -->
-          <WrapPanel>
-            <Button x:Name="NewPresetButton" Margin="0,0,6,6" HorizontalContentAlignment="Center" Padding="6,6"
-                    Command="{Binding NewPresetCommand}" ToolTip.Tip="{DynamicResource toolbar.new_preset}">
-              <StackPanel Orientation="Horizontal" Spacing="5">
-                <PathIcon Width="12" Height="12" Data="{StaticResource Icon.Plus}" />
-                <TextBlock Text="{DynamicResource toolbar.new_preset}" />
-              </StackPanel>
-            </Button>
-            <Button x:Name="NewGroupButton" Margin="0,0,0,6" HorizontalContentAlignment="Center" Padding="6,6"
-                    Command="{Binding NewGroupCommand}" ToolTip.Tip="{DynamicResource group.hint}">
-              <StackPanel Orientation="Horizontal" Spacing="5">
-                <PathIcon Width="12" Height="12" Data="{StaticResource Icon.Donut}" />
-                <TextBlock Text="{DynamicResource toolbar.new_group}" />
-              </StackPanel>
-            </Button>
-          </WrapPanel>
-          <TextBox x:Name="PaletteSearchBox" Classes="search clearButton" Text="{Binding PaletteSearch}" Watermark="{DynamicResource common.search}">
-            <TextBox.InnerLeftContent>
-              <PathIcon Width="14" Height="14" Margin="10,0,0,0" Data="{StaticResource Icon.Search}" Foreground="{DynamicResource TextSecondaryBrush}" />
-            </TextBox.InnerLeftContent>
-          </TextBox>
-          <!-- Kinds of preset (All first). Hidden when one kind would only repeat All. Wraps rather than scrolls sideways. -->
-          <ListBox x:Name="PaletteTabs" ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}"
-                   IsVisible="{Binding ShowTabRow}"
-                   AutomationProperties.Name="{DynamicResource toolbar.available}"
-                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-            <ListBox.ItemsPanel>
-              <ItemsPanelTemplate>
-                <WrapPanel />
-              </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:PaletteTabItem">
-                <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-          <Border x:Name="PaletteBox" MinHeight="180" Padding="6" CornerRadius="{DynamicResource SoftRadius}"
+      <!-- Palette: full-width tray below the stage -->
+      <Border x:Name="PaletteColumn" Grid.Row="3" Classes="card tray" Padding="14,12" Margin="0,14,0,0">
+        <StackPanel Spacing="10">
+          <DockPanel>
+            <WrapPanel DockPanel.Dock="Right">
+              <Button x:Name="NewPresetButton" Margin="0,0,6,0" HorizontalContentAlignment="Center" Padding="8,6"
+                      Command="{Binding NewPresetCommand}" ToolTip.Tip="{DynamicResource toolbar.new_preset}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                  <PathIcon Width="12" Height="12" Data="{StaticResource Icon.Plus}" />
+                  <TextBlock Text="{DynamicResource toolbar.new_preset}" />
+                </StackPanel>
+              </Button>
+              <Button x:Name="NewGroupButton" HorizontalContentAlignment="Center" Padding="8,6"
+                      Command="{Binding NewGroupCommand}" ToolTip.Tip="{DynamicResource group.hint}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                  <PathIcon Width="12" Height="12" Data="{StaticResource Icon.Donut}" />
+                  <TextBlock Text="{DynamicResource toolbar.new_group}" />
+                </StackPanel>
+              </Button>
+            </WrapPanel>
+            <TextBlock Classes="label" VerticalAlignment="Center" Text="{DynamicResource toolbar.available}" />
+          </DockPanel>
+          <DockPanel>
+            <TextBox x:Name="PaletteSearchBox" DockPanel.Dock="Left" Classes="search clearButton" VerticalAlignment="Center" Width="180"
+                     Text="{Binding PaletteSearch}" Watermark="{DynamicResource common.search}">
+              <TextBox.InnerLeftContent>
+                <PathIcon Width="14" Height="14" Margin="10,0,0,0" Data="{StaticResource Icon.Search}" Foreground="{DynamicResource TextSecondaryBrush}" />
+              </TextBox.InnerLeftContent>
+            </TextBox>
+            <!-- Kinds of preset (All first). Hidden when one kind would only repeat All. Wraps rather than scrolls sideways. -->
+            <ListBox x:Name="PaletteTabs" ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}"
+                     IsVisible="{Binding ShowTabRow}" Margin="12,0,0,0" VerticalAlignment="Center"
+                     AutoScrollToSelectedItem="False"
+                     AutomationProperties.Name="{DynamicResource toolbar.available}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel />
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:PaletteTabItem">
+                  <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+          <Border x:Name="PaletteBox" MinHeight="120" Padding="6" CornerRadius="{DynamicResource SoftRadius}"
                   BorderThickness="2" BorderBrush="{DynamicResource SubtleBorderBrush}" Background="Transparent">
             <ItemsControl ItemsSource="{Binding VisiblePalette}">
               <ItemsControl.ItemsPanel>
@@ -429,17 +448,14 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
           </Border>
-          <StackPanel Spacing="4" Margin="2,6,0,0">
-            <TextBlock Classes="caption" TextWrapping="Wrap" Text="{DynamicResource toolbar.hint_add}" />
-            <TextBlock Classes="caption" TextWrapping="Wrap" Text="{DynamicResource toolbar.hint_remove}" />
-            <TextBlock Classes="caption" TextWrapping="Wrap" Text="{DynamicResource toolbar.hint_reorder}" />
-            <TextBlock Classes="caption" TextWrapping="Wrap" Text="{DynamicResource toolbar.hint_edit}" />
-          </StackPanel>
+          <TextBlock Classes="caption" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center">
+            <Run Text="{DynamicResource toolbar.hint_add}" /><Run Text=" · " /><Run Text="{DynamicResource toolbar.hint_remove}" /><Run Text=" · " /><Run Text="{DynamicResource toolbar.hint_reorder}" /><Run Text=" · " /><Run Text="{DynamicResource toolbar.hint_edit}" />
+          </TextBlock>
         </StackPanel>
-      </Grid>
+      </Border>
 
       <!-- Drag ghost layer -->
-      <Canvas x:Name="DragLayer" Grid.RowSpan="2" IsHitTestVisible="False">
+      <Canvas x:Name="DragLayer" Grid.RowSpan="4" IsHitTestVisible="False">
         <Border x:Name="Ghost" IsVisible="False">
           <TextBlock x:Name="GhostText" Foreground="{DynamicResource OnAccentBrush}" FontWeight="SemiBold" />
         </Border>

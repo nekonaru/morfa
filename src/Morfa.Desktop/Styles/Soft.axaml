@@ -106,6 +106,12 @@
     <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
   </Style>
 
+  <!-- A full-width bottom band (the toolbar palette): reads as docked to the stage, not as a floating card. -->
+  <Style Selector="Border.tray">
+    <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
+    <Setter Property="BoxShadow" Value="none" />
+  </Style>
+
   <!-- ───────── Cards ───────── -->
   <Style Selector="Border.card">
     <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />

@@ -1920,31 +1920,35 @@ public class RenderTests
     }
 
     /// <summary>
-    /// The palette tabs of the mixed donut (no extensions, so every kind and no judging) wrap inside the 230 px column:
-    /// every tab whole, in rows, reachable with the arrow keys, the last one too.
+    /// The palette tabs of the mixed donut (no extensions, so every kind and no judging) sit in the full-width tray:
+    /// every tab whole, wrapped onto as many rows as it takes, reachable with the arrow keys.
     /// </summary>
     [AvaloniaTheory]
     [InlineData("en", false)]
     [InlineData("en", true)]
     [InlineData("id", false)]
     [InlineData("id", true)]
-    public void Palette_tabs_fit_narrow_column(string language, bool dark)
+    public void Palette_tabs_fit_the_tray(string language, bool dark)
     {
         WithProfiles(language, dark, 820, _ => { }, (window, vm) =>
         {
             vm.SelectedProfile = vm.Profiles.Single(p => p.Profile.Id == "mixed");
             Pump();
             Assert.Empty(vm.SelectedProfile.Profile.Extensions);
-            var column = window.GetVisualDescendants().OfType<StackPanel>().Single(s => s.Name == "PaletteColumn");
+            var tray = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "PaletteColumn");
             var tabs = window.GetVisualDescendants().OfType<ListBox>().Single(l => l.Name == "PaletteTabs");
             Assert.True(tabs.IsEffectivelyVisible);
             Assert.Equal(Enum.GetValues<PaletteTab>(), tabs.Items.Cast<PaletteTabItem>().Select(t => t.Id));
 
             Avalonia.Rect InWindow(Avalonia.Visual v) =>
                 new Avalonia.Rect(v.Bounds.Size).TransformToAABB(Avalonia.VisualExtensions.TransformToVisual(v, window)!.Value);
-            var columnBox = InWindow(column);
+            var columnBox = InWindow(tray);
+            // Squeeze the tabs like the old narrow column, so they wrap onto several rows.
+            tabs.MaxWidth = 150;
+            Pump();
             var rowBox = InWindow(tabs);
-            Assert.Equal(230, columnBox.Width, 0.5);
+            // The tray is full width; the tabs sit inside it.
+            Assert.True(columnBox.Width > 600, $"tray width {columnBox.Width}");
             var items = Enumerable.Range(0, tabs.ItemCount).Select(i => (ListBoxItem)tabs.ContainerFromIndex(i)!).ToList();
             var boxes = items.Select(InWindow).ToList();
             for (var i = 0; i < items.Count; i++)
@@ -1962,7 +1966,7 @@ public class RenderTests
                 Assert.True(Math.Abs(box.Top - previous.Top) < 0.5 ? box.Left >= previous.Right - 0.5 : box.Top >= previous.Bottom - 0.5,
                     $"tab {i} {box} overlaps or precedes {previous}");
             }
-            Assert.True(boxes.Select(b => Math.Round(b.Top)).Distinct().Count() >= 2);
+            Assert.True(boxes.Select(b => Math.Round(b.Top)).Distinct().Count() >= 2, "the squeezed tabs should wrap");
             var suffix = dark ? "dark" : "light";
             Save(window, $"toolbar-tabs-{language}-{suffix}.png");
 
@@ -2020,7 +2024,7 @@ public class RenderTests
             var scroller = window.FindControl<ScrollViewer>("PageScroller")!;
             Assert.True(last.IsEffectivelyVisible);
             Assert.True(InWindow(scroller).Intersects(InWindow(last)));
-            Assert.True(InWindow(last).Right <= InWindow(column).Right + 0.5);
+            Assert.True(InWindow(last).Right <= InWindow(tray).Right + 0.5);
             var chips = window.GetVisualDescendants().OfType<Border>().Where(b => b.DataContext is PaletteChip && b.Classes.Contains("chip"))
                 .Select(b => ((PaletteChip)b.DataContext!).PresetId).ToList();
             // The last tab is Font: font presets, no image or archive ones.

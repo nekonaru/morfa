@@ -37,6 +37,9 @@ public class ToolbarPaletteViewTests
             Window = new Window { Width = 1080, Height = 820, Content = new ScrollViewer { Content = Page } };
             Window.Show();
             RenderTests.Pump();
+            // The palette tray sits below the fold: scroll to it, so clicks land in window coordinates.
+            Page.FindControl<ListBox>("PaletteTabs")!.BringIntoView();
+            RenderTests.Pump();
         }
 
         public ToolbarPage Page { get; }
@@ -173,7 +176,7 @@ public class ToolbarPaletteViewTests
         var everything = Profile("tabs-all");
         f.Store.Profiles.Add(everything);
         vm.Profiles.Add(new ProfileItemViewModel(everything, f.Loc));
-        var profiles = view.Page.GetVisualDescendants().OfType<ListBox>().Single(l => l.Classes.Contains("soft"));
+        var profiles = view.Page.GetVisualDescendants().OfType<ListBox>().Single(l => l.Classes.Contains("pill"));
         profiles.SelectedItem = vm.Profiles[^1];
         RenderTests.Pump();
         Assert.Equal(Enum.GetValues<PaletteTab>(), view.TabIds);
@@ -457,7 +460,7 @@ public class ToolbarPaletteViewTests
         Dispatcher.UIThread.RunJobs();
         using var view = new View(vm);
         var faces = view.Page.FindControl<Border>("FaceSwitch")!.GetVisualDescendants().OfType<RadioButton>().ToList();
-        var profiles = view.Page.GetVisualDescendants().OfType<ListBox>().Single(l => l.Classes.Contains("soft"));
+        var profiles = view.Page.GetVisualDescendants().OfType<ListBox>().Single(l => l.Classes.Contains("pill"));
         Assert.Equal([PaletteTab.All, PaletteTab.Media, PaletteTab.Edit], view.TabIds);
         // PNG judged once: going there later shows its tabs (Video & audio too) at once, so only the reset makes it All.
         profiles.SelectedItem = vm.Profiles.Single(p => p.Profile == png);
