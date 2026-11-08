@@ -19,11 +19,12 @@
       <Setter Property="ZIndex" Value="1" />
     </Style>
   </UserControl.Styles>
-  <!-- Keep editor columns usable on narrow windows; the page still scrolls vertically in MainWindow. -->
-  <ScrollViewer x:Name="EditorScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-    <StackPanel Spacing="18" MinWidth="660" Width="{Binding #EditorScroller.Viewport.Width}" HorizontalAlignment="Left">
-      <DockPanel>
-        <Button DockPanel.Dock="Right" Command="{Binding RecheckCommand}">
+
+  <!-- Segmented switch: Optional packages, or the priority order. Both stay one tap away. -->
+  <ScrollViewer x:Name="EditorScroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+    <Grid RowDefinitions="Auto,Auto,*">
+      <DockPanel Margin="0,0,0,14">
+        <Button DockPanel.Dock="Right" VerticalAlignment="Center" Command="{Binding RecheckCommand}">
           <StackPanel Orientation="Horizontal" Spacing="6">
             <PathIcon Width="13" Height="13" Data="{StaticResource Icon.Refresh}" />
             <TextBlock Text="{DynamicResource engines.recheck}" />
@@ -35,47 +36,36 @@
         </StackPanel>
       </DockPanel>
 
-      <!-- Optional engines: downloaded on demand because they are large. -->
-      <StackPanel Spacing="10">
-        <StackPanel Spacing="2">
-          <TextBlock Classes="h2" Text="{DynamicResource engines.optional_title}" />
-          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{DynamicResource engines.optional_description}" />
+      <Border Grid.Row="1" Classes="faces" HorizontalAlignment="Left" Margin="0,0,0,18">
+        <StackPanel Orientation="Horizontal">
+          <RadioButton x:Name="OptionalSegment" Classes="face" GroupName="EngineSegments" IsChecked="True">
+            <TextBlock Text="{DynamicResource engines.optional_title}" />
+          </RadioButton>
+          <RadioButton x:Name="PrioritySegment" Classes="face" GroupName="EngineSegments">
+            <TextBlock Text="{DynamicResource engines.all_title}" />
+          </RadioButton>
         </StackPanel>
+      </Border>
+
+      <!-- Optional engines: downloaded on demand because they are large -->
+      <StackPanel Grid.Row="2" Spacing="10" IsVisible="{Binding #OptionalSegment.IsChecked}">
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="{DynamicResource engines.optional_description}" />
         <ItemsControl ItemsSource="{Binding Packages}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel Spacing="10" />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="svc:EnginePackageState">
-              <Border Classes="card" Padding="16,12">
-                <DockPanel>
-                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="12,0,0,0">
-                    <Button IsVisible="{Binding HasSettings}" Click="OnPackageSettings" ToolTip.Tip="{DynamicResource engines.lo_title}">
-                      <StackPanel Orientation="Horizontal" Spacing="6">
-                        <PathIcon Width="13" Height="13" Data="{StaticResource Icon.Settings}" />
-                        <TextBlock Text="{DynamicResource engines.settings}" />
-                      </StackPanel>
-                    </Button>
-                    <Button Classes="accent" Content="{DynamicResource engines.install}" IsVisible="{Binding CanInstall}"
-                            Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).InstallCommand}" CommandParameter="{Binding}" />
-                    <Button Classes="accent" Content="{DynamicResource engines.update}" IsVisible="{Binding CanUpdate}"
-                            Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).InstallCommand}" CommandParameter="{Binding}" />
-                    <Button Content="{DynamicResource engines.cancel}" IsVisible="{Binding IsBusy}"
-                            Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).CancelCommand}" CommandParameter="{Binding}" />
-                    <Button Content="{DynamicResource engines.use_own}" IsVisible="{Binding CanUseOwnCopy}" Click="OnUseOwnCopy"
-                            ToolTip.Tip="{DynamicResource engines.use_own_hint}" />
-                    <Button Content="{DynamicResource engines.stop_own}" IsVisible="{Binding UsesOwnCopy}" Click="OnStopOwnCopy" />
-                    <Button Content="{DynamicResource engines.remove}" IsVisible="{Binding CanRemove}" Click="OnRemove" />
-                  </StackPanel>
-                  <StackPanel Spacing="4">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                      <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                      <Border Classes="badge">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="svc:EnginePackageState">
+                <Border Classes="panel" Width="468" Margin="0,0,14,14">
+                  <StackPanel Spacing="6">
+                    <DockPanel>
+                      <Border Classes="badge" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="10,0,0,0">
                         <TextBlock Classes="caption" Text="{Binding StatusText}" />
                       </Border>
-                    </StackPanel>
+                      <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" Text="{Binding Name}" />
+                    </DockPanel>
                     <TextBlock Classes="caption" TextWrapping="Wrap" Text="{Binding Description}" />
                     <TextBlock Classes="caption" Text="{Binding Sizes}" IsVisible="{Binding !UsesOwnCopy}" />
                     <TextBlock Classes="caption" TextWrapping="Wrap" Text="{Binding InstallGuidance}"
@@ -85,66 +75,82 @@
                                IsVisible="{Binding UpdateNote, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                     <ProgressBar Classes="soft" Maximum="100" Value="{Binding Progress}" IsVisible="{Binding IsBusy}" Margin="0,4,0,0" />
                     <TextBlock Classes="caption" Text="{Binding ProgressDetail}" IsVisible="{Binding ProgressDetail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <WrapPanel Margin="0,4,0,0">
+                      <Button IsVisible="{Binding HasSettings}" Click="OnPackageSettings" ToolTip.Tip="{DynamicResource engines.lo_title}" Margin="0,0,6,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                          <PathIcon Width="13" Height="13" Data="{StaticResource Icon.Settings}" />
+                          <TextBlock Text="{DynamicResource engines.settings}" />
+                        </StackPanel>
+                      </Button>
+                      <Button Classes="accent" Content="{DynamicResource engines.install}" IsVisible="{Binding CanInstall}"
+                              Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).InstallCommand}" CommandParameter="{Binding}" Margin="0,0,6,6" />
+                      <Button Classes="accent" Content="{DynamicResource engines.update}" IsVisible="{Binding CanUpdate}"
+                              Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).InstallCommand}" CommandParameter="{Binding}" Margin="0,0,6,6" />
+                      <Button Content="{DynamicResource engines.cancel}" IsVisible="{Binding IsBusy}"
+                              Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).CancelCommand}" CommandParameter="{Binding}" Margin="0,0,6,6" />
+                      <Button Content="{DynamicResource engines.use_own}" IsVisible="{Binding CanUseOwnCopy}" Click="OnUseOwnCopy"
+                              ToolTip.Tip="{DynamicResource engines.use_own_hint}" Margin="0,0,6,6" />
+                      <Button Content="{DynamicResource engines.stop_own}" IsVisible="{Binding UsesOwnCopy}" Click="OnStopOwnCopy" Margin="0,0,6,6" />
+                      <Button Content="{DynamicResource engines.remove}" IsVisible="{Binding CanRemove}" Click="OnRemove" Margin="0,0,6,6" />
+                    </WrapPanel>
                   </StackPanel>
-                </DockPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <!-- Every engine in priority order: drag a card (or use the arrows) to change it -->
+      <StackPanel Grid.Row="2" Spacing="10" IsVisible="{Binding #PrioritySegment.IsChecked}">
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="{DynamicResource engines.all_description}" />
+        <ItemsControl x:Name="EngineList" ItemsSource="{Binding Engines}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Spacing="10" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:EngineItemViewModel">
+              <Border Classes="card engine" Classes.dragging="{Binding IsDragging}" Padding="16,12" Cursor="SizeNorthSouth"
+                      PointerPressed="OnEnginePressed">
+                <StackPanel Spacing="10">
+                  <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                      <Button Classes="icon" ToolTip.Tip="{DynamicResource engines.move_up}"
+                              Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).MoveUpCommand}" CommandParameter="{Binding}">
+                        <PathIcon Width="14" Height="14" Data="{StaticResource Icon.ArrowUp}" />
+                      </Button>
+                      <Button Classes="icon" ToolTip.Tip="{DynamicResource engines.move_down}"
+                              Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).MoveDownCommand}" CommandParameter="{Binding}">
+                        <PathIcon Width="14" Height="14" Data="{StaticResource Icon.ArrowDown}" />
+                      </Button>
+                    </StackPanel>
+                    <PathIcon DockPanel.Dock="Left" Width="16" Height="16" Margin="0,0,8,0" Opacity="0.4" VerticalAlignment="Center"
+                              Data="{StaticResource Icon.DragVertical}" />
+                    <Border DockPanel.Dock="Left" Width="10" Height="10" CornerRadius="999" Margin="2,0,12,0" VerticalAlignment="Center"
+                            Background="{DynamicResource SuccessBrush}" IsVisible="{Binding IsAvailable}" />
+                    <Border DockPanel.Dock="Left" Width="10" Height="10" CornerRadius="999" Margin="2,0,12,0" VerticalAlignment="Center"
+                            Background="{DynamicResource TextSecondaryBrush}" IsVisible="{Binding !IsAvailable}" />
+                    <StackPanel Spacing="3" ToolTip.Tip="{Binding Detail}">
+                      <WrapPanel Orientation="Horizontal">
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                        <Border Classes="badge" Margin="0,0,8,0">
+                          <TextBlock Classes="caption" Text="{Binding StatusText}" />
+                        </Border>
+                        <TextBlock Classes="caption" VerticalAlignment="Center" Margin="0,0,8,0" Text="{Binding Version}"
+                                   IsVisible="{Binding Version, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        <TextBlock Classes="caption" VerticalAlignment="Center" Text="{Binding Conversions}" />
+                      </WrapPanel>
+                      <TextBlock Classes="caption" TextWrapping="Wrap" Text="{Binding Description}"
+                                 IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
+                  </DockPanel>
+                </StackPanel>
               </Border>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <StackPanel Spacing="2" Margin="0,8,0,0">
-          <TextBlock Classes="h2" Text="{DynamicResource engines.all_title}" />
-          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{DynamicResource engines.all_description}" />
-        </StackPanel>
       </StackPanel>
-
-      <!-- Every engine in priority order: drag a card (or use the arrows) to change it -->
-      <ItemsControl x:Name="EngineList" ItemsSource="{Binding Engines}">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <StackPanel Spacing="10" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:EngineItemViewModel">
-            <Border Classes="card engine" Classes.dragging="{Binding IsDragging}" Padding="16,12" Cursor="SizeNorthSouth"
-                    PointerPressed="OnEnginePressed">
-              <StackPanel Spacing="10">
-                <DockPanel>
-                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
-                    <Button Classes="icon" ToolTip.Tip="{DynamicResource engines.move_up}"
-                            Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).MoveUpCommand}" CommandParameter="{Binding}">
-                      <PathIcon Width="14" Height="14" Data="{StaticResource Icon.ArrowUp}" />
-                    </Button>
-                    <Button Classes="icon" ToolTip.Tip="{DynamicResource engines.move_down}"
-                            Command="{Binding $parent[ItemsControl].((vm:EnginesPageViewModel)DataContext).MoveDownCommand}" CommandParameter="{Binding}">
-                      <PathIcon Width="14" Height="14" Data="{StaticResource Icon.ArrowDown}" />
-                    </Button>
-                  </StackPanel>
-                  <PathIcon DockPanel.Dock="Left" Width="16" Height="16" Margin="0,0,8,0" Opacity="0.4" VerticalAlignment="Center"
-                            Data="{StaticResource Icon.DragVertical}" />
-                  <Border DockPanel.Dock="Left" Width="10" Height="10" CornerRadius="999" Margin="2,0,12,0" VerticalAlignment="Center"
-                          Background="{DynamicResource SuccessBrush}" IsVisible="{Binding IsAvailable}" />
-                  <Border DockPanel.Dock="Left" Width="10" Height="10" CornerRadius="999" Margin="2,0,12,0" VerticalAlignment="Center"
-                          Background="{DynamicResource TextSecondaryBrush}" IsVisible="{Binding !IsAvailable}" />
-                  <StackPanel Spacing="3" ToolTip.Tip="{Binding Detail}">
-                    <WrapPanel Orientation="Horizontal">
-                      <TextBlock FontWeight="SemiBold" Text="{Binding Name}" Margin="0,0,10,0" VerticalAlignment="Center" />
-                      <Border Classes="badge" Margin="0,0,8,0">
-                        <TextBlock Classes="caption" Text="{Binding StatusText}" />
-                      </Border>
-                      <TextBlock Classes="caption" VerticalAlignment="Center" Margin="0,0,8,0" Text="{Binding Version}"
-                                 IsVisible="{Binding Version, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                      <TextBlock Classes="caption" VerticalAlignment="Center" Text="{Binding Conversions}" />
-                    </WrapPanel>
-                    <TextBlock Classes="caption" TextWrapping="Wrap" Text="{Binding Description}"
-                               IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                  </StackPanel>
-                </DockPanel>
-              </StackPanel>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </StackPanel>
+    </Grid>
   </ScrollViewer>
 </UserControl>

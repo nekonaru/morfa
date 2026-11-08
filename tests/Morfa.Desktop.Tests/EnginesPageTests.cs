@@ -44,6 +44,9 @@ public class EnginesPageTests
         try
         {
             var page = window.GetVisualDescendants().OfType<EnginesPage>().Single();
+            var priority = page.FindControl<RadioButton>("PrioritySegment")!;
+            priority.IsChecked = true;
+            Pump();
             var engines = ((EnginesPageViewModel)page.DataContext!).Engines;
             var (first, second, third) = (engines[0], engines[1], engines[2]);
             var list = page.FindControl<ItemsControl>("EngineList")!;
