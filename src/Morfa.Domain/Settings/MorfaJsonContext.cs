@@ -26,7 +26,9 @@ internal sealed partial class MorfaJsonContext : JsonSerializerContext;
 /// <summary>File format used to import / export presets and profiles.</summary>
 public sealed class PresetBundle
 {
-    public int SchemaVersion { get; set; } = 1;
+    public const int CurrentSchemaVersion = 1;
+
+    public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public List<Preset> Presets { get; set; } = [];
     public List<ToolbarProfile> Profiles { get; set; } = [];
 }

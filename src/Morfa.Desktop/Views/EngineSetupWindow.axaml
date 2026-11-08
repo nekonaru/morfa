@@ -60,8 +60,8 @@
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
           <!-- Esc is "Later" / "Continue in background" / "Done", like Cancel and Close in the other dialogs. -->
-          <Button x:Name="CloseButton" Content="{Binding CloseText}" Command="{Binding CloseCommand}" IsCancel="True" />
-          <Button x:Name="InstallButton" Classes="accent" Content="{DynamicResource setup.install}" Command="{Binding InstallCommand}"
+          <Button x:Name="CloseButton" Classes="accent" Content="{Binding CloseText}" Command="{Binding CloseCommand}" IsCancel="True" />
+          <Button x:Name="InstallButton" Content="{DynamicResource setup.install}" Command="{Binding InstallCommand}"
                   IsVisible="{Binding CanChoose}" />
         </StackPanel>
         <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding SelectionText}" IsVisible="{Binding CanChoose}" />

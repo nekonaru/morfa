@@ -2,6 +2,7 @@
 
 using System.Collections.ObjectModel;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,6 +12,7 @@ using Morfa.Domain.Formats;
 using Morfa.Domain.History;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
+using Morfa.Domain.Presets;
 using Morfa.Domain.Settings;
 
 namespace Morfa.Desktop.ViewModels.Pages;
@@ -204,6 +206,39 @@ public sealed partial class HomePageViewModel : ObservableObject, IDisposable
     /// it, from the whole history (<see cref="AppSettings.HistoryLimit"/>), not just the ones listed without it.
     /// </summary>
     [ObservableProperty] private string _search = "";
+
+    /// <summary>Whether the sample card shows (empty history only, and only where converting can run).</summary>
+    public bool ShowTrySample => IsEmpty && _conversions is not null;
+
+    partial void OnIsEmptyChanged(bool value) => OnPropertyChanged(nameof(ShowTrySample));
+
+    /// <summary>Copies the built-in sample to a temp file and converts it (so first-run users can try Morfa).</summary>
+    [RelayCommand(CanExecute = nameof(CanTrySample))]
+    private void TrySample()
+    {
+        if (_conversions is null || TrySampleBusy)
+            return;
+        var path = SampleFiles.Copy();
+        if (path is null)
+            return;
+        TrySampleBusy = true;
+        try
+        {
+            var preset = _store.Presets.FirstOrDefault(p => p.Id == "to-jpg")
+                ?? Morfa.Domain.Presets.BuiltInData.CreatePresets().Single(p => p.Id == "to-jpg");
+            _conversions.Start([path], preset);
+        }
+        finally
+        {
+            TrySampleBusy = false;
+        }
+    }
+
+    private bool CanTrySample() => !TrySampleBusy;
+
+    [ObservableProperty] private bool _trySampleBusy;
+
+    partial void OnTrySampleBusyChanged(bool value) => TrySampleCommand.NotifyCanExecuteChanged();
 
     partial void OnSearchChanged(string value) => Reload();
 

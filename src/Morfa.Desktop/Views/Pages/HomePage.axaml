@@ -69,6 +69,20 @@
       </StackPanel>
     </Border>
 
+    <!-- Try it first: a built-in picture anyone can convert without having a file of their own. -->
+    <Border Classes="card" Padding="14,12" IsVisible="{Binding ShowTrySample}">
+      <DockPanel>
+        <Image Source="avares://Morfa/Assets/Sample/sample.png" Width="110" Height="74" Stretch="UniformToFill"
+               VerticalAlignment="Center" Margin="0,0,14,0" />
+        <Button DockPanel.Dock="Right" Classes="accent" VerticalAlignment="Center" Margin="14,0,0,0"
+                Content="{DynamicResource home.try_sample_button}" Command="{Binding TrySampleCommand}" />
+        <StackPanel Spacing="4">
+          <TextBlock FontWeight="SemiBold" Text="{DynamicResource home.try_sample}" />
+          <TextBlock Classes="caption" TextWrapping="Wrap" Text="{DynamicResource home.try_sample_hint}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
     <!-- Recent conversions -->
     <StackPanel Spacing="10">
       <DockPanel>

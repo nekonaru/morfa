@@ -228,6 +228,8 @@ public sealed class UserDataStore
         using var stream = File.OpenRead(path);
         var bundle = JsonSerializer.Deserialize(stream, MorfaJsonContext.Default.PresetBundle)
                      ?? throw new InvalidDataException("Empty preset bundle.");
+        if (bundle.SchemaVersion > PresetBundle.CurrentSchemaVersion)
+            throw new InvalidDataException($"This bundle was exported by a newer version of Morfa (format {bundle.SchemaVersion}).");
 
         foreach (var preset in bundle.Presets)
         {

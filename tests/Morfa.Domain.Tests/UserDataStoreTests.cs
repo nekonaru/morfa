@@ -1542,6 +1542,19 @@ public class UserDataStoreTests
     }
 
     [Fact]
+    public void Importing_a_newer_schema_version_is_refused()
+    {
+        using var dir = new TempDir();
+        var store = new UserDataStore(dir.Path);
+        store.Load();
+        var bundle = Path.Combine(dir.Path, "bundle.json");
+        File.WriteAllText(bundle, """{ "schemaVersion": 99, "presets": [], "profiles": [] }""");
+
+        var ex = Assert.Throws<InvalidDataException>(() => store.Import(bundle));
+        Assert.Contains("newer version", ex.Message);
+    }
+
+    [Fact]
     public void Spreadsheet_profile_is_not_added_when_a_user_profile_takes_spreadsheets()
     {
         var profiles = BuiltInData.CreateProfiles().Where(p => p.Id is not ("spreadsheets" or "presentations")).ToList();
