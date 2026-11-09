@@ -1,6 +1,21 @@
-# Changelog
+﻿# Changelog
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
+
+## v1.2.0
+
+Seluruh jendela utama Morfa dan setiap halamannya menjalani desain ulang: navigasi dua tingkat di bar atas, tata letak yang berbeda untuk setiap halaman, dan panel yang menumpuk di bawah konten utama ketika jendela sempit.
+
+## Peningkatan
+
+- **Bar atas dua tingkat.** Sidebar hilang: baris pertama memuat logo, empat grup serta tombol unduhan, GitHub, Sponsor dan versi; baris kedua menampilkan halaman-halaman grup yang dipilih dan mengingat halaman terakhir yang dipakai.
+- **Tata letak yang khas per halaman.** Home dibuka dengan drop zone yang lebih besar dan kolom konversi terbaru; editor donut dibangun dengan baris pill profil dan tray palet penuh; preset menjadi galeri kartu di sebelah editor; shortcut dibuka dengan strip status hook dan dua panel bawah; folder pantau menjadi aliran panel; Mesin beralih antara paket opsional dan urutan prioritas; Tema mendapat pratinjau langsung yang tetap terlihat saat kamu menggulir; Umum mendaftar bagian-bagiannya dalam daftar isi; Tentang dibuka dengan hero dan tiga panel berdampingan.
+- **Panel menumpuk saat jendela sempit.** Pada lebar minimum, panel samping turun ke bawah konten utama alih-alih menciut atau bergulir ke samping.
+
+## Perbaikan bug
+
+- **Halaman toolbar donut dibuka dari bagian atas.** Tab palet tidak lagi menggulir halaman ke bawah ke tab yang dipilih.
+
 
 ## v1.1.0
 
@@ -51,3 +66,4 @@ Rilis mandiri pertama Morfa: konverter file drag-and-drop, digarap ulang dari so
 - **Terinspirasi Filee.** Morfa adalah reimplementasi yang terinspirasi dari [Filee](https://github.com/KnifeLemon/Filee), digarap ulang menjadi proyeknya sendiri dengan namespace, struktur dan identitasnya sendiri. Katalog engine converter, pipeline dan desain toolbar donut berasal dari source Filee yang berlisensi MIT.
 - **Konversi paralel.** Banyak file dikonversi sekaligus, dan rute multi-langkah (HWP ke HWPX ke DOCX) ditemukan otomatis.
 - **Konversi terbaru.** Setiap hasil muncul di Home dengan thumbnail.
+

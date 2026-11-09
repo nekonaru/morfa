@@ -1,6 +1,21 @@
-# Changelog
+﻿# Changelog
 
 What changed in each version of Morfa. Newest version on top.
+
+## v1.2.0
+
+Morfa's whole main window and every page were redesigned: two-tier top navigation, a distinct layout per page, and panels that stack below the main content when the window is narrow.
+
+## Improvements
+
+- **Two-tier top bar.** The sidebar is gone: the first row carries the brand, the four groups and the download, GitHub, Sponsor and version tools; the second row shows the pages of the selected group and remembers the last one you used.
+- **A distinct layout per page.** Home opens with a bigger drop zone and a recent-conversions column; the donut toolbar editor is built around a profile pill row and a full-width palette tray; presets are a card gallery next to the editor; shortcuts open on a hook status strip with two bottom panels; watch folders are a flow of panels; engines switch between optional packages and the priority order; theme gains a live preview that stays visible while you scroll; general lists its sections in a table of contents; about opens with a hero and three panels side by side.
+- **Panels stack when the window is narrow.** At the minimum width, the side panels drop below the main content instead of squeezing or scrolling sideways.
+
+## Bug fixes
+
+- **The donut toolbar page opens at the top.** The palette tabs no longer scroll the page down to the selected tab.
+
 
 ## v1.1.0
 
@@ -51,3 +66,4 @@ Morfa's first standalone release: the drag-and-drop file converter, reworked fro
 - **Inspired by Filee.** Morfa is a reimplementation inspired by [Filee](https://github.com/KnifeLemon/Filee), reworked into its own project with its own namespaces, structure and identity. The converter engine catalog, pipeline and donut toolbar design come from Filee's MIT-licensed source.
 - **Parallel conversions.** Many files convert at once, and multi-step routes (HWP to HWPX to DOCX) are found automatically.
 - **Recent conversions.** Every result shows on Home with a thumbnail.
+

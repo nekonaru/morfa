@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
   <img src="src/Morfa.Desktop/Assets/Icons/morfa.png" alt="Morfa logo" width="120" />
   <h1>Morfa: Drag. Drop. Converted.</h1>
   <p><b>Hold a key, drag your files and drop them on a format in the donut that opens at your cursor.<br/>
@@ -150,7 +150,7 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 ### Option A: Windows installer (easiest)
 
 1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
-2. Download `Morfa-1.1.0-win-Setup.exe`.
+2. Download `Morfa-1.2.0-win-Setup.exe`.
 3. Double-click the downloaded file.
 4. Windows SmartScreen opens **"Windows protected your PC"**. The build is not code-signed yet, so this is expected. Click **More info**, then **Run anyway**.
 5. The Morfa Setup window appears.
@@ -166,7 +166,7 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 Silent install (for scripts and winget-style manifests):
 
 ```powershell
-Morfa-1.1.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+Morfa-1.2.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
 Useful switches:
@@ -186,7 +186,7 @@ If the installer does nothing or shows an error, run it as administrator.
 
 ### Option B: Windows portable (no installer)
 
-1. Download `Morfa-1.1.0-win-Portable.zip`.
+1. Download `Morfa-1.2.0-win-Portable.zip`.
 2. Extract it to a folder of your choice (for example `D:\Morfa`).
 3. Double-click `Morfa.exe`.
 
@@ -195,11 +195,11 @@ The portable copy does not add shortcuts, the Explorer menu, or the `morfa` comm
 ### Option C: Linux (x64 / ARM64)
 
 1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
-2. Download `Morfa-1.1.0-linux-x64.tar.gz` (or `-arm64.tar.gz` for ARM64).
+2. Download `Morfa-1.2.0-linux-x64.tar.gz` (or `-arm64.tar.gz` for ARM64).
 3. Extract it:
 
 ```bash
-tar xzf Morfa-1.1.0-linux-x64.tar.gz
+tar xzf Morfa-1.2.0-linux-x64.tar.gz
 ```
 
 4. Run `./install.sh`. It installs for your user into `~/.local/share/morfa` (or similar) and adds the `morfa` command.
@@ -211,7 +211,7 @@ tar xzf Morfa-1.1.0-linux-x64.tar.gz
 ### Option D: macOS (Apple Silicon / Intel)
 
 1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
-2. Download `Morfa-1.1.0-osx-arm64.dmg` (Apple Silicon) or `Morfa-1.1.0-osx-x64.dmg` (Intel).
+2. Download `Morfa-1.2.0-osx-arm64.dmg` (Apple Silicon) or `Morfa-1.2.0-osx-x64.dmg` (Intel).
 3. Open the DMG and drag Morfa to Applications.
 4. On first start, allow it in **System Settings > Privacy & Security > Open Anyway**. The app is not notarized.
 
@@ -310,27 +310,27 @@ The app UI (menus, buttons, messages, and settings) is available in **English** 
 
 ```
 morfa/
-├── src/
-│   ├── Morfa.Domain/               # domain model: conversion, formats, presets, settings
-│   ├── Morfa.Converters/            # IConverter implementations, one folder per engine
-│   ├── Morfa.Platforms.Windows/   # Windows platform services
-│   ├── Morfa.Platforms.Linux/     # Linux platform services
-│   ├── Morfa.Platforms.MacOS/     # macOS platform services
-│   ├── Morfa.Desktop/                # the Avalonia desktop app
-│   │   └── Assets/i18n/          # English (en.json) and Indonesian (id.json) strings
-│   ├── Morfa.CommandLine/                # the morfa command line
-│   ├── Morfa.Installer/              # the Windows installer and uninstaller
-│   └── Morfa.ExplorerMenu/       # Windows 11 Explorer menu COM server (plain C)
-├── tests/                        # one test project per layer
-├── build/                        # build, packaging and release scripts
-├── installer/                    # Linux and macOS install assets
-├── docs/                         # architecture and engine documentation
-├── Directory.Build.props         # shared MSBuild settings
-├── Directory.Packages.props      # central package versions
-├── Morfa.slnx                    # the solution
-├── LICENSE
-├── README.md                     # main documentation (English)
-└── README.id.md                  # documentation (Bahasa Indonesia)
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ Morfa.Domain/               # domain model: conversion, formats, presets, settings
+â”‚   â”œâ”€â”€ Morfa.Converters/            # IConverter implementations, one folder per engine
+â”‚   â”œâ”€â”€ Morfa.Platforms.Windows/   # Windows platform services
+â”‚   â”œâ”€â”€ Morfa.Platforms.Linux/     # Linux platform services
+â”‚   â”œâ”€â”€ Morfa.Platforms.MacOS/     # macOS platform services
+â”‚   â”œâ”€â”€ Morfa.Desktop/                # the Avalonia desktop app
+â”‚   â”‚   â””â”€â”€ Assets/i18n/          # English (en.json) and Indonesian (id.json) strings
+â”‚   â”œâ”€â”€ Morfa.CommandLine/                # the morfa command line
+â”‚   â”œâ”€â”€ Morfa.Installer/              # the Windows installer and uninstaller
+â”‚   â””â”€â”€ Morfa.ExplorerMenu/       # Windows 11 Explorer menu COM server (plain C)
+â”œâ”€â”€ tests/                        # one test project per layer
+â”œâ”€â”€ build/                        # build, packaging and release scripts
+â”œâ”€â”€ installer/                    # Linux and macOS install assets
+â”œâ”€â”€ docs/                         # architecture and engine documentation
+â”œâ”€â”€ Directory.Build.props         # shared MSBuild settings
+â”œâ”€â”€ Directory.Packages.props      # central package versions
+â”œâ”€â”€ Morfa.slnx                    # the solution
+â”œâ”€â”€ LICENSE
+â”œâ”€â”€ README.md                     # main documentation (English)
+â””â”€â”€ README.id.md                  # documentation (Bahasa Indonesia)
 ```
 
 ---

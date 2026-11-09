@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
   <img src="src/Morfa.Desktop/Assets/Icons/morfa.png" alt="Logo Morfa" width="120" />
   <h1>Morfa: Drag. Drop. Converted.</h1>
   <p><b>Tahan sebuah tombol, tarik file kamu dan jatuhkan ke sebuah format di donut yang terbuka di posisi kursor.<br/>
@@ -150,7 +150,7 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 ### Opsi A: Installer Windows (paling mudah)
 
 1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
-2. Download `Morfa-1.1.0-win-Setup.exe`.
+2. Download `Morfa-1.2.0-win-Setup.exe`.
 3. Klik dua kali file yang di-download.
 4. Windows SmartScreen akan menampilkan **"Windows protected your PC"**. Build ini belum ditandatangani, jadi ini normal. Klik **More info**, lalu **Run anyway**.
 5. Jendela Morfa Setup muncul.
@@ -166,7 +166,7 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 Install senyap (untuk skrip dan manifest seperti winget):
 
 ```powershell
-Morfa-1.1.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+Morfa-1.2.0-win-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
 Switch berguna:
@@ -186,7 +186,7 @@ Jika installer tidak melakukan apa-apa atau menampilkan error, jalankan sebagai 
 
 ### Opsi B: Windows portable (tanpa installer)
 
-1. Download `Morfa-1.1.0-win-Portable.zip`.
+1. Download `Morfa-1.2.0-win-Portable.zip`.
 2. Ekstrak ke folder pilihanmu (misalnya `D:\Morfa`).
 3. Klik dua kali `Morfa.exe`.
 
@@ -195,11 +195,11 @@ Copy portable ini tidak menambahkan shortcut, menu konteks Explorer, dan command
 ### Opsi C: Linux (x64 / ARM64)
 
 1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
-2. Download `Morfa-1.1.0-linux-x64.tar.gz` (atau `-arm64.tar.gz` untuk ARM64).
+2. Download `Morfa-1.2.0-linux-x64.tar.gz` (atau `-arm64.tar.gz` untuk ARM64).
 3. Ekstrak:
 
 ```bash
-tar xzf Morfa-1.1.0-linux-x64.tar.gz
+tar xzf Morfa-1.2.0-linux-x64.tar.gz
 ```
 
 4. Jalankan `./install.sh`. Script ini memasang untuk user kamu ke `~/.local/share/morfa` (atau lokasi serupa) dan menambahkan commandline `morfa`.
@@ -211,7 +211,7 @@ tar xzf Morfa-1.1.0-linux-x64.tar.gz
 ### Opsi D: macOS (Apple Silicon / Intel)
 
 1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
-2. Download `Morfa-1.1.0-osx-arm64.dmg` (Apple Silicon) atau `Morfa-1.1.0-osx-x64.dmg` (Intel).
+2. Download `Morfa-1.2.0-osx-arm64.dmg` (Apple Silicon) atau `Morfa-1.2.0-osx-x64.dmg` (Intel).
 3. Buka DMG dan seret Morfa ke Applications.
 4. Pada peluncuran pertama, izinkan lewat **Pengaturan Sistem > Privasi & Keamanan > Buka Anyway**. Aplikasi tidak di-notarize.
 
@@ -312,27 +312,27 @@ UI aplikasi (menu, tombol, pesan, dan pengaturan) tersedia dalam **English** (de
 
 ```
 morfa/
-├── src/
-│   ├── Morfa.Domain/               # model domain: conversion, formats, presets, settings
-│   ├── Morfa.Converters/            # implementasi IConverter, satu folder per engine
-│   ├── Morfa.Platforms.Windows/   # layanan platform Windows
-│   ├── Morfa.Platforms.Linux/     # layanan platform Linux
-│   ├── Morfa.Platforms.MacOS/     # layanan platform macOS
-│   ├── Morfa.Desktop/                # aplikasi desktop Avalonia
-│   │   └── Assets/i18n/          # string English (en.json) dan Indonesia (id.json)
-│   ├── Morfa.CommandLine/                # command line morfa
-│   ├── Morfa.Installer/              # installer dan uninstaller Windows
-│   └── Morfa.ExplorerMenu/       # COM server menu Explorer Windows 11 (C murni)
-├── tests/                        # satu proyek test per layer
-├── build/                        # skrip build, packaging dan rilis
-├── installer/                    # aset instalasi Linux dan macOS
-├── docs/                         # dokumentasi arsitektur dan engine
-├── Directory.Build.props         # pengaturan MSBuild bersama
-├── Directory.Packages.props      # versi paket terpusat
-├── Morfa.slnx                    # solusi
-├── LICENSE
-├── README.md                     # dokumentasi utama (English)
-└── README.id.md                  # dokumentasi (Bahasa Indonesia)
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ Morfa.Domain/               # model domain: conversion, formats, presets, settings
+â”‚   â”œâ”€â”€ Morfa.Converters/            # implementasi IConverter, satu folder per engine
+â”‚   â”œâ”€â”€ Morfa.Platforms.Windows/   # layanan platform Windows
+â”‚   â”œâ”€â”€ Morfa.Platforms.Linux/     # layanan platform Linux
+â”‚   â”œâ”€â”€ Morfa.Platforms.MacOS/     # layanan platform macOS
+â”‚   â”œâ”€â”€ Morfa.Desktop/                # aplikasi desktop Avalonia
+â”‚   â”‚   â””â”€â”€ Assets/i18n/          # string English (en.json) dan Indonesia (id.json)
+â”‚   â”œâ”€â”€ Morfa.CommandLine/                # command line morfa
+â”‚   â”œâ”€â”€ Morfa.Installer/              # installer dan uninstaller Windows
+â”‚   â””â”€â”€ Morfa.ExplorerMenu/       # COM server menu Explorer Windows 11 (C murni)
+â”œâ”€â”€ tests/                        # satu proyek test per layer
+â”œâ”€â”€ build/                        # skrip build, packaging dan rilis
+â”œâ”€â”€ installer/                    # aset instalasi Linux dan macOS
+â”œâ”€â”€ docs/                         # dokumentasi arsitektur dan engine
+â”œâ”€â”€ Directory.Build.props         # pengaturan MSBuild bersama
+â”œâ”€â”€ Directory.Packages.props      # versi paket terpusat
+â”œâ”€â”€ Morfa.slnx                    # solusi
+â”œâ”€â”€ LICENSE
+â”œâ”€â”€ README.md                     # dokumentasi utama (English)
+â””â”€â”€ README.id.md                  # dokumentasi (Bahasa Indonesia)
 ```
 
 ---
