@@ -12,16 +12,16 @@
     <ResourceDictionary>
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-          <SolidColorBrush x:Key="PageBrush" Color="#F6F5F1" />
+          <SolidColorBrush x:Key="PageBrush" Color="#F8F7F3" />
           <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-          <SolidColorBrush x:Key="SurfaceAltBrush" Color="#EFEDE6" />
-          <SolidColorBrush x:Key="SubtleBorderBrush" Color="#16000000" />
-          <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1F1E1D" />
-          <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6B6A66" />
+          <SolidColorBrush x:Key="SurfaceAltBrush" Color="#ECEBE6" />
+          <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1F1E1A0F" />
+          <SolidColorBrush x:Key="TextPrimaryBrush" Color="#201F1D" />
+          <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6E6B64" />
           <SolidColorBrush x:Key="DangerBrush" Color="#C73A39" />
           <SolidColorBrush x:Key="SuccessBrush" Color="#0F7A5A" />
           <SolidColorBrush x:Key="WarningBrush" Color="#9A5B0C" />
-          <BoxShadows x:Key="CardShadow">0 1 3 0 #12000000, 0 6 18 0 #0D000000</BoxShadows>
+          <BoxShadows x:Key="CardShadow">0 1 2 0 #14000000, 0 8 18 0 #10000000</BoxShadows>
           <SolidColorBrush x:Key="AccentBrush" Color="#0EA5A4" />
           <SolidColorBrush x:Key="AccentSoftBrush" Color="#2E0EA5A4" />
           <SolidColorBrush x:Key="AccentFaintBrush" Color="#170EA5A4" />
@@ -29,16 +29,16 @@
           <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
-          <SolidColorBrush x:Key="PageBrush" Color="#1B1B19" />
-          <SolidColorBrush x:Key="SurfaceBrush" Color="#262624" />
-          <SolidColorBrush x:Key="SurfaceAltBrush" Color="#31312E" />
-          <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1CFFFFFF" />
-          <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F1EFE8" />
-          <SolidColorBrush x:Key="TextSecondaryBrush" Color="#AEACA4" />
+          <SolidColorBrush x:Key="PageBrush" Color="#161512" />
+          <SolidColorBrush x:Key="SurfaceBrush" Color="#1F1E1C" />
+          <SolidColorBrush x:Key="SurfaceAltBrush" Color="#242321" />
+          <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1DFFFFFF" />
+          <SolidColorBrush x:Key="TextPrimaryBrush" Color="#ECEBE7" />
+          <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A5A29A" />
           <SolidColorBrush x:Key="DangerBrush" Color="#F09595" />
           <SolidColorBrush x:Key="SuccessBrush" Color="#5DCAA5" />
           <SolidColorBrush x:Key="WarningBrush" Color="#EF9F27" />
-          <BoxShadows x:Key="CardShadow">0 1 3 0 #40000000, 0 8 24 0 #33000000</BoxShadows>
+          <BoxShadows x:Key="CardShadow">0 1 2 0 #56000000, 0 10 22 0 #38000000</BoxShadows>
           <SolidColorBrush x:Key="AccentBrush" Color="#0EA5A4" />
           <SolidColorBrush x:Key="AccentSoftBrush" Color="#2E0EA5A4" />
           <SolidColorBrush x:Key="AccentFaintBrush" Color="#170EA5A4" />
@@ -83,11 +83,11 @@
   </Style>
 
   <Style Selector="TextBlock.h1">
-    <Setter Property="FontSize" Value="24" />
+    <Setter Property="FontSize" Value="23" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="TextBlock.h2">
-    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontSize" Value="15.5" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="TextBlock.muted">
@@ -112,6 +112,18 @@
     <Setter Property="BoxShadow" Value="none" />
   </Style>
 
+  <!-- The two bands of the top bar: a solid surface for the brand and groups, then the sub-page row on the tinted page. -->
+  <Style Selector="Border.chromeband">
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+  <Style Selector="Border.subbar">
+    <Setter Property="Background" Value="{DynamicResource PageBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+
   <!-- Gallery panels (preset list, engines grid): flatter than a floating card. -->
   <Style Selector="Border.panel">
     <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
@@ -127,7 +139,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{DynamicResource SoftRadius}" />
-    <Setter Property="Padding" Value="18,16" />
+    <Setter Property="Padding" Value="16,15" />
     <Setter Property="BoxShadow" Value="{DynamicResource CardShadow}" />
   </Style>
 
@@ -241,8 +253,9 @@
   </Style>
   <Style Selector="ListBox.pill ListBoxItem">
     <Setter Property="CornerRadius" Value="999" />
-    <Setter Property="Padding" Value="14,7" />
-    <Setter Property="Margin" Value="0,0,6,0" />
+    <Setter Property="Padding" Value="13,6" />
+    <Setter Property="Margin" Value="0,0,4,0" />
+    <Setter Property="FontSize" Value="12.5" />
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
@@ -255,6 +268,12 @@
   </Style>
   <Style Selector="ListBox.pill ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentStrongBrush}" />
+  </Style>
+  <Style Selector="ListBox.pill ListBoxItem PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+  </Style>
+  <Style Selector="ListBox.pill ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter PathIcon">
     <Setter Property="Foreground" Value="{DynamicResource AccentStrongBrush}" />
   </Style>
   <Style Selector="ListBox.pill ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">

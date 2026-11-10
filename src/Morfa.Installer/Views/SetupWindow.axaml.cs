@@ -102,7 +102,6 @@ public partial class SetupWindow : Window
         // Links and the version pill: the deeper accent on light, the accent itself on dark (enough contrast on both).
         if (Application.Current?.FindResource(dark ? "AccentBrush" : "AccentStrongBrush") is { } link)
             Resources["Setup.LinkBrush"] = link;
-        Backdrop.Intensity = dark ? 0.22 : 0.30;
     }
 
     private void OnModelChanged(object? sender, PropertyChangedEventArgs e)

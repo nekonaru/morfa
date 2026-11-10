@@ -28,10 +28,16 @@ public sealed partial class NavItem(string key, string titleKey, string iconKey,
     public void Refresh(ILocalizer loc) => Title = loc[TitleKey];
 }
 
-/// <summary>One pill of the top bar row: a group of pages shown in the row below.</summary>
-public sealed record NavGroup(string Key, string TitleKey, IReadOnlyList<NavItem> Items)
+/// <summary>One pill of the top bar row: a group of pages shown in the row below, with its own icon.</summary>
+public sealed partial class NavGroup(string key, string titleKey, string iconKey, IReadOnlyList<NavItem> items) : ObservableObject
 {
-    public string Title { get; set; } = "";
+    public string Key { get; } = key;
+    public string TitleKey { get; } = titleKey;
+    public Geometry? Icon { get; } = Application.Current?.FindResource(iconKey) as Geometry;
+    public IReadOnlyList<NavItem> Items { get; } = items;
+
+    [ObservableProperty] private string _title = "";
+
     public void Refresh(ILocalizer loc) => Title = loc[TitleKey];
 }
 
@@ -71,10 +77,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             item.Refresh(loc);
         Groups =
         [
-            new("home", "nav.group.home", Items.Where(i => i.Group == "home").ToArray()),
-            new("donut", "nav.group.donut", Items.Where(i => i.Group == "donut").ToArray()),
-            new("conversion", "nav.group.conversion", Items.Where(i => i.Group == "conversion").ToArray()),
-            new("app", "nav.group.app", Items.Where(i => i.Group == "app").ToArray()),
+            new("home", "nav.group.home", "Icon.Home", Items.Where(i => i.Group == "home").ToArray()),
+            new("donut", "nav.group.donut", "Icon.Donut", Items.Where(i => i.Group == "donut").ToArray()),
+            new("conversion", "nav.group.conversion", "Icon.Tune", Items.Where(i => i.Group == "conversion").ToArray()),
+            new("app", "nav.group.app", "Icon.Settings", Items.Where(i => i.Group == "app").ToArray()),
         ];
         foreach (var group in Groups)
             group.Refresh(loc);

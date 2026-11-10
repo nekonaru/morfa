@@ -1,4 +1,4 @@
-<!-- Setup's card on top of Morfa's Soft.axaml: big soft buttons, the Options sheet, the window chrome. -->
+<!-- Setup's card on top of Morfa's Soft.axaml: app surfaces, big pill buttons, window chrome. -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -23,22 +23,22 @@
     <Setter Property="FontWeight" Value="Bold" />
   </Style>
 
-  <!-- The card: rounded, with a soft shadow; the window around it is transparent. -->
+  <!-- The card: app surface; the window is full-bleed with a chrome bar on top. -->
   <Style Selector="Border.setupcard">
-    <Setter Property="CornerRadius" Value="{DynamicResource SoftRadiusLarge}" />
-    <Setter Property="BoxShadow" Value="0 10 30 0 #33000000, 0 2 8 0 #1A000000" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
     <Setter Property="ClipToBounds" Value="True" />
   </Style>
 
-  <!-- Window buttons. -->
+  <!-- Window buttons, same language as the app: quiet, rounds behind them on hover. -->
   <Style Selector="Button.chrome">
-    <Setter Property="Width" Value="34" />
+    <Setter Property="Width" Value="36" />
     <Setter Property="Height" Value="28" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SoftRadiusSmall}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Focusable" Value="True" />
@@ -47,6 +47,9 @@
     <Setter Property="Stroke" Value="{DynamicResource TextSecondaryBrush}" />
     <Setter Property="StrokeThickness" Value="1.4" />
     <Setter Property="StrokeLineCap" Value="Round" />
+  </Style>
+  <Style Selector="Button.chrome:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
   </Style>
   <Style Selector="Button.chrome.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource DangerBrush}" />
@@ -81,6 +84,7 @@
     <Setter Property="Padding" Value="10,6" />
     <Setter Property="Foreground" Value="{DynamicResource Setup.LinkBrush}" />
     <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Cursor" Value="Hand" />
   </Style>
   <Style Selector="Button.link Path">
     <Setter Property="Stroke" Value="{DynamicResource Setup.LinkBrush}" />
@@ -89,27 +93,30 @@
     <Setter Property="StrokeJoin" Value="Round" />
   </Style>
 
+  <!-- The version pill: accent tint, strong accent text. -->
   <Style Selector="Border.pill">
     <Setter Property="CornerRadius" Value="999" />
-    <Setter Property="Padding" Value="9,2" />
-    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="Padding" Value="10,2" />
+    <Setter Property="Background" Value="{DynamicResource AccentFaintBrush}" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
   <Style Selector="Border.pill > TextBlock">
     <Setter Property="FontSize" Value="12" />
-    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Foreground" Value="{DynamicResource Setup.LinkBrush}" />
   </Style>
 
   <!-- The Options sheet slides up from the bottom of the card. -->
   <Style Selector="Border.sheet">
     <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1,1,1,0" />
     <Setter Property="CornerRadius" Value="{DynamicResource SoftRadiusLarge}" />
-    <Setter Property="BoxShadow" Value="0 -6 24 0 #26000000" />
+    <Setter Property="BoxShadow" Value="0 -10 34 0 #26000000" />
     <Setter Property="RenderTransform" Value="translateY(460px)" />
     <Setter Property="Transitions">
       <Transitions>
-        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.38" Easing="CubicEaseOut" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.34" Easing="CubicEaseOut" />
       </Transitions>
     </Setter>
   </Style>
@@ -125,6 +132,7 @@
     <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
 
+  <!-- Uninstall settings card uses the app's card style via Classes="card". -->
   <Style Selector="Border.clip">
     <Setter Property="CornerRadius" Value="{DynamicResource SoftRadius}" />
     <Setter Property="ClipToBounds" Value="True" />
@@ -132,12 +140,13 @@
     <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
   </Style>
 
+  <!-- Warning panel: accented hairline, tinted surface. -->
   <Style Selector="Border.warning">
-    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{DynamicResource SoftRadiusSmall}" />
-    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="Padding" Value="12,10" />
   </Style>
 
   <!-- Without animations: no slide, no springy buttons. -->

@@ -1,15 +1,17 @@
-<!-- The states of Setup's card. SetupWindow shows one at a time (crossfading); all bind the same SetupViewModel. -->
+<!-- The states of Setup: the card shows the current state crossfading within the card; all bind the same SetupViewModel. -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="using:Morfa.Installer.ViewModels"
                     xmlns:c="using:Morfa.Installer.Controls"
                     xmlns:shared="using:Morfa.Desktop.Controls">
 
-  <!-- Welcome: the logo assembling, one big button, Options. -->
+  <!-- Welcome: the logo inside an accent-washed tile, the name and version in one line, and a big accent pill. -->
   <DataTemplate x:Key="Setup.Welcome" x:DataType="vm:SetupViewModel">
     <Grid RowDefinitions="*,Auto">
-      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6" MaxWidth="470" Margin="24,0">
-        <c:MorfaLogo Width="96" Height="96" HorizontalAlignment="Center" Margin="0,0,0,10" />
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10" MaxWidth="460" Margin="24,0">
+        <Border HorizontalAlignment="Center" Width="108" Height="108" CornerRadius="54" Background="{DynamicResource AccentFaintBrush}" Margin="0,0,0,4">
+          <c:MorfaLogo Width="88" Height="88" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
           <TextBlock Classes="title" Text="Morfa" />
           <Border Classes="pill">
@@ -17,7 +19,7 @@
           </Border>
         </StackPanel>
         <TextBlock Classes="muted" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding WelcomeText}" />
-        <Button x:Name="PrimaryButton" Classes="big accent" HorizontalAlignment="Center" Margin="0,18,0,2"
+        <Button x:Name="PrimaryButton" Classes="big accent" HorizontalAlignment="Center" Margin="0,10,0,2" MinWidth="220"
                 Content="{Binding PrimaryText}" Command="{Binding InstallCommand}" IsDefault="True" />
         <Button Classes="link" HorizontalAlignment="Center" Command="{Binding ToggleOptionsCommand}">
           <StackPanel Orientation="Horizontal" Spacing="6">
@@ -26,15 +28,15 @@
           </StackPanel>
         </Button>
       </StackPanel>
-      <TextBlock Grid.Row="1" Classes="caption" HorizontalAlignment="Center" Margin="24,0,24,16" TextWrapping="Wrap"
+      <TextBlock Grid.Row="1" Classes="caption" HorizontalAlignment="Center" Margin="24,0,24,14" TextWrapping="Wrap"
                  TextAlignment="Center" Text="{DynamicResource installer.welcome.license}" />
     </Grid>
   </DataTemplate>
 
-  <!-- Installing (and uninstalling): the new version's "What's new" slides, one status line, a thin bar. -->
+  <!-- Installing (and uninstalling): the new version's "What's new" slides, one status line, a thin accent bar. -->
   <DataTemplate x:Key="Setup.Progress" x:DataType="vm:SetupViewModel">
     <Grid RowDefinitions="*,Auto" Margin="32,0,32,26">
-      <shared:SlideShow x:Name="Slides" VerticalAlignment="Center" MaxWidth="520" MediaWidth="304" MediaHeight="171"
+      <shared:SlideShow x:Name="Slides" VerticalAlignment="Center" MaxWidth="520" MediaWidth="312" MediaHeight="176"
                         AutoAdvance="0:0:6" IsVisible="{Binding ShowShowcase}" />
       <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14" IsVisible="{Binding !ShowShowcase}">
         <c:MorfaLogo Width="84" Height="84" HorizontalAlignment="Center" />
@@ -42,7 +44,7 @@
       </StackPanel>
       <StackPanel Grid.Row="1" Spacing="10" Margin="0,8,0,0">
         <DockPanel>
-          <TextBlock DockPanel.Dock="Right" Classes="caption" Margin="12,0,0,0" Text="{Binding Percent, StringFormat={}{0:0}%}" />
+          <TextBlock DockPanel.Dock="Right" Classes="caption" Name="Percent" Margin="12,0,0,0" Text="{Binding Percent, StringFormat={}{0:0}%}" />
           <TextBlock Classes="muted" TextTrimming="CharacterEllipsis" Text="{Binding StatusText}" />
         </DockPanel>
         <c:ShimmerBar x:Name="Bar" Value="{Binding Percent}" Track="{DynamicResource SurfaceAltBrush}" Fill="{DynamicResource AccentBrush}" />
@@ -50,15 +52,15 @@
     </Grid>
   </DataTemplate>
 
-  <!-- Done: the check mark bursts, "Launch Morfa". -->
+  <!-- Done: the check mark bursts, then the way out. -->
   <DataTemplate x:Key="Setup.Done" x:DataType="vm:SetupViewModel">
-    <Grid RowDefinitions="*,Auto" Margin="32,0,32,24">
-      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" MaxWidth="500" Margin="0,0,0,12">
-        <c:CheckBurst Width="88" Height="88" HorizontalAlignment="Center" Fill="{DynamicResource AccentBrush}" Mark="{DynamicResource OnAccentBrush}" />
-        <TextBlock Classes="title" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding DoneTitle}" />
+    <Grid RowDefinitions="*,Auto" Margin="32,0,32,22">
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10" MaxWidth="500" Margin="0,0,0,12">
+        <c:CheckBurst Width="84" Height="84" HorizontalAlignment="Center" Fill="{DynamicResource AccentBrush}" Mark="{DynamicResource OnAccentBrush}" />
+        <TextBlock Classes="title" FontSize="22" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding DoneTitle}" />
         <TextBlock Classes="muted" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding DoneText}" />
         <Border Classes="warning" Margin="0,4,0,0" IsVisible="{Binding WarningText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-          <ScrollViewer MaxHeight="84" HorizontalScrollBarVisibility="Disabled">
+          <ScrollViewer MaxHeight="78" HorizontalScrollBarVisibility="Disabled">
             <SelectableTextBlock FontSize="12.5" TextWrapping="Wrap" Text="{Binding WarningText}" />
           </ScrollViewer>
         </Border>
@@ -66,20 +68,20 @@
       <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
         <Button Classes="soft" Content="{DynamicResource common.close}" Command="{Binding CloseCommand}" />
         <Button x:Name="PrimaryButton" Classes="big accent" Content="{DynamicResource installer.done.launch}"
-                Command="{Binding LaunchAndCloseCommand}" IsDefault="True" />
+                Command="{Binding LaunchAndCloseCommand}" IsDefault="True" MinWidth="190" />
       </StackPanel>
     </Grid>
   </DataTemplate>
 
   <!-- Something went wrong: what, and the details to copy. -->
   <DataTemplate x:Key="Setup.Failed" x:DataType="vm:SetupViewModel">
-    <Grid RowDefinitions="*,Auto" Margin="32,0,32,24">
+    <Grid RowDefinitions="*,Auto" Margin="32,0,32,22">
       <StackPanel VerticalAlignment="Center" Spacing="10" MaxWidth="520" HorizontalAlignment="Center">
         <Border Width="64" Height="64" CornerRadius="32" HorizontalAlignment="Center" Background="{DynamicResource DangerBrush}">
           <TextBlock Text="!" FontSize="34" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>
         <TextBlock Classes="title" FontSize="22" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding ErrorTitle}" />
-        <ScrollViewer MaxHeight="120" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer MaxHeight="118" HorizontalScrollBarVisibility="Disabled">
           <SelectableTextBlock Classes="muted" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding ErrorText}" />
         </ScrollViewer>
         <TextBlock Classes="caption" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding LogText}" />
@@ -99,9 +101,9 @@
 
   <!-- The uninstaller: keep or delete the settings. -->
   <DataTemplate x:Key="Setup.Uninstall" x:DataType="vm:SetupViewModel">
-    <Grid RowDefinitions="*,Auto" Margin="32,0,32,24">
+    <Grid RowDefinitions="*,Auto" Margin="32,0,32,22">
       <StackPanel VerticalAlignment="Center" Spacing="8" MaxWidth="500" HorizontalAlignment="Center">
-        <c:MorfaLogo Width="76" Height="76" HorizontalAlignment="Center" Margin="0,0,0,6" />
+        <c:MorfaLogo Width="72" Height="72" HorizontalAlignment="Center" Margin="0,0,0,4" />
         <TextBlock Classes="title" FontSize="22" TextAlignment="Center" TextWrapping="Wrap" Text="{DynamicResource installer.uninstall.title}" />
         <TextBlock Classes="muted" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding UninstallText}" />
         <Border Classes="card" Padding="14,10" Margin="0,8,0,0">
@@ -115,7 +117,7 @@
       </StackPanel>
       <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
         <Button Classes="soft" Content="{DynamicResource common.cancel}" Command="{Binding CancelCommand}" />
-        <Button x:Name="PrimaryButton" Classes="big accent" MinWidth="160" Content="{DynamicResource installer.uninstall.button}"
+        <Button x:Name="PrimaryButton" Classes="big accent" MinWidth="170" Content="{DynamicResource installer.uninstall.button}"
                 Command="{Binding UninstallCommand}" IsDefault="True" />
       </StackPanel>
     </Grid>
@@ -123,9 +125,9 @@
 
   <!-- Uninstalled. -->
   <DataTemplate x:Key="Setup.Uninstalled" x:DataType="vm:SetupViewModel">
-    <Grid RowDefinitions="*,Auto" Margin="32,0,32,24">
+    <Grid RowDefinitions="*,Auto" Margin="32,0,32,22">
       <StackPanel VerticalAlignment="Center" Spacing="8" MaxWidth="480" HorizontalAlignment="Center">
-        <c:CheckBurst Width="96" Height="96" HorizontalAlignment="Center" Fill="{DynamicResource AccentBrush}" Mark="{DynamicResource OnAccentBrush}" />
+        <c:CheckBurst Width="92" Height="92" HorizontalAlignment="Center" Fill="{DynamicResource AccentBrush}" Mark="{DynamicResource OnAccentBrush}" />
         <TextBlock Classes="title" FontSize="22" TextAlignment="Center" TextWrapping="Wrap" Text="{DynamicResource installer.uninstall.done_title}" />
         <TextBlock Classes="muted" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding UninstalledText}" />
       </StackPanel>

@@ -1,9 +1,8 @@
-<!-- Setup and the uninstaller: one soft card (640×420) on a transparent window, with its own window buttons, a
-     drifting background, the state in the middle (crossfading) and the Options sheet sliding over it. -->
+<!-- Setup and the uninstaller: one flat app-styled window; the current state crossfades inside, the Options sheet
+     slides over the page, and Morfa's look (styles) matches the app. -->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Morfa.Installer.ViewModels"
-        xmlns:c="using:Morfa.Installer.Controls"
         x:Class="Morfa.Installer.Views.SetupWindow"
         x:DataType="vm:SetupViewModel"
         Title="{DynamicResource installer.title}"
@@ -11,17 +10,14 @@
         Width="664" Height="444"
         CanResize="False"
         WindowDecorations="None"
-        Background="Transparent"
-        TransparencyLevelHint="Transparent"
+        Background="{DynamicResource SurfaceBrush}"
         WindowStartupLocation="CenterScreen">
-  <Border x:Name="Card" Classes="setupcard" Margin="12">
+  <Border x:Name="Card" Classes="setupcard" Margin="0">
     <Panel>
-      <c:SoftBackdrop x:Name="Backdrop" Background="{DynamicResource PageBrush}" Accent="{DynamicResource AccentColor}" />
-
       <DockPanel>
         <!-- Window bar: drag to move, minimize, close. -->
-        <Grid x:Name="TitleBar" DockPanel.Dock="Top" Height="42" Background="Transparent" ColumnDefinitions="*,Auto,Auto">
-          <TextBlock Classes="caption" Margin="20,0" VerticalAlignment="Center" Text="{DynamicResource installer.title}" />
+        <Grid x:Name="TitleBar" DockPanel.Dock="Top" Height="42" ColumnDefinitions="*,Auto,Auto">
+          <TextBlock Classes="caption" Margin="18,0" VerticalAlignment="Center" Text="{DynamicResource installer.title}" />
           <Button Grid.Column="1" Classes="chrome" Click="OnMinimize" AutomationProperties.Name="{DynamicResource installer.minimize}"
                   ToolTip.Tip="{DynamicResource installer.minimize}">
             <Path Data="{DynamicResource Setup.Minimize}" Width="12" Height="12" />
