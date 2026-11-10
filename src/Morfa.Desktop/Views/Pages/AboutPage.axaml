@@ -59,7 +59,7 @@
       </StackPanel>
     </Border>
 
-    <!-- The three sections, left to right: sponsors, support, and the third-party notices. -->
+    <!-- The two sections, left to right: sponsors and support. -->
     <WrapPanel>
       <!-- The sponsors right below Morfa itself, while there are any -->
       <Border Classes="card" IsVisible="{Binding #Supporters.IsVisible}" Width="300" Margin="0,0,14,14" VerticalAlignment="Stretch">
@@ -84,15 +84,19 @@
           </WrapPanel>
         </StackPanel>
       </Border>
-      <Border Classes="card" Width="300" Margin="0,0,14,14" VerticalAlignment="Stretch">
-        <!-- The notices are in English: left to right in every language. -->
-        <Expander x:Name="NoticesToggle" IsExpanded="False">
-          <Expander.Header>
-            <TextBlock Classes="h2" Text="{DynamicResource about.notices}" />
-          </Expander.Header>
-          <c:MarkdownView Markdown="{Binding Notices}" SkipTitle="True" FlowDirection="LeftToRight" />
-        </Expander>
-      </Border>
     </WrapPanel>
+
+    <!-- The third-party notices: full width on every window, so the table fits without wrapping per character. -->
+    <Border Classes="card" HorizontalAlignment="Stretch">
+      <!-- The notices are in English: left to right in every language. -->
+      <Expander x:Name="NoticesToggle" IsExpanded="False">
+        <Expander.Header>
+          <TextBlock Classes="h2" Text="{DynamicResource about.notices}" />
+        </Expander.Header>
+        <ScrollViewer MaxHeight="520" HorizontalScrollBarVisibility="Disabled">
+          <c:MarkdownView Markdown="{Binding Notices}" SkipTitle="True" FlowDirection="LeftToRight" />
+        </ScrollViewer>
+      </Expander>
+    </Border>
   </StackPanel>
 </UserControl>
