@@ -3,10 +3,10 @@
 // with the frame and labels, values on the page, QR code and seal pictures), a WPS document (page size only in
 // Document.xml, decimal colours, wrapped body text over two pages), and hostile packages.
 
+using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 using System.Xml.Linq;
-using System.Globalization;
 using ImageMagick;
 using Morfa.Converters.Hwp.Hwpx;
 using Morfa.Converters.Ofd;
