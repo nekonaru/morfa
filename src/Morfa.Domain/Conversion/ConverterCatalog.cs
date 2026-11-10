@@ -34,8 +34,19 @@ public sealed class ConverterCatalog
     }
 
     /// <summary>Converters ordered by priority (for display in settings).</summary>
-    public IReadOnlyList<IConverter> Ordered =>
-        _all.OrderBy(c => PriorityIndex(c)).ThenBy(c => _all.ToList().IndexOf(c)).ToList();
+    public IReadOnlyList<IConverter> Ordered
+    {
+        get
+        {
+            var positions = new Dictionary<string, int>(_priority.Count, StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < _priority.Count; i++) positions.TryAdd(_priority[i], i);
+            return _all
+                .Select((c, index) => (Index: index, Priority: positions.GetValueOrDefault(c.Id, _priority.Count)))
+                .OrderBy(c => c.Priority).ThenBy(c => c.Index)
+                .Select(c => _all[c.Index])
+                .ToList();
+        }
+    }
 
     /// <summary>Cached availability of a converter.</summary>
     public EngineStatus StatusOf(IConverter converter) => Statuses()[converter.Id];

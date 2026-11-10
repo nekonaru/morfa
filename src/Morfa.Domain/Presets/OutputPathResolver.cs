@@ -135,13 +135,17 @@ public static partial class OutputPathResolver
     [GeneratedRegex(@"\{(name|ext|preset|date|time|index)\}", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex Token();
 
+    // Getting the invalid filename chars allocates an array, plus a concat iterator and a hash set, on every
+    // sanitize; keep one frozen set for the process lifetime.
+    private static readonly HashSet<char> InvalidNameChars = new(Path.GetInvalidFileNameChars()
+        .Concat(['<', '>', ':', '"', '/', '\\', '|', '?', '*']));
+
     /// <summary>Removes characters that are invalid in file names on any supported OS.</summary>
     public static string Sanitize(string name, string fallback)
     {
-        var invalid = Path.GetInvalidFileNameChars().Concat(['<', '>', ':', '"', '/', '\\', '|', '?', '*']).ToHashSet();
         var sb = new StringBuilder(name.Length);
         foreach (var c in name)
-            sb.Append(invalid.Contains(c) || char.IsControl(c) ? '_' : c);
+            sb.Append(InvalidNameChars.Contains(c) || char.IsControl(c) ? '_' : c);
 
         var result = sb.ToString().Trim().TrimEnd('.');
         return result.Length == 0 ? fallback : result;
