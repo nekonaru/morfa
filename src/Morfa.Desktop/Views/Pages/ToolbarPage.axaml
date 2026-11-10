@@ -184,7 +184,7 @@
             </StackPanel>
           </Button>
           <TextBox DockPanel.Dock="Right" Classes="search clearButton" VerticalAlignment="Center" Width="180"
-                   Text="{Binding ProfileSearch}" Watermark="{DynamicResource common.search}">
+                   Text="{Binding ProfileSearch}" PlaceholderText="{DynamicResource common.search}">
             <TextBox.InnerLeftContent>
               <PathIcon Width="14" Height="14" Margin="10,0,0,0" Data="{StaticResource Icon.Search}" Foreground="{DynamicResource TextSecondaryBrush}" />
             </TextBox.InnerLeftContent>
@@ -402,7 +402,7 @@
           </DockPanel>
           <DockPanel>
             <TextBox x:Name="PaletteSearchBox" DockPanel.Dock="Left" Classes="search clearButton" VerticalAlignment="Center" Width="180"
-                     Text="{Binding PaletteSearch}" Watermark="{DynamicResource common.search}">
+                     Text="{Binding PaletteSearch}" PlaceholderText="{DynamicResource common.search}">
               <TextBox.InnerLeftContent>
                 <PathIcon Width="14" Height="14" Margin="10,0,0,0" Data="{StaticResource Icon.Search}" Foreground="{DynamicResource TextSecondaryBrush}" />
               </TextBox.InnerLeftContent>
