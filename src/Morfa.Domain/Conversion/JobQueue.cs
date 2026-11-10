@@ -70,8 +70,12 @@ public sealed class JobQueue : IAsyncDisposable
     {
         var job = new ConversionJob(sources, preset, presetDisplayName, fetcher);
         Interlocked.Increment(ref _busy); // until the worker is done with it
-        _channel.Writer.TryWrite(job);
-        JobUpdated?.Invoke(this, job);
+        if (!_channel.Writer.TryWrite(job))
+        {
+            Interlocked.Decrement(ref _busy); // job was not queued (e.g. after shutdown); don't count it as busy
+            _log.LogWarning("Job {Job} was rejected because the queue is closing", job.Id);
+        }
+        Notify(job); // safe raise (handlers can throw); the caller needs the job enqueued regardless
         return job;
     }
 
@@ -152,7 +156,7 @@ public sealed class JobQueue : IAsyncDisposable
         }
 
         Notify(job);
-        JobFinished?.Invoke(this, job);
+        RaiseJobFinished(job);
     }
 
     /// <summary>Share of a fetched file's progress that saving it takes; converting it fills the rest.</summary>
@@ -1178,6 +1182,19 @@ public sealed class JobQueue : IAsyncDisposable
         }
     }
 
+    /// <summary>Raises JobFinished; a handler that throws can't kill the queue (history recording failures must not stop conversions).</summary>
+    private void RaiseJobFinished(ConversionJob job)
+    {
+        try
+        {
+            JobFinished?.Invoke(this, job);
+        }
+        catch (Exception ex)
+        {
+            _log.LogWarning(ex, "JobFinished handler threw");
+        }
+    }
+
     private async Task WorkLoopAsync()
     {
         await foreach (var job in _channel.Reader.ReadAllAsync())
@@ -1189,7 +1206,7 @@ public sealed class JobQueue : IAsyncDisposable
                     job.State = JobState.Cancelled;
                     Release(job);
                     Notify(job);
-                    JobFinished?.Invoke(this, job);
+                    RaiseJobFinished(job);
                     continue;
                 }
                 await RunAsync(job);

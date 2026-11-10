@@ -309,10 +309,19 @@ public sealed class UserDataStore
         lock (_saveLock)
         {
             System.IO.Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            var temp = path + ".tmp";
-            using (var stream = File.Create(temp))
-                JsonSerializer.Serialize(stream, value, type);
-            File.Move(temp, path, overwrite: true);
+            // A unique temp name keeps two Morfa processes (app + CLI) from truncating the same temp file and
+            // publishing a mixed file; the rename is still atomic per process.
+            var temp = path + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp";
+            try
+            {
+                using (var stream = File.Create(temp))
+                    JsonSerializer.Serialize(stream, value, type);
+                File.Move(temp, path, overwrite: true);
+            }
+            finally
+            {
+                try { if (File.Exists(temp)) File.Delete(temp); } catch (IOException) { }
+            }
         }
     }
 }
@@ -416,9 +425,8 @@ internal static class SettingsMigrations
         if (settings.SchemaVersion < 21)
             InsertBefore(settings.EnginePriority, "wic", settings.EnginePriority.Contains("ffmpeg") ? "ffmpeg" : "pandoc");
 
-        if (settings.Triggers.Count == 0)
-            settings.Triggers = TriggerGesture.Defaults();
-
+        // Triggers default at construction (AppSettings.Triggers initializer) for new installs; re-adding default
+        // gestures here would resurrect ones the user deliberately removed, so old configs keep an empty list too.
         settings.SchemaVersion = AppSettings.CurrentSchemaVersion;
     }
 

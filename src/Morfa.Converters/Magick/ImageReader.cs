@@ -72,7 +72,9 @@ internal static class ImageReader
         {
             foreach (var image in images.Where(i => i.ClassType == ClassType.Pseudo && i.HasAlpha))
             {
-                var rgba = image.GetPixels().ToByteArray(PixelMapping.RGBA)!;
+                byte[] rgba;
+                using (var pixels = image.GetPixels())
+                    rgba = pixels.ToByteArray(PixelMapping.RGBA)!;
                 image.ClassType = ClassType.Direct;
                 image.ImportPixels(rgba, new PixelImportSettings(image.Width, image.Height, StorageType.Char, PixelMapping.RGBA));
             }

@@ -176,7 +176,8 @@ public sealed class ConversionService
     /// Callable from any thread; used by watch folders.
     /// </summary>
     /// <param name="watchRuleId">The watch folder the files come from; recorded in the history.</param>
-    public async Task<ConversionJob?> RunAsync(IReadOnlyList<string> files, Preset preset, string? watchRuleId = null)
+    /// <param name="cancellation">Cancelling this asks the job to cancel, so watch folders can stop cleanly.</param>
+    public async Task<ConversionJob?> RunAsync(IReadOnlyList<string> files, Preset preset, string? watchRuleId = null, CancellationToken? cancellation = null)
     {
         var vm = await Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -187,6 +188,7 @@ public sealed class ConversionService
         });
         if (vm is null)
             return null;
+        using var registration = cancellation?.Register(() => vm.Job.Cancel());
         var finished = _waiting.GetOrAdd(vm.Job.Id, _ => new TaskCompletionSource<ConversionJob>(TaskCreationOptions.RunContinuationsAsynchronously));
         // The job may have finished before the wait was registered.
         if (vm.Job.State is not (JobState.Queued or JobState.Running))

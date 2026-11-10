@@ -44,10 +44,12 @@ public sealed class FolderWatcher : IAsyncDisposable
     private readonly ConcurrentDictionary<string, Candidate> _pending = new(FileSystemPaths.Comparer);
     private readonly GeneratedWatchOutputs _results;
     private readonly HashSet<string> _handled = new(FileSystemPaths.Comparer);
+    private readonly ConcurrentDictionary<string, int> _batchRetries = new(FileSystemPaths.Comparer);
     private readonly SemaphoreSlim _busy = new(1, 1);
     private readonly CancellationTokenSource _stop = new();
     private FileSystemWatcher? _watcher;
     private ITimer? _timer;
+    private const int MaxBatchRetries = 3;
 
     /// <param name="rule">The folder and its options; the watcher keeps its own copy.</param>
     /// <param name="convert">Runs the conversion (the app's queue or the command line's).</param>
@@ -137,10 +139,11 @@ public sealed class FolderWatcher : IAsyncDisposable
     {
         if (!await _busy.WaitAsync(0))
             return 0; // the previous batch is still converting; new files wait for the next tick
+        var ready = new List<string>();
+        var readyKeys = new List<string>();
+        DateTimeOffset now = _time.GetUtcNow();
         try
         {
-            var ready = new List<string>();
-            var now = _time.GetUtcNow();
             foreach (var (path, candidate) in _pending)
             {
                 var current = candidate.Refresh(path, now);
@@ -155,55 +158,90 @@ public sealed class FolderWatcher : IAsyncDisposable
                 _pending.TryRemove(path, out _);
                 // A file that was converted before (same size and time) is not converted again.
                 if (_handled.Add(current.Key(path)))
+                {
                     ready.Add(path);
+                    readyKeys.Add(current.Key(path));
+                }
             }
             if (ready.Count == 0 || _stop.IsCancellationRequested)
                 return 0;
 
             ready.Sort(FileSystemPaths.Comparer);
             _log.LogInformation("Watch folder {Folder}: converting {Count} file(s)", Rule.Folder, ready.Count);
-            var job = await _convert(ready, _stop.Token);
-            if (job is not null)
+            ConversionJob? job = null;
+            try { job = await _convert(ready, _stop.Token); }
+            catch (Exception ex)
             {
-                // A shared input/output folder cannot be excluded wholesale. Remember exactly what this batch
-                // wrote before the next batch runs, including results noticed while the conversion was busy.
-                var resultsChanged = false;
-                foreach (var output in job.Outputs.Distinct(FileSystemPaths.Comparer))
-                {
-                    // Dedicated output trees are already excluded. Only shared results need a state file.
-                    if (SameFolder(Rule.ResolvedOutputFolder, Rule.Folder)
-                        || !IsInside(Rule.ResolvedOutputFolder, Rule.Folder))
-                        resultsChanged |= _results.Remember(output);
-                    if (!Directory.Exists(output))
-                    {
-                        var result = Candidate.Of(output, _time.GetUtcNow());
-                        if (result.Exists)
-                            _handled.Add(result.Key(output));
-                    }
-                }
-                if (resultsChanged)
-                {
-                    try { _results.Save(); }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                    {
-                        _log.LogWarning(ex, "Could not save generated results for watch folder {Folder}; they may be retried after restart", Rule.Folder);
-                    }
-                }
-                if (Rule.Originals == AfterConversion.MoveToOriginals)
-                    foreach (var file in job.Files.Where(f => f.State == FileState.Done))
-                        MoveToOriginals(Rule, file.SourcePath, _log);
-                Converted?.Invoke(this, job);
+                _log.LogError(ex, "Watch folder {Folder} failed", Rule.Folder);
             }
+            if (job is null)
+            {
+                // Conversion could not start (preset gone, engine missing, ...): re-queue with fresh stability so the
+                // folder keeps picking the files up, capped so a persistent failure does not loop forever.
+                Requeue(ready, readyKeys, now);
+                return 0;
+            }
+            foreach (var path in ready)
+                _batchRetries.Remove(path, out _);
+
+            // A shared input/output folder cannot be excluded wholesale. Remember exactly what this batch
+            // wrote before the next batch runs, including results noticed while the conversion was busy.
+            var resultsChanged = false;
+            foreach (var output in job.Outputs.Distinct(FileSystemPaths.Comparer))
+            {
+                // Dedicated output trees are already excluded. Only shared results need a state file.
+                if (SameFolder(Rule.ResolvedOutputFolder, Rule.Folder)
+                    || !IsInside(Rule.ResolvedOutputFolder, Rule.Folder))
+                    resultsChanged |= _results.Remember(output);
+                if (!Directory.Exists(output))
+                {
+                    var result = Candidate.Of(output, _time.GetUtcNow());
+                    if (result.Exists)
+                        _handled.Add(result.Key(output));
+                }
+            }
+            if (resultsChanged)
+            {
+                try { _results.Save(); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    _log.LogWarning(ex, "Could not save generated results for watch folder {Folder}; they may be retried after restart", Rule.Folder);
+                }
+            }
+            if (Rule.Originals == AfterConversion.MoveToOriginals)
+                foreach (var file in job.Files.Where(f => f.State == FileState.Done))
+                    MoveToOriginals(Rule, file.SourcePath, _log);
+            Converted?.Invoke(this, job);
             return ready.Count;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             _log.LogError(ex, "Watch folder {Folder} failed", Rule.Folder);
+            Requeue(ready, readyKeys, now);
             return 0;
         }
         finally
         {
             _busy.Release();
+        }
+    }
+
+    /// <summary>
+    /// Re-queues a batch whose conversion could not run at all. Files are stable again before the next scan picks
+    /// them up, and the folder is capped at <see cref="MaxBatchRetries"/> re-queue attempts per file per session.
+    /// </summary>
+    private void Requeue(List<string> ready, List<string> keys, DateTimeOffset now)
+    {
+        foreach (var (path, key) in ready.Zip(keys))
+        {
+            _handled.Remove(key);
+            var attempts = _batchRetries.AddOrUpdate(path, 1, (_, current) => current + 1);
+            if (attempts > MaxBatchRetries)
+            {
+                _log.LogWarning("Watch folder {Folder}: skipping {Path} after {Attempts} failed attempts", Rule.Folder, path, attempts);
+                continue;
+            }
+            _pending[path] = Candidate.Of(path, now) with { StableSince = now };
         }
     }
 

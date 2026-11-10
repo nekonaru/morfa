@@ -241,7 +241,9 @@ internal static class Apng
                     image.BackgroundColor = MagickColors.Transparent;
                     image.Extent(width, height, Gravity.Northwest);
                 }
-                var pixels = image.GetPixels().ToByteArray(PixelMapping.RGBA)!;
+                byte[] pixels;
+                using (var pc = image.GetPixels())
+                    pixels = pc.ToByteArray(PixelMapping.RGBA)!;
                 var ticks = frame.AnimationTicksPerSecond > 0 ? (uint)frame.AnimationTicksPerSecond : TicksPerSecond;
                 if (pictures.Count > 0 && pixels.AsSpan().SequenceEqual(pictures[^1].Pixels) && pictures[^1].DelayDenominator == ticks)
                 {

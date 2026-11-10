@@ -17,6 +17,7 @@ public sealed class WatchFolderService(UserDataStore store, ConversionService co
 
     private readonly Dictionary<string, (string Signature, FolderWatcher Watcher)> _running = [];
     private readonly Dictionary<string, string?> _errors = [];
+    private readonly SemaphoreSlim _applySync = new(1, 1); // serializes ApplyAsync so a timer fire during an apply can't double-start a watcher
     private IDisposable? _pendingApply;
 
     /// <summary>Raised (UI thread) when a rule started, stopped or failed to start.</summary>
@@ -42,38 +43,46 @@ public sealed class WatchFolderService(UserDataStore store, ConversionService co
     /// <summary>Starts, restarts and stops watchers so they match the settings.</summary>
     private async Task ApplyAsync()
     {
-        var wanted = store.Settings.WatchFolders
-            .Where(r => r.Enabled && !string.IsNullOrWhiteSpace(r.Folder) && !string.IsNullOrWhiteSpace(r.PresetId))
-            .ToDictionary(r => r.Id, r => r.Clone());
+        await _applySync.WaitAsync();
+        try
+        {
+            var wanted = store.Settings.WatchFolders
+                .Where(r => r.Enabled && !string.IsNullOrWhiteSpace(r.Folder) && !string.IsNullOrWhiteSpace(r.PresetId))
+                .ToDictionary(r => r.Id, r => r.Clone());
 
-        foreach (var (id, (signature, watcher)) in _running.ToList())
-        {
-            if (wanted.TryGetValue(id, out var rule) && Signature(rule) == signature)
-                continue;
-            _running.Remove(id);
-            await watcher.DisposeAsync();
-        }
-        _errors.Clear();
-        foreach (var (id, rule) in wanted)
-        {
-            if (_running.ContainsKey(id))
-                continue;
-            var watcher = new FolderWatcher(rule, (files, _) => ConvertAsync(rule, files), log);
-            if (watcher.Start())
+            foreach (var (id, (signature, watcher)) in _running.ToList())
             {
-                _running[id] = (Signature(rule), watcher);
-                log.LogInformation("Watching {Folder}", rule.Folder);
-            }
-            else
-            {
-                _errors[id] = watcher.Error;
+                if (wanted.TryGetValue(id, out var rule) && Signature(rule) == signature)
+                    continue;
+                _running.Remove(id);
                 await watcher.DisposeAsync();
             }
+            _errors.Clear();
+            foreach (var (id, rule) in wanted)
+            {
+                if (_running.ContainsKey(id))
+                    continue;
+                var watcher = new FolderWatcher(rule, (files, ct) => ConvertAsync(rule, files, ct), log);
+                if (watcher.Start())
+                {
+                    _running[id] = (Signature(rule), watcher);
+                    log.LogInformation("Watching {Folder}", rule.Folder);
+                }
+                else
+                {
+                    _errors[id] = watcher.Error;
+                    await watcher.DisposeAsync();
+                }
+            }
+            StatusChanged?.Invoke(this, EventArgs.Empty);
         }
-        StatusChanged?.Invoke(this, EventArgs.Empty);
+        finally
+        {
+            _applySync.Release();
+        }
     }
 
-    private async Task<Domain.Conversion.ConversionJob?> ConvertAsync(WatchRule rule, IReadOnlyList<string> files)
+    private async Task<Domain.Conversion.ConversionJob?> ConvertAsync(WatchRule rule, IReadOnlyList<string> files, CancellationToken cancellationToken)
     {
         var preset = store.FindConversion(rule.PresetId);
         if (preset is null)
@@ -81,7 +90,7 @@ public sealed class WatchFolderService(UserDataStore store, ConversionService co
             log.LogWarning("Watch folder {Folder}: preset {Preset} no longer exists", rule.Folder, rule.PresetId);
             return null;
         }
-        return await conversions.RunAsync(files, rule.Apply(preset), rule.Id);
+        return await conversions.RunAsync(files, rule.Apply(preset), rule.Id, cancellationToken);
     }
 
     /// <summary>

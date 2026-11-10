@@ -106,8 +106,9 @@ public sealed class WindowService(ILocalizer loc, IServiceProvider services, Mem
         var catalog = services.GetRequiredService<ConverterCatalog>();
         var conversions = services.GetRequiredService<ConversionService>();
         var log = services.GetService<ILogger<ClipWindowViewModel>>();
+        var planner = catalog.CreatePlanner(); // one planner for every path instead of one each
         var vm = new ClipWindowViewModel(videos, preset, loc, store, new FfmpegFrameSource(),
-            path => ClipTool.TargetFor(FormatRegistry.Detect(path)?.Id ?? ClipTool.FallbackTarget, catalog.CreatePlanner()),
+            path => ClipTool.TargetFor(FormatRegistry.Detect(path)?.Id ?? ClipTool.FallbackTarget, planner),
             (path, conversion) => conversions.Start([path], conversion), log);
         var win = new ClipWindow { DataContext = vm };
         win.PositionOnScreen(near);

@@ -277,12 +277,15 @@ internal static partial class MobiReader
             xhtml = KindleFlow().Replace(xhtml, m => Flow(flows, (int)Base32(m.Groups[1].Value), m.Groups[2].Value, folder));
             texts[i] = xhtml;
         }
+        // The parts were assembled for Latin-1 so that kindle:pos links (byte offsets) are exact; decode with the
+        // header's codepage instead of writing the Latin-1 bytes under a UTF-8 BOM (matching the non-KF8 path).
+        var encoding = header.Codepage == 65001 ? Encoding.UTF8 : CodePage(header.Codepage);
         for (var i = 0; i < texts.Count; i++)
         {
             // Links that point at an element by its Amazon "aid" get an id to land on.
             var xhtml = linkedAids.Count == 0 ? texts[i] : Aid().Replace(texts[i], m => linkedAids.Contains(m.Groups[1].Value) ? $"{m.Value} id=\"aid-{m.Groups[1].Value}\"" : m.Value);
             var file = Path.Combine(folder, PartName(i));
-            File.WriteAllBytes(file, [.. Encoding.UTF8.Preamble, .. Encoding.Latin1.GetBytes(xhtml)]);
+            File.WriteAllText(file, encoding.GetString(Encoding.Latin1.GetBytes(xhtml)), new UTF8Encoding(true));
             files.Add(file);
         }
         return ChapterReader.Read(files, Path.Combine(folder, "~media"), cancellationToken);

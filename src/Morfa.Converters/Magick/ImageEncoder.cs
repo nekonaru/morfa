@@ -242,7 +242,9 @@ internal static class ImageEncoder
         if (!image.HasAlpha)
             return;
         int width = (int)image.Width, height = (int)image.Height;
-        var rgba = image.GetPixels().ToByteArray(PixelMapping.RGBA)!;
+        byte[] rgba;
+        using (var pixels = image.GetPixels())
+            rgba = pixels.ToByteArray(PixelMapping.RGBA)!;
         int left = width, top = height, right = -1, bottom = -1;
         for (var y = 0; y < height; y++)
         {

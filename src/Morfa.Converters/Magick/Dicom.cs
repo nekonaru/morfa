@@ -138,16 +138,16 @@ internal static class Dicom
             return null;
         if (rows == 0 || columns == 0 || frames < 1)
             throw new InvalidDataException("The DICOM image has no size.");
-        var pixelCount = rows * columns;
-        var frameBytes = (long)pixelCount * samples * allocated / 8;
+        var pixelCount = (long)rows * columns;
+        var frameBytes = pixelCount * samples * allocated / 8;
         if (pixels.Length < frameBytes * frames)
             throw new InvalidDataException("The DICOM file is damaged (its image data is incomplete).");
 
         var shift = highBit - stored + 1;
         var mask = (1 << stored) - 1;
-        int Raw(int frame, int index)
+        int Raw(int frame, long index)
         {
-            var offset = frame * frameBytes + (long)index * allocated / 8;
+            var offset = frame * frameBytes + index * allocated / 8;
             int value = allocated == 8 ? pixels[offset]
                 : bigEndian ? BinaryPrimitives.ReadUInt16BigEndian(pixels.AsSpan((int)offset))
                 : BinaryPrimitives.ReadUInt16LittleEndian(pixels.AsSpan((int)offset));

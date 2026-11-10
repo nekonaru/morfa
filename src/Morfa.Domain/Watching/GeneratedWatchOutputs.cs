@@ -60,7 +60,7 @@ internal sealed class GeneratedWatchOutputs(WatchRule rule)
             _entries.Remove(stale.Path);
             _directories.Remove(stale.Path);
         }
-        var temporary = StateFile + ".tmp";
+        var temporary = StateFile + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp";
         try
         {
             File.WriteAllText(temporary, JsonSerializer.Serialize(_entries.Values));
