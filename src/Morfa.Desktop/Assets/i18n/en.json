@@ -1156,5 +1156,11 @@
   "whats_new.1_0_0.languages.text": "English and Bahasa Indonesia, switchable any time in Settings.",
   "whats_new.1_0_0.more.title": "And a little more",
   "whats_new.1_0_0.more.text": "Reset a single donut to its defaults, search your whole history, and convert Gujarati, Hindi or Arabic documents through LibreOffice.",
+  "whats_new.1_2_0.nav.title": "A new top bar in two rows",
+  "whats_new.1_2_0.nav.text": "The sidebar is gone. Pick a group in the top row, then one of its pages in the second; Morfa remembers the last page you used of each group.",
+  "whats_new.1_2_0.layouts.title": "Every page has its own layout",
+  "whats_new.1_2_0.layouts.text": "Home leads with a bigger drop zone and a recent conversions column; the general page is a table of contents you can scroll; every panel stays in its place.",
+  "whats_new.1_2_0.stack.title": "Panels stack when it gets narrow",
+  "whats_new.1_2_0.stack.text": "At the minimum width, the side panels drop below the main content instead of squeezing or scrolling sideways.",
   "preset.extract_motion.donut": "Extract video"
 }

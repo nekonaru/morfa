@@ -28,6 +28,7 @@ public class WhatsNewTests
 {
     private static readonly Version V2 = new(2, 0, 0);
     private static readonly Version V100 = new(1, 0, 0);
+    private static readonly Version V120 = new(1, 2, 0);
 
     private static SlideDeck Deck(string version) =>
         new(SlideDeck.TryParseVersion(version)!, [new Slide("a", new Uri("avares://Morfa/a.webp"), "t", "x")]);
@@ -49,6 +50,27 @@ public class WhatsNewTests
             Assert.StartsWith("avares://Morfa/Assets/WhatsNew/1.0.0/", slide.Media.ToString(), StringComparison.Ordinal);
             Assert.Contains(slide.TitleKey, english.Keys);
             Assert.Contains(slide.TextKey, english.Keys);
+        }
+    }
+
+    [AvaloniaFact]
+    public void The_1_2_0_deck_ships_with_its_media_and_texts()
+    {
+        TestServices.EnsureInitialized("en");
+        var decks = SlideDeck.LoadAll("Morfa");
+        var deck = Assert.Single(decks, d => d.Version == V120);
+        Assert.InRange(deck.Slides.Count, 2, 4);
+        Assert.Equal(deck.Slides.Count, deck.Slides.Select(s => s.Id).Distinct().Count());
+        var english = LoadStrings("en");
+        var indonesian = LoadStrings("id");
+        foreach (var slide in deck.Slides)
+        {
+            Assert.True(AssetLoader.Exists(slide.Media), $"{slide.Media} is missing");
+            Assert.StartsWith("avares://Morfa/Assets/WhatsNew/1.2.0/", slide.Media.ToString(), StringComparison.Ordinal);
+            Assert.Contains(slide.TitleKey, english.Keys);
+            Assert.Contains(slide.TextKey, english.Keys);
+            Assert.Contains(slide.TitleKey, indonesian.Keys);
+            Assert.Contains(slide.TextKey, indonesian.Keys);
         }
     }
 

@@ -42,9 +42,9 @@ public class WhatsNewMedia
     private const double Frame = 1 / 25.0;
 
     /// <summary>The light theme's PageBrush: the canvas behind every clip.</summary>
-    private const string Page = "#F6F5F1";
+    private const string Page = "#F8F7F3";
 
-    /// <summary>Where the 1.0.0 slides live in the repository.</summary>
+    /// <summary>Where a deck's slides live in the repository.</summary>
     internal static string Folder(string version) =>
         Path.Combine(RepositoryRoot, "src", "Morfa.Desktop", "Assets", "WhatsNew", version);
 
@@ -56,6 +56,33 @@ public class WhatsNewMedia
             while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "Morfa.slnx")))
                 dir = dir.Parent;
             return dir!.FullName;
+        }
+    }
+
+    [AvaloniaFact(Explicit = true)]
+    public void Generate_1_2_0()
+    {
+        var language = Environment.GetEnvironmentVariable("MORFA_WHATSNEW_LANGUAGE") ?? "en";
+        Assert.Contains(language, AppLanguages.All.Select(l => l.Code));
+        TestServices.EnsureInitialized(language);
+        var folder = language == "en" ? Folder("1.2.0") : Path.Combine(Folder("1.2.0"), language);
+        Directory.CreateDirectory(folder);
+        var theme = AppHost.Get<ThemeService>();
+        Motion.Set(true);
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(language == "en" ? "en-US" : language);
+        try
+        {
+            theme.Apply(new ThemeSettings { ReduceMotion = false, Mode = ThemeMode.Light }, language);
+            Write(folder, "nav.webp", NavBar);
+            Write(folder, "layouts.webp", () => ScrollPage("general"));
+            Write(folder, "stack.webp", () => StackAtTheMinimumWidth());
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+            theme.Apply(new ThemeSettings(), "en");
+            TestServices.EnsureInitialized("en");
         }
     }
 
@@ -632,6 +659,126 @@ public class WhatsNewMedia
             store.ClearHistory();
             store.Profiles.Clear();
             store.Profiles.AddRange(profiles);
+        }
+        return clip;
+    }
+
+    /// <summary>
+    /// The two-row top bar: the pointer clicks the Donut group in the first row, the second row becomes its pages, the
+    /// pointer picks Donut toolbar, and the bar remembers the clip's last page of the group when it is opened again.
+    /// </summary>
+    private static Clip NavBar()
+    {
+        var clip = new Clip();
+        var vm = new MainWindowViewModel(AppHost.Services, AppHost.Get<ILocalizer>(), AppHost.Get<UpdateService>());
+        var window = new MainWindow { DataContext = vm, Width = 1080, Height = 608 };
+        vm.Navigate("home");
+        window.Show();
+        Pump();
+        var groups = window.FindControl<ListBox>("Groups")!;
+        var subNav = window.FindControl<ListBox>("SubNav")!;
+        Avalonia.Point Middle(Control control) =>
+            control.TranslatePoint(new Avalonia.Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!.Value;
+        try
+        {
+            var scene = new Scene(window, clip, "1.2.0");
+            // Frame 0: Home, with the two rows of the top bar.
+            scene.Place(new Avalonia.Point(908, 26));
+            clip.Add(Capture(window, "1.2.0"), 1700);
+
+            // The Donut group: the second row fills with its pages.
+            scene.MoveTo(Middle(groups.ContainerFromIndex(1)!), 0.55);
+            scene.Click();
+            Pump();
+            clip.Add(Capture(window, "1.2.0"), 1400);
+
+            // The Donut toolbar page.
+            scene.MoveTo(Middle(subNav.ContainerFromIndex(1)!), 0.55);
+            scene.Click();
+            Pump();
+            clip.Add(Capture(window, "1.2.0"), 1600);
+
+            // Away to the Convert group and back: the toolbar is remembered.
+            scene.MoveTo(Middle(groups.ContainerFromIndex(2)!), 0.5);
+            scene.Click();
+            Pump();
+            clip.Add(Capture(window, "1.2.0"), 1200);
+            scene.MoveTo(Middle(groups.ContainerFromIndex(1)!), 0.5);
+            scene.Click();
+            Pump();
+            clip.Add(Capture(window, "1.2.0"), 1600);
+        }
+        finally
+        {
+            window.Close();
+            vm.Dispose();
+        }
+        return clip;
+    }
+
+    /// <summary>
+    /// A page scrolling by: the General page (with its table of contents) gliding to the bottom and back to the top.
+    /// </summary>
+    private static Clip ScrollPage(string page)
+    {
+        var clip = new Clip { Quality = 40 }; // a long scroll re-renders the whole page every frame
+        var vm = new MainWindowViewModel(AppHost.Services, AppHost.Get<ILocalizer>(), AppHost.Get<UpdateService>());
+        var window = new MainWindow { DataContext = vm, Width = 1080, Height = 600 };
+        vm.Navigate(page);
+        window.Show();
+        Pump();
+        try
+        {
+            var scroller = window.GetVisualDescendants().OfType<ScrollViewer>().Single(s => s.Name == "PageScroller");
+            clip.Add(Capture(window, "1.2.0"), 1500); // frame 0: the top of the page
+            var max = Math.Max(0, scroller.Extent.Height - scroller.Viewport.Height);
+            if (max > 0)
+            {
+                const int frames = 30;
+                for (var i = 1; i <= frames; i++)
+                {
+                    var t = i / (double)frames;
+                    scroller.Offset = new Avalonia.Vector(0, max * (0.5 - 0.5 * Math.Cos(Math.PI * t)));
+                    Pump();
+                    clip.Add(Capture(window, "1.2.0"), (int)(Frame * 1000));
+                }
+                clip.Add(Capture(window, "1.2.0"), 700);
+                scroller.Offset = new Avalonia.Vector(0, 0);
+                Pump();
+                clip.Add(Capture(window, "1.2.0"), 900);
+            }
+        }
+        finally
+        {
+            window.Close();
+            vm.Dispose();
+        }
+        return clip;
+    }
+
+    /// <summary>
+    /// The same window at the widest and the narrowest size: the side column of Home drops below the main content.
+    /// </summary>
+    private static Clip StackAtTheMinimumWidth()
+    {
+        var clip = new Clip();
+        var vm = new MainWindowViewModel(AppHost.Services, AppHost.Get<ILocalizer>(), AppHost.Get<UpdateService>());
+        var window = new MainWindow { DataContext = vm, Width = 1080, Height = 640 };
+        vm.Navigate("home");
+        window.Show();
+        Pump();
+        try
+        {
+            clip.Add(Capture(window, "1.2.0"), 1700); // frame 0: side by side
+            window.Width = 820; // the minimum width
+            window.Height = 760;
+            Pump();
+            clip.Add(Capture(window, "1.2.0"), 1500); // the column stacks below
+        }
+        finally
+        {
+            window.Close();
+            vm.Dispose();
         }
         return clip;
     }

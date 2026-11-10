@@ -1,0 +1,23 @@
+{
+  "version": "1.2.0",
+  "slides": [
+    {
+      "id": "nav",
+      "media": "nav.webp",
+      "title": "whats_new.1_2_0.nav.title",
+      "text": "whats_new.1_2_0.nav.text"
+    },
+    {
+      "id": "layouts",
+      "media": "layouts.webp",
+      "title": "whats_new.1_2_0.layouts.title",
+      "text": "whats_new.1_2_0.layouts.text"
+    },
+    {
+      "id": "stack",
+      "media": "stack.webp",
+      "title": "whats_new.1_2_0.stack.title",
+      "text": "whats_new.1_2_0.stack.text"
+    }
+  ]
+}

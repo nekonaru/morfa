@@ -1156,5 +1156,11 @@
   "whats_new.1_0_0.languages.text": "English dan Bahasa Indonesia, dapat diganti kapan saja di Settings.",
   "whats_new.1_0_0.more.title": "Dan sedikit lagi",
   "whats_new.1_0_0.more.text": "Atur ulang satu donat ke bawaannya, cari di seluruh riwayatmu, dan konversi dokumen Gujarat, Hindi, atau Arab melalui LibreOffice.",
+  "whats_new.1_2_0.nav.title": "Bar atas baru dengan dua baris",
+  "whats_new.1_2_0.nav.text": "Bilah samping sudah hilang. Pilih grup di baris atas, lalu halamannya di baris kedua; Morfa mengingat halaman terakhir yang kamu pakai di tiap grup.",
+  "whats_new.1_2_0.layouts.title": "Tiap halaman punya tata letaknya sendiri",
+  "whats_new.1_2_0.layouts.text": "Home tampil dengan area lepas yang lebih besar dan kolom konversi terakhir; halaman umum berupa daftar isi yang bisa digulir; setiap panel tetap di tempatnya.",
+  "whats_new.1_2_0.stack.title": "Panel menumpuk saat sempit",
+  "whats_new.1_2_0.stack.text": "Pada lebar minimum, panel samping berpindah ke bawah konten utama, tidak lagi menciut atau menggulir ke samping.",
   "preset.extract_motion.donut": "Ekstrak video"
 }
