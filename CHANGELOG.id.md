@@ -2,6 +2,23 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
+## v1.2.1
+
+Morfa membawa slide "Yang baru di Morfa 1.2.0", halaman Tentang yang lebih rapi dan chrome yang lebih lembut, serta menghilangkan contoh uji coba.
+
+## Fitur baru
+
+- **Yang baru di Morfa 1.2.0.** Pembaruan kini memutar tiga slide: bar atas dua baris, halaman general yang bergulir, dan panel yang turun ke bawah konten saat jendela sempit.
+
+## Peningkatan
+
+- **Chrome yang lebih lembut.** Jendela, setiap halaman, dan Setup di-restyle: warna halaman dan permukaan yang lebih hangat, huruf lebih kecil, sudut lebih bulat, bayangan lebih ringan.
+- **Contoh uji coba hilang.** Kartu "Konversi contoh" tidak lagi tampil di Home; Morfa membuka area lepas yang bersih.
+
+## Perbaikan bug
+
+- **Pemberitahuan pihak ketiga di Tentang bisa dibaca.** Panelnya membuka selebar kartu penuh: judulnya tidak terpotong dan tabel lisensi tidak lagi wrap satu karakter per baris.
+
 ## v1.2.0
 
 Seluruh jendela utama Morfa dan setiap halamannya menjalani desain ulang: navigasi dua tingkat di bar atas, tata letak yang berbeda untuk setiap halaman, dan panel yang menumpuk di bawah konten utama ketika jendela sempit.

@@ -2,6 +2,23 @@
 
 What changed in each version of Morfa. Newest version on top.
 
+## v1.2.1
+
+Morfa ships the "What's new in Morfa 1.2.0" slides, a tidier About page and a softer chrome, and drops the first-run sample.
+
+## New features
+
+- **What's new in Morfa 1.2.0.** Updating now plays three slides: the two-row top bar, the general page scrolling by, and the panels dropping below the content on narrow windows.
+
+## Improvements
+
+- **A softer chrome.** The window, every page and Setup were restyled: warmer page and surface colours, smaller type, rounder corners, lighter shadows.
+- **The first-run sample is gone.** The "Convert the sample" card no longer appears on Home; Morfa opens on a clean drop zone.
+
+## Bug fixes
+
+- **The third-party notices on About are readable.** They open full width now: the heading is no longer clipped and the licence table wraps normally instead of one character per line.
+
 ## v1.2.0
 
 Morfa's whole main window and every page were redesigned: two-tier top navigation, a distinct layout per page, and panels that stack below the main content when the window is narrow.
