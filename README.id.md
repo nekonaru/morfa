@@ -152,7 +152,7 @@ Format tanpa tanda berjalan langsung. Format bertanda butuh engine opsional, diu
 1. Buka halaman [Releases](https://github.com/nekonaru/morfa/releases).
 2. Download `Morfa-1.2.0-win-Setup.exe`.
 3. Klik dua kali file yang di-download.
-4. Windows SmartScreen akan menampilkan **"Windows protected your PC"**. Build ini belum ditandatangani, jadi ini normal. Klik **More info**, lalu **Run anyway**.
+4. Windows SmartScreen akan menampilkan **"Windows protected your PC"**. Build Windows tidak ditandatangani, jadi ini normal. Klik **More info**, lalu **Run anyway**.
 5. Jendela Morfa Setup muncul.
 
    **Install baru:** halaman Welcome menampilkan versi yang akan dipasang. Klik **Install**. Halaman progress menyelingi dengan catatan versi baru.

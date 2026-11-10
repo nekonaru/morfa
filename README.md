@@ -152,7 +152,7 @@ Unmarked formats work out of the box. Marked ones need an optional engine, downl
 1. Open the [Releases](https://github.com/nekonaru/morfa/releases) page.
 2. Download `Morfa-1.2.0-win-Setup.exe`.
 3. Double-click the downloaded file.
-4. Windows SmartScreen opens **"Windows protected your PC"**. The build is not code-signed yet, so this is expected. Click **More info**, then **Run anyway**.
+4. Windows SmartScreen opens **"Windows protected your PC"**. Windows builds are not code-signed, so this is expected. Click **More info**, then **Run anyway**.
 5. The Morfa Setup window appears.
 
    **Installing fresh:** the Welcome page shows which version is being installed. Click **Install**. The progress page slides through what's new in the release, with a thin progress bar.
