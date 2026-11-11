@@ -2,6 +2,28 @@
 
 What changed in each version of Morfa. Newest version on top.
 
+## v1.2.2
+
+Stability refresh: the queue no longer dies mid-batch, watch folders honor cancellation and retry transient failures, and several converter bugs that could corrupt files are fixed.
+
+## Bug fixes
+
+- **Conversions no longer stop after one file fails.** A job-finished handler that recorded the history could throw and kill the queue worker, leaving every following file stuck. Handlers are now isolated.
+- **Watch folders stop cleanly.** The stop token was not passed to the conversion job, so a running batch blocked shutdown forever and rule changes could double-start a watcher. Conversions now honor the token, applying rules is serialized, and the apply race that could leak watchers is gone.
+- **Watch folders retry failed batches.** A batch whose conversion could not start (preset deleted, engine missing) was dropped forever. It is now re-queued with a cap of three attempts per file per session.
+- **DICOM files no longer overflow their pixel count.** Rows times columns wrapped a 32-bit integer for large images, making the pixel-data guard useless and allocation failures silent.
+- **KF8 (Kindle) books no longer write mojibake.** Part files carried a UTF-8 BOM over Latin-1 bytes, so non-ASCII text was unreadable. They are now decoded with the header's code page.
+- **Native pixel buffers from Magick.NET are now disposed.** Three call sites kept native memory alive longer than needed.
+- **Cleared shortcut lists are no longer resurrected.** A settings migration re-added default triggers whenever the list was empty, so deleting every shortcut did not stick.
+- **Settings and watch state are written via a unique temp file.** Two processes (app and CLI) could write to the same `.tmp` file and publish a mixed file.
+
+## Improvements
+
+- **Catalog ordering is allocation-free.** Converter priorities are precomputed once, and the ordered list is built in linear time.
+- **Output path sanitizing reuses one frozen character set,** saving the concat allocation on every output path.
+- **Clip cutter window uses one route planner** for every dropped path instead of rebuilding one per path.
+- **Obsolete APIs replaced.** `PlaceholderText` instead of `Watermark`; `BoundingBox` instead of removed `Bounds` / `GlyphRectangle`; `cref` qualified for clarity.
+
 ## v1.2.1
 
 Morfa ships the "What's new in Morfa 1.2.0" slides, a tidier About page and a softer chrome, and drops the first-run sample.

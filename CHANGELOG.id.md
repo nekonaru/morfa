@@ -2,6 +2,28 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
+## v1.2.2
+
+Penyegaran stabilitas: antrian tidak lagi mati di tengah batch, watch folder menghormati pembatalan dan mencoba batch yang gagal, serta beberapa bug konverter yang bisa merusak file diperbaiki.
+
+## Perbaikan bug
+
+- **Konversi tidak lagi berhenti setelah satu file gagal.** Handler job-finished yang menulis history bisa throw dan mematikan worker antrian, membuat semua file berikutnya macet. Handler sekarang dipisahkan.
+- **Watch folder berhenti dengan bersih.** Token stop tidak diteruskan ke job konversi, sehingga batch yang berjalan menghalangi shutdown selamanya dan perubahan aturan bisa membuat watcher dobel. Konversi sekarang menghormati token, penerapan aturan diserialisasi, dan race apply yang membocorkan watcher hilang.
+- **Watch folder mencoba batch yang gagal.** Batch yang konversinya tidak bisa dimulai (preset dihapus, engine tidak ada) dibuang selamanya. Sekarang di-requeue dengan batas tiga percobaan per file per sesi.
+- **File DICOM tidak lagi overflow pixel count.** Baris dikali kolom wrap integer 32-bit untuk gambar besar, membuat guard pixel data tidak berguna dan alokasi bisa gagal diam-diam.
+- **Buku KF8 (Kindle) tidak lagi menulis mojibake.** Part file membawa UTF-8 BOM di atas byte Latin-1, sehingga teks non-ASCII tidak terbaca. Sekarang didecode dengan code page dari header.
+- **Pixel buffer native dari Magick.NET sekarang dimatikan.** Tiga call site menahan memori native lebih lama dari yang dibutuhkan.
+- **Daftar shortcut yang dikosongkan tidak lagi dimunculkan paksa.** Migrasi pengaturan menambahkan kembali shortcut bawaan setiap kali daftarnya kosong, jadi menghapus semua shortcut tidak permanen.
+- **Settings dan watch state ditulis dengan temp file unik.** Dua proses (aplikasi dan CLI) bisa menulis ke file `.tmp` yang sama dan menerbitkan file campuran.
+
+## Peningkatan
+
+- **Pengurutan katalog bebas alokasi.** Prioritas konverter dihitung sekali dan list terurut dibangun dalam waktu linear.
+- **Sanitasi output path memakai satu set karakter frozen,** menghemat alokasi concat pada setiap output path.
+- **Jendela Clip cutter menggunakan satu route planner** untuk semua path yang dijatuhkan, bukan membangun satu per path.
+- **API obsolete diganti.** `PlaceholderText` menggantikan `Watermark`; `BoundingBox` menggantikan `Bounds` / `GlyphRectangle` yang dihapus; `cref` memenuhi syarat untuk kejelasan.
+
 ## v1.2.1
 
 Morfa membawa slide "Yang baru di Morfa 1.2.0", halaman Tentang yang lebih rapi dan chrome yang lebih lembut, serta menghilangkan contoh uji coba.
