@@ -49,6 +49,7 @@
   "home.open_file": "Buka berkas",
   "home.open_with": "Buka dengan",
   "home.clear_history": "Bersihkan",
+  "home.export_csv": "Ekspor CSV",
   "home.files": "{0} berkas",
   "home.failed_files": "{0} gagal",
 

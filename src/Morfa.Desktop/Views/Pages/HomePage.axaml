@@ -78,6 +78,7 @@
       <!-- Recent conversions -->
       <StackPanel Grid.Column="2" Spacing="10">
         <DockPanel>
+          <Button DockPanel.Dock="Right" Classes="ghost" Content="{DynamicResource home.export_csv}" Click="OnExportHistoryClick" Margin="0,0,6,0" />
           <Button DockPanel.Dock="Right" Classes="ghost" Content="{DynamicResource home.clear_history}" Command="{Binding ClearHistoryCommand}" />
           <TextBlock Classes="h2" VerticalAlignment="Center" Text="{DynamicResource home.recent}" />
         </DockPanel>
