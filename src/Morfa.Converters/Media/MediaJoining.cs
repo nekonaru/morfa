@@ -48,7 +48,7 @@ internal static class MediaJoining
 
     /// <summary>The list of the concat demuxer: one <c>file '…'</c> line per clip.</summary>
     public static string ConcatList(IEnumerable<string> paths) =>
-        string.Concat(paths.Select(path => "file '" + Path.GetFullPath(path).Replace('\\', '/').Replace("'", "\\'", StringComparison.Ordinal) + "'\n"));
+        string.Concat(paths.Select(path => "file '" + Path.GetFullPath(path).Replace('\\', '/').Replace("'", @"'\''", StringComparison.Ordinal) + "'\n"));
 
     /// <summary>Clips that share codecs and size, copied one after the other into one MP4 (<see cref="CanCopyVideos"/>).</summary>
     public static List<string> CopyVideos(string listFile, string output, MediaInfo first)

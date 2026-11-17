@@ -35,7 +35,7 @@
           <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1DFFFFFF" />
           <SolidColorBrush x:Key="TextPrimaryBrush" Color="#ECEBE7" />
           <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A5A29A" />
-          <SolidColorBrush x:Key="DangerBrush" Color="#F09595" />
+          <SolidColorBrush x:Key="DangerBrush" Color="#C73A39" />
           <SolidColorBrush x:Key="SuccessBrush" Color="#5DCAA5" />
           <SolidColorBrush x:Key="WarningBrush" Color="#EF9F27" />
           <BoxShadows x:Key="CardShadow">0 1 2 0 #56000000, 0 10 22 0 #38000000</BoxShadows>

@@ -109,17 +109,18 @@ internal sealed class LinuxDesktopIntegration(string configHome, string dataHome
             Path.Combine(dataHome, "nemo", "actions", "morfa.nemo_action"),
             Path.Combine(dataHome, "kio", "servicemenus", "morfa.desktop"),
         };
-        // Thunar's custom actions file can be broken (user error, disk, another program); the context menu of the
-        // other file managers must still be set up, so a failure there is reported but does not abort the rest.
-        XDocument? thunar = null;
-        try
+        // Enabling: a broken uca.xml fails before anything is written (the test MalformedThunarConfigurationIsNotOverwritten
+        // asserts the whole operation is atomic). Disabling: report and keep going so the rest is still removed.
+        XDocument? thunar;
+        if (enabled)
         {
             thunar = LoadThunarActions(thunarPath);
-            UpdateThunarAction(thunar, enabled, executablePath, label);
+            UpdateThunarAction(thunar, true, executablePath, label);
         }
-        catch (Exception)
+        else
         {
-            // The Thunar entry is skipped; the other file managers still get theirs.
+            try { thunar = LoadThunarActions(thunarPath); UpdateThunarAction(thunar, false, executablePath, label); }
+            catch (Exception) { thunar = null; }
         }
         if (!enabled)
         {
