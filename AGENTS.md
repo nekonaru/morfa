@@ -9,3 +9,4 @@
 - License: MIT
 - Language: English is the source for code, comments, commit messages and README.md; Bahasa Indonesia is the translation (README.id.md, CHANGELOG.id.md)
 - How to build and test: `dotnet build Morfa.slnx` then `dotnet test Morfa.slnx`; CI runs a formatting check (`dotnet format --verify-no-changes`), the build and the tests on Windows, plus packaging jobs
+- PIPELINE: pr
