@@ -181,7 +181,15 @@ public sealed class PandocConverter : IConverter
                 continue;
             }
             var from = Path.GetRelativePath(Path.GetDirectoryName(output)!, metafile).Replace('\\', '/');
-            text = text.Replace(from, Path.ChangeExtension(from, ".png"), StringComparison.Ordinal);
+            var to = Path.ChangeExtension(from, ".png");
+            // Only the image target (never a code block or a URL somewhere else in the document).
+            var idx = text.Length;
+            while ((idx = text.LastIndexOf(from, idx, StringComparison.Ordinal)) != -1)
+            {
+                if (idx > 0 && text[idx - 1] == '(')
+                    text = text.Remove(idx, from.Length).Insert(idx, to);
+                idx--;
+            }
             File.Delete(metafile);
             changed = true;
         }

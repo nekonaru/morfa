@@ -508,7 +508,16 @@ internal sealed class XhtmlWriter
             return !_options.SplitChapters || chapter == _chapter ? "#" + id : $"{_options.ChapterFile(chapter)}#{id}";
         }
         var colon = target.IndexOf(':');
-        return colon > 1 && target[..colon].All(char.IsAsciiLetter) ? target : null;
+        if (colon <= 1)
+            return null;
+        // Keep only well-known network schemes; javascript:, data:, file: and friends stay as plain text so a
+        // hostile document cannot make a script or a local path clickable.
+        var scheme = target[..colon];
+        if (!scheme.All(char.IsAsciiLetter))
+            return null;
+        return scheme.ToLowerInvariant() is "http" or "https" or "mailto" or "ftp" or "ftps" or "tel"
+            ? target
+            : null;
     }
 
     /// <summary>A valid, unique XML id for a bookmark name (the same name always gets the same id).</summary>

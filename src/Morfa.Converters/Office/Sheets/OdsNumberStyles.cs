@@ -603,5 +603,5 @@ internal static class OdsNumberStyles
             (scaling > 0 ? string.Create(CultureInfo.InvariantCulture, $" number:display-factor=\"{Math.Pow(1000, scaling)}\"") : "") + "/>";
     }
 
-    private static string Escape(string text) => SecurityElement.Escape(text) ?? "";
+    private static string Escape(string text) => XmlEscape.Escape(text);
 }
