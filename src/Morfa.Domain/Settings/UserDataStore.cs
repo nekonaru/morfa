@@ -70,6 +70,11 @@ public sealed class UserDataStore
     public void Load()
     {
         System.IO.Directory.CreateDirectory(Directory);
+        // Orphans from a process that died between creating the temp file and renaming it.
+        foreach (var stale in System.IO.Directory.EnumerateFiles(Directory, "*.tmp"))
+        {
+            try { File.Delete(stale); } catch (IOException) { }
+        }
         Settings = Read(SettingsPath, MorfaJsonContext.Default.AppSettings) ?? new AppSettings();
         Presets = Read(PresetsPath, MorfaJsonContext.Default.ListPreset) ?? BuiltInData.CreatePresets();
         Profiles = Read(ProfilesPath, MorfaJsonContext.Default.ListToolbarProfile) ?? BuiltInData.CreateProfiles();
@@ -77,7 +82,7 @@ public sealed class UserDataStore
 
         var schema = Settings.SchemaVersion;
         SettingsMigrations.Apply(Settings);
-        var libraryChanged = File.Exists(ProfilesPath) && SettingsMigrations.ApplyToLibrary(schema, Presets, Profiles);
+        var libraryChanged = SettingsMigrations.ApplyToLibrary(schema, Presets, Profiles);
         EnsureConsistency();
 
         // Persist upgrades right away so they run once, even if the user never changes a setting.
@@ -288,7 +293,7 @@ public sealed class UserDataStore
             return null;
         try
         {
-            using var stream = File.OpenRead(path);
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             return JsonSerializer.Deserialize(stream, type);
         }
         catch (Exception ex) when (ex is JsonException or IOException or NotSupportedException)
@@ -316,7 +321,12 @@ public sealed class UserDataStore
             {
                 using (var stream = File.Create(temp))
                     JsonSerializer.Serialize(stream, value, type);
-                File.Move(temp, path, overwrite: true);
+                // Two processes can find the destination open at the same moment; a brief wait is enough.
+                for (var attempt = 0; ; attempt++)
+                {
+                    try { File.Move(temp, path, overwrite: true); break; }
+                    catch (IOException) when (attempt < 3) { Thread.Sleep(50); }
+                }
             }
             finally
             {
@@ -427,7 +437,9 @@ internal static class SettingsMigrations
 
         // Triggers default at construction (AppSettings.Triggers initializer) for new installs; re-adding default
         // gestures here would resurrect ones the user deliberately removed, so old configs keep an empty list too.
-        settings.SchemaVersion = AppSettings.CurrentSchemaVersion;
+        // Only raise the schema marker: a newer file read by this build keeps its newer version for anything it needs.
+        if (settings.SchemaVersion < AppSettings.CurrentSchemaVersion)
+            settings.SchemaVersion = AppSettings.CurrentSchemaVersion;
     }
 
     /// <summary>Upgrades presets and profiles written with settings schema <paramref name="from"/>.</summary>

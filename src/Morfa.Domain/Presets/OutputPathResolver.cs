@@ -53,12 +53,13 @@ public static partial class OutputPathResolver
         if (!isSource && rule.Conflict == ConflictPolicy.Skip)
             return null;
 
-        for (var n = 2; ; n++)
+        for (var n = 2; n <= 1000; n++)
         {
             candidate = PathFor($"{name} ({n})");
             if (!exists(candidate) && !PathsEqual(candidate, tokens.SourcePath))
                 return candidate;
         }
+        return null; // 1000 numbered files is not a name anyone would pick, so give up instead of spin forever
     }
 
     /// <summary>

@@ -287,8 +287,14 @@ else
     rm -rf "$backup_dir"
     rm -f "$install_dir/.morfa-upgrade-token"
 
-    # Refresh launcher symlink (using -f to overwrite existing link atomically).
-    ln -sf "$install_dir/morfa-cli" "$bin_dir/morfa"
+    # Refresh the launcher symlink, but only if Morfa created it in the first place.
+    if [ -L "$bin_dir/morfa" ] && [ "$(readlink "$bin_dir/morfa")" = "$install_dir/morfa-cli" ]; then
+        ln -sf "$install_dir/morfa-cli" "$bin_dir/morfa"
+    elif [ ! -e "$bin_dir/morfa" ]; then
+        ln -s "$install_dir/morfa-cli" "$bin_dir/morfa"
+    else
+        printf '%s\n' "$bin_dir/morfa was not created by Morfa; leaving it alone." >&2
+    fi
 fi
 
 # GNOME Shell extension. A first install puts it in place on GNOME and asks GNOME to enable it. An upgrade refreshes

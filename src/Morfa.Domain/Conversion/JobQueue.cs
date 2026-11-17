@@ -299,8 +299,18 @@ public sealed class JobQueue : IAsyncDisposable
             // Once for the merged PDF, so its pages are numbered through.
             await FinishPdfsAsync(job.Preset, [output], job.CancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
+            // A merge that fails after the parts converted is no failure at all in the files. Mark them so the job
+            // records real failures and the user can retry, instead of counting them as converted in a failed job.
+            foreach (var f in job.Files)
+            {
+                if (f.State is FileState.Failed)
+                    continue;
+                f.State = FileState.Failed;
+                f.ErrorKey ??= "error.conversion_failed";
+                f.ErrorDetail ??= ex.Message;
+            }
             allocator.Discard();
             throw;
         }
@@ -351,8 +361,18 @@ public sealed class JobQueue : IAsyncDisposable
         {
             await _tiffMerger!.MergeAsync(inputs, output, job.Preset.Image, job.CancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
+            // A merge that fails after the parts converted is no failure at all in the files. Mark them so the job
+            // records real failures and the user can retry, instead of counting them as converted in a failed job.
+            foreach (var f in job.Files)
+            {
+                if (f.State is FileState.Failed)
+                    continue;
+                f.State = FileState.Failed;
+                f.ErrorKey ??= "error.conversion_failed";
+                f.ErrorDetail ??= ex.Message;
+            }
             allocator.Discard();
             throw;
         }

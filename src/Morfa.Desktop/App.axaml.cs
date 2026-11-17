@@ -166,6 +166,9 @@ public partial class App : Application
 
         desktop.Exit += (_, _) =>
         {
+            // Stop in-flight conversions before anything else goes away, so a quit cannot leave a half-written file
+            // where the destination was. Jobs observe the token (FFmpeg, renders, ...); a stuck one is abandoned after the timeout.
+            AppHost.Get<ConversionService>().DrainAsync(TimeSpan.FromSeconds(10)).Wait(TimeSpan.FromSeconds(11));
             UiZoom.Flush();
             watchdog.Dispose();
             AppHost.Get<MemoryTrimmer>().Dispose();

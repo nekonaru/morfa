@@ -17,7 +17,9 @@ if [ "$bundle_id" != 'com.morfa.app' ]; then
     printf '%s\n' 'The bundle is not Morfa.'
     exit 1
 fi
-"$install_dir/Contents/MacOS/Morfa" --uninstall-cleanup
+if ! "$install_dir/Contents/MacOS/Morfa" --uninstall-cleanup; then
+    printf '%s\n' 'Warning: Morfa could not clean up everything it had registered. The installation is still being removed.' >&2
+fi
 if [ -L "$HOME/.local/bin/morfa" ] && [ "$(readlink "$HOME/.local/bin/morfa")" = "$install_dir/Contents/MacOS/morfa-cli" ]; then
     rm -- "$HOME/.local/bin/morfa"
 fi
