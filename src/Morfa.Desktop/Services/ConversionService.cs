@@ -172,6 +172,23 @@ public sealed class ConversionService
     }
 
     /// <summary>
+    /// Cancels every job in flight and waits for it. Used on exit so a quit cannot leave a half-written file next to
+    /// the user's source.
+    /// </summary>
+    public async Task DrainAsync(TimeSpan timeout)
+    {
+        foreach (var vm in _byId.Values)
+            vm.Job.Cancel();
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        while (watch.Elapsed < timeout)
+        {
+            if (_byId.Values.All(w => w.Job.State is not (JobState.Queued or JobState.Running)))
+                return;
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Converts like <see cref="Start"/> (shown in the toast and history) and completes when the job has finished.
     /// Callable from any thread; used by watch folders.
     /// </summary>

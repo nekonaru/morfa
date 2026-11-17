@@ -2,6 +2,43 @@
 
 What changed in each version of Morfa. Newest version on top.
 
+## v1.3.0
+
+Stability refresh: exits cancel in-flight conversions, merge jobs report failures properly, watch folders retry transient problems, and a new CSV export joins Home.
+
+## New features
+
+- **Export history as CSV.** A new button on Home writes the recent conversions (date, preset, state, sources, outputs, failures) to a UTF-8 CSV file.
+
+## Bug fixes
+
+- **Exiting Morfa now cancels running conversions.** Quit used to abandon jobs mid-run, leaving half-written files at user-visible paths.
+- **Merged jobs no longer report zero failures.** A merge that converted every part but failed to stitch them now fails the files themselves, so the batch can be retried and watch folders no longer credit it as converted.
+- **Failed watch-folder batches are re-queued with fresh stability.** Up to three attempts per session before they count as failed.
+- **Settings migrations no longer skip when profiles.json is missing.** A migration could be silently lost even with the schema still bumped.
+- **The colour of the danger brush in dark mode is readable.** White text on a light red was unreadable; danger is now a solid strong red.
+- **Primary CTA buttons styled again.** The `accent` class used by Install, Launch, retry and similar actions had no style; they now render as filled accent buttons.
+- **Enabling a context menu with a broken Thunar config fails cleanly.** Only the export fails, not the whole SetContextMenu call.
+- **Disabling the context menu keeps going past a broken Thunar config.** The other file manager entries are removed regardless.
+- **The Linux installer no longer replaces a foreign `~/.local/bin/morfa`.** It refreshes only a Morfa-created symlink; otherwise it leaves it alone and reports.
+- **Linux and macOS uninstallers continue when Morfa cannot clean up its registration.** The rest of the uninstall still runs.
+- **Output name resolution stops after 1000 numbered candidates.** A pathological watched folder cannot spin this forever.
+- **Settings writes use a delete-share, retry the rename, and sweep stale `.tmp` files at startup.**
+- **Passwordless shortcuts are no longer resurrected by the migration.** The migration that re-added empty trigger lists is gone.
+- **Trigger entries keep `.exe` matching case-insensitively.** Leading `.exe` was stripped from the middle of names before; now it is stripped only at the end.
+- **Markdown media paths rewritten by a Pandoc round-trip are replaced only inside image targets.** A plain string that happened to match the path elsewhere in the document is untouched.
+- **SVG conversions free their native Skia picture when done.**
+- **XHTML exports keep only recognised http/https/mailto/ftp/ftps/tel link schemes.** Other schemes are kept as text, not turned into clickable links.
+- **XML output filters characters that XML 1.0 forbids.** A corrupted unicode escape in a cell no longer breaks the file.
+- **FFmpeg concat lists use forward slashes.** Paths from Windows no longer need double-escaping.
+- **Watch-folder status updates now run on the UI thread.** Previously the DataContext-bound state may have been updated from a background thread.
+
+## Improvements
+
+- **Recent-conversion thumbnails evict the oldest fifth instead of flushing all.** A full cache no longer reloads the entire list from disk; hot entries survive.
+- **Piped concurrency: Planner order is built in linear time and the sanitizer reuses one frozen character-set.** Allocation on every conversion path goes down.
+- **Settings schema is only raised, never lowered.** A settings file written by a newer build keeps its newer schema marker on a downgrade.
+
 ## v1.2.2
 
 Stability refresh: the queue no longer dies mid-batch, watch folders honor cancellation and retry transient failures, and several converter bugs that could corrupt files are fixed.

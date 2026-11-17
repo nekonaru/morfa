@@ -132,7 +132,12 @@ public sealed class TriggerService : IDisposable
         _detector.Paused = settings.Paused;
         _flipKey = settings.Donut.EffectiveFlipKey(settings.Triggers);
         _flipWheel = settings.Donut.FlipWithWheel;
-        _excluded = new HashSet<string>(settings.ExcludedProcesses.Select(p => p.Trim().Replace(".exe", "", StringComparison.OrdinalIgnoreCase)),
+        _excluded = new HashSet<string>(settings.ExcludedProcesses.Select(p =>
+        {
+            // Strip the extension only at the end, not in the middle: "my.exes.process" is not "my.s.process".
+            var trimmed = p.Trim();
+            return trimmed.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? trimmed[..^4] : trimmed;
+        }),
             StringComparer.OrdinalIgnoreCase);
     }
 

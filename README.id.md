@@ -64,6 +64,7 @@ Morfa terinspirasi dari, dan membangun atas, [Filee](https://github.com/KnifeLem
 | **Banyak file sekaligus, paralel** | Rute dengan beberapa langkah (HWP ke HWPX ke DOCX) ditemukan otomatis |
 | **Watch folder** | Konversi setiap file yang masuk ke folder yang kamu pilih |
 | **Konversi terbaru** | Setiap hasil muncul di Home dengan thumbnail: buka file itu, atau buka dengan aplikasi lain |
+| **Ekspor riwayat** | Ekspor daftar konversi terbaru ke CSV UTF-8 dari Home |
 
 ### Toolbar dan Preset
 

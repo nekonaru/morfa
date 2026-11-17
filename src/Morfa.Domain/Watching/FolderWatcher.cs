@@ -306,6 +306,25 @@ public sealed class FolderWatcher : IAsyncDisposable
             var extension = Path.GetExtension(target);
             for (var n = 2; File.Exists(target); n++)
                 target = Path.Combine(Path.GetDirectoryName(target)!, $"{name} ({n}){extension}");
+            // Companion files (e.g. a Shapefile's .dbf and .shp.xml) travel with the source, not as unknown files.
+            foreach (var companion in Domain.Formats.CompanionFiles.Of(source))
+            {
+                var companionTarget = Path.Combine(Path.GetDirectoryName(target)!, Path.GetFileName(companion));
+                for (var n = 2; File.Exists(companionTarget); n++)
+                {
+                    var companionName = Path.GetFileNameWithoutExtension(companionTarget);
+                    var companionExtension = Path.GetExtension(companionTarget);
+                    companionTarget = Path.Combine(Path.GetDirectoryName(companionTarget)!, $"{companionName} ({n}){companionExtension}");
+                }
+                try
+                {
+                    File.Move(companion, companionTarget);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    log.LogWarning(ex, "Could not move {File} to the originals folder", companion);
+                }
+            }
             File.Move(source, target);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

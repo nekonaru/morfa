@@ -74,7 +74,7 @@ public sealed class WatchFolderService(UserDataStore store, ConversionService co
                     await watcher.DisposeAsync();
                 }
             }
-            StatusChanged?.Invoke(this, EventArgs.Empty);
+            Dispatcher.UIThread.Post(() => StatusChanged?.Invoke(this, EventArgs.Empty));
         }
         finally
         {

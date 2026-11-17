@@ -163,7 +163,21 @@ if ($Runtime.StartsWith('osx-')) {
     Invoke-Checked 'Applications link' { ln -s /Applications (Join-Path $volume 'Applications') }
     Copy-Item -LiteralPath (Join-Path $root 'installer/macos/INSTALL.txt') -Destination $volume
     $temporaryImage = "$diskImage.$([Guid]::NewGuid().ToString('N')).partial.dmg"
-    Invoke-Checked 'Create dmg' { hdiutil create -volname Morfa -srcfolder $volume -fs HFS+ -format UDZO -ov $temporaryImage | Out-Null }
+    # macOS background scanning (XProtect et al.) can hold the source folder for a few seconds, making hdiutil fail
+    # with "Resource busy". That is a flake, not a real problem: retry with a short wait. Do not kill system
+    # processes to dodge it; just try again.
+    $created = $false
+    for ($attempt = 1; $attempt -le 5 -and -not $created; $attempt++) {
+        hdiutil create -volname Morfa -srcfolder $volume -fs HFS+ -format UDZO -ov $temporaryImage | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            $created = $true
+        } else {
+            Write-Host "Create dmg: attempt $attempt of 5 failed with exit code $LASTEXITCODE; retrying in 10s"
+            if (Test-Path -LiteralPath $temporaryImage) { Remove-Item -LiteralPath $temporaryImage -Force }
+            Start-Sleep -Seconds 10
+        }
+    }
+    if (-not $created) { throw 'Create dmg failed after 5 attempts' }
     Move-Item -LiteralPath $temporaryImage -Destination $diskImage
     $packages += $diskImage
 }

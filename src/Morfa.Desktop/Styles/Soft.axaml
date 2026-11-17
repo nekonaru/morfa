@@ -35,7 +35,7 @@
           <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1DFFFFFF" />
           <SolidColorBrush x:Key="TextPrimaryBrush" Color="#ECEBE7" />
           <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A5A29A" />
-          <SolidColorBrush x:Key="DangerBrush" Color="#F09595" />
+          <SolidColorBrush x:Key="DangerBrush" Color="#C73A39" />
           <SolidColorBrush x:Key="SuccessBrush" Color="#5DCAA5" />
           <SolidColorBrush x:Key="WarningBrush" Color="#EF9F27" />
           <BoxShadows x:Key="CardShadow">0 1 2 0 #56000000, 0 10 22 0 #38000000</BoxShadows>
@@ -53,7 +53,7 @@
       <CornerRadius x:Key="SoftRadiusLarge">22</CornerRadius>
       <FontFamily x:Key="AppFontFamily">Segoe UI, Malgun Gothic, Microsoft YaHei, sans-serif</FontFamily>
 
-      <!-- Springy easing used by press/hover transitions ("말랑말랑"). -->
+      <!-- Springy easing used by press/hover transitions (soft and springy). -->
       <BackEaseOut x:Key="SoftEase" />
     </ResourceDictionary>
   </Styles.Resources>
@@ -202,6 +202,21 @@
     <Setter Property="Padding" Value="8" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <!-- Primary call to action: filled with the accent colour, white text. -->
+  <Style Selector="Button.accent">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SoftRadiusSmall}" />
+    <Setter Property="Padding" Value="16,10" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentStrongBrush}" />
+  </Style>
+  <Style Selector="Button.accent:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentStrongBrush}" />
   </Style>
 
   <Style Selector="ProgressBar.soft">

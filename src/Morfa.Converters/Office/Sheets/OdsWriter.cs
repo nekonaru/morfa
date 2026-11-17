@@ -273,8 +273,7 @@ internal static class OdsWriter
         return sb.ToString();
     }
 
-    private static string Escape(string text) =>
-        SecurityElement.Escape(new string([.. text.Where(ch => ch is '\t' or '\n' or '\r' || ch >= ' ')])) ?? "";
+    private static string Escape(string text) => XmlEscape.Escape(text);
 
     private static void Add(ZipArchive zip, string name, string content, CompressionLevel level = CompressionLevel.Optimal)
     {

@@ -164,8 +164,7 @@ internal static class XlsxWriter
         return result;
     }
 
-    internal static string Escape(string text) =>
-        SecurityElement.Escape(new string([.. text.Where(ch => ch is '\t' or '\n' or '\r' || ch >= ' ')])) ?? "";
+    internal static string Escape(string text) => XmlEscape.Escape(text);
 
     private static void Add(ZipArchive zip, string name, string content)
     {

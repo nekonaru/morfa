@@ -64,6 +64,7 @@ Morfa is inspired by, and builds on, [Filee](https://github.com/KnifeLemon/Filee
 | **Many files at once, in parallel** | Routes with several steps (HWP to HWPX to DOCX) are found automatically |
 | **Watch folders** | Convert every file that lands in a folder you choose |
 | **Recent conversions** | Every result on Home with a thumbnail: open it, or open it with another app |
+| **Export history** | Save the recent-conversions list to a UTF-8 CSV file from Home |
 
 ### Toolbars and Presets
 

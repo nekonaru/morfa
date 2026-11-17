@@ -38,7 +38,7 @@ internal static class HistoryThumbnails
         "png", "jpg", "jpeg", "jfif", "webp", "gif", "bmp", "ico",
     };
 
-    private sealed record Entry(DateTime Written, long Length, Bitmap? Bitmap);
+    private sealed record Entry(DateTime Written, long Length, Bitmap? Bitmap, DateTime Created);
 
     private static readonly Dictionary<string, Entry> Cache = new(FileSystemPaths.Comparer);
     private static readonly Lock CacheLock = new();
@@ -97,8 +97,13 @@ internal static class HistoryThumbnails
         lock (CacheLock)
         {
             if (Cache.Count >= CacheSize)
-                Cache.Clear();
-            Cache[path] = new Entry(written, length, bitmap);
+            {
+                // Drop the oldest fifth instead of wiping the cache, so the view does not flicker.
+                var drop = Math.Max(1, CacheSize / 5);
+                foreach (var oldest in Cache.OrderBy(e => e.Value.Created).Take(drop).Select(e => e.Key).ToList())
+                    Cache.Remove(oldest);
+            }
+            Cache[path] = new Entry(written, length, bitmap, DateTime.UtcNow);
         }
         return bitmap;
     }

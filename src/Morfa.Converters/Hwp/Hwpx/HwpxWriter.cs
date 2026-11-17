@@ -9,7 +9,7 @@
 //  * HwpxWriter.Objects.cs pictures, text boxes, notes, hyperlinks, bookmarks and page numbers.
 
 using System.IO.Compression;
-using System.Security;
+
 using System.Text;
 using System.Xml.Linq;
 using ImageMagick;
@@ -203,16 +203,7 @@ internal sealed partial class HwpxWriter
         elements.Select(e => int.TryParse((string?)e.Attribute("id"), out var id) ? id : 0).DefaultIfEmpty(0).Max();
 
     /// <summary>XML-escapes text and removes characters XML 1.0 does not allow (e.g. vertical tab from Word).</summary>
-    internal static string Escape(string text)
-    {
-        var clean = new StringBuilder(text.Length);
-        foreach (var ch in text)
-        {
-            if (ch is '\t' or '\n' or '\r' || (ch >= 0x20 && ch != 0xFFFE && ch != 0xFFFF))
-                clean.Append(ch);
-        }
-        return SecurityElement.Escape(clean.ToString()) ?? "";
-    }
+    internal static string Escape(string text) => XmlEscape.Escape(text);
 
     private static string ReadEntry(ZipArchive archive, string name)
     {

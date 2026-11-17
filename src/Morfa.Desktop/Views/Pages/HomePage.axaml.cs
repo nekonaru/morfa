@@ -4,9 +4,11 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Microsoft.Extensions.Logging;
 using Morfa.Desktop.Services;
+using Morfa.Domain.Settings;
 
 namespace Morfa.Desktop.Views.Pages;
 
@@ -59,6 +61,24 @@ public partial class HomePage : UserControl
             : new Point(DropZone.Bounds.Width / 2, DropZone.Bounds.Height / 2);
         var screenPoint = DropZone.PointToScreen(targetPos);
         AppHost.Get<RadialController>().ShowForFiles(screenPoint.X, screenPoint.Y, paths);
+    }
+
+    private async void OnExportHistoryClick(object? sender, RoutedEventArgs? e)
+    {
+        if (TopLevel.GetTopLevel(this) is not { } top)
+            return;
+        var target = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export history as CSV",
+            SuggestedFileName = "morfa-history.csv",
+            FileTypeChoices = [new FilePickerFileType("CSV") { Patterns = ["*.csv"] }],
+        });
+        if (target?.TryGetLocalPath() is not { } path)
+            return;
+        var entries = AppHost.Get<UserDataStore>().History;
+        if (entries.Count == 0)
+            return; // nothing to write
+        HistoryCsv.Write(path, entries);
     }
 
     private void OnDrop(object? sender, DragEventArgs e)

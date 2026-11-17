@@ -51,7 +51,11 @@ internal static class SvgRenderer
         /// <summary>The SVG viewport (width/height or viewBox) in CSS pixels.</summary>
         public SKRect Bounds { get; } = bounds;
 
-        public void Dispose() => Svg.Dispose();
+        public void Dispose()
+        {
+            Svg.Dispose();
+            Picture.Dispose(); // the Skia picture is a native object; freeing it releases the native memory
+        }
     }
 
     /// <summary>Loads an SVG or SVGZ (gzip) file.</summary>

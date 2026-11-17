@@ -17,7 +17,9 @@ if target.is_symlink() or target.resolve() != expected:
 if (target / '.morfa-package').read_text(encoding='utf-8').strip() != 'com.morfa.app':
     raise SystemExit('The directory is not an installation created by Morfa.')
 PY
-"$install_dir/Morfa" --uninstall-cleanup
+if ! "$install_dir/Morfa" --uninstall-cleanup; then
+    printf '%s\n' 'Warning: Morfa could not clean up everything it had registered. The installation is still being removed.' >&2
+fi
 if [ -f "$gnome_extension_dir/.morfa-package" ] && [ "$(cat "$gnome_extension_dir/.morfa-package")" = 'com.morfa.app' ]; then
     if command -v gnome-extensions >/dev/null 2>&1; then
         gnome-extensions disable "$gnome_extension_id" >/dev/null 2>&1 || true

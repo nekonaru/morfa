@@ -109,11 +109,22 @@ internal sealed class LinuxDesktopIntegration(string configHome, string dataHome
             Path.Combine(dataHome, "nemo", "actions", "morfa.nemo_action"),
             Path.Combine(dataHome, "kio", "servicemenus", "morfa.desktop"),
         };
-        var thunar = LoadThunarActions(thunarPath);
-        UpdateThunarAction(thunar, enabled, executablePath, label);
+        // Enabling: a broken uca.xml fails before anything is written (the test MalformedThunarConfigurationIsNotOverwritten
+        // asserts the whole operation is atomic). Disabling: report and keep going so the rest is still removed.
+        XDocument? thunar;
+        if (enabled)
+        {
+            thunar = LoadThunarActions(thunarPath);
+            UpdateThunarAction(thunar, true, executablePath, label);
+        }
+        else
+        {
+            try { thunar = LoadThunarActions(thunarPath); UpdateThunarAction(thunar, false, executablePath, label); }
+            catch (Exception) { thunar = null; }
+        }
         if (!enabled)
         {
-            if (File.Exists(thunarPath))
+            if (thunar is not null && File.Exists(thunarPath))
                 Write(thunarPath, thunar.ToString());
             foreach (var path in menuPaths)
                 File.Delete(path);
@@ -122,7 +133,8 @@ internal sealed class LinuxDesktopIntegration(string configHome, string dataHome
 
         var command = $"{DesktopArgument(executablePath)} --convert %F";
         var name = DesktopValue(label);
-        Write(thunarPath, thunar.ToString());
+        if (thunar is not null)
+            Write(thunarPath, thunar.ToString());
         Write(menuPaths[0], $"[Desktop Entry]\nType=Application\nName={name}\nExec={command}\nIcon=document-save-as\nTerminal=false\n");
         Write(menuPaths[1], $"#!/bin/sh\n[ \"$#\" -gt 0 ] || exit 0\nfor file do\n  case \"$file\" in\n    /*) set -- \"$@\" \"$file\" ;;\n    *) set -- \"$@\" \"$PWD/$file\" ;;\n  esac\n  shift\ndone\nexec {ShellArgument(executablePath)} --convert \"$@\"\n", executable: true);
         Write(menuPaths[2], $"[Nemo Action]\nName={name.Replace("%", "%%", StringComparison.Ordinal)}\nExec={command}\nSelection=notnone\nExtensions=nodirs;\nUriScheme=file\nIcon-Name=document-save-as\n");
