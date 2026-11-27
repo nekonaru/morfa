@@ -331,6 +331,35 @@ public sealed class CliTests : IDisposable
     }
 
     [Fact]
+    public async Task Doctor_reports_a_clean_machine_and_accepts_fix()
+    {
+        var (code, output, errors) = await Run("doctor");
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.Contains("settings", output);
+        Assert.Contains("engines", output);
+        Assert.Contains("queue", output);
+
+        (code, output, _) = await Run("doctor", "--fix");
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("created settings.json with defaults", output);
+        Assert.True(File.Exists(Path.Combine(_settings, "settings.json")));
+    }
+
+    [Fact]
+    public async Task Doctor_fails_on_a_broken_settings_file()
+    {
+        await File.WriteAllTextAsync(Path.Combine(_settings, "settings.json"), "{ not json",
+            TestContext.Current.CancellationToken);
+
+        var (code, output, errors) = await Run("doctor");
+
+        Assert.NotEqual(Cli.Success, code);
+        Assert.Contains("settings backup", output);
+        Assert.Contains("check(s) failed", errors);
+    }
+
+    [Fact]
     public async Task Queue_command_lists_pauses_and_resumes_a_saved_job()
     {
         var store = new JobStore(_settings);

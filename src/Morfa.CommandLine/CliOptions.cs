@@ -19,6 +19,7 @@ internal sealed record CliOptions
     public bool Quiet { get; set; }
     public bool MoveOriginals { get; set; }
     public bool KeepDates { get; set; }
+    public bool Fix { get; set; }
 
     public bool Zip { get; set; }
     public double? SettleSeconds { get; set; }
@@ -100,6 +101,9 @@ internal sealed record CliOptions
                 case "--zip":
                     options.Zip = true;
                     break;
+                case "--fix":
+                    options.Fix = true;
+                    break;
                 case "--settle":
                     var settle = Value();
                     if (settle is not null)
@@ -133,6 +137,7 @@ internal sealed record CliOptions
                 $"Unknown queue action '{options.Inputs[0]}'.",
             "queue" when options.Inputs[0].ToLowerInvariant() is "pause" or "resume" && options.Inputs.Count != 2 =>
                 $"{options.Inputs[0]} needs a job id.",
+            "doctor" when options.Inputs.Count > 0 => "doctor takes no arguments.",
             _ => null,
         };
         return options;

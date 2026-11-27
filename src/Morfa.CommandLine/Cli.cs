@@ -2,13 +2,17 @@
 // --json, one JSON document for other programs. Exit codes: 0 everything converted, 1 some files failed,
 // 2 wrong arguments or a missing input, 3 nothing to convert.
 
+using System.Net.Http;
 using System.Text.Json;
+using Morfa.Converters.Infrastructure;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Watching;
+using Morfa.Platforms.Linux;
+using Morfa.Platforms.Windows;
 
 namespace Morfa.CommandLine;
 
@@ -47,6 +51,7 @@ internal static class Cli
             "watch" => await WatchAsync(options, host, output, errors, cancellationToken),
             "formats" => ListFormats(options, host, output, errors),
             "queue" => Queue(options, host, output, errors),
+            "doctor" => Doctor(options, host, output, errors),
             _ => ListPresets(host, output),
         };
     }
@@ -321,6 +326,120 @@ internal static class Cli
                 missing.Add(input);
         }
         return files.Select(Path.GetFullPath).Distinct(FileSystemPaths.Comparer).ToList();
+    }
+
+    /// <summary>
+    /// Local health check. Missing optional engines and missing permissions are warnings, because Morfa can run
+    /// without them. Unreadable settings or a corrupt queue are errors and give a nonzero exit.
+    /// </summary>
+    private static int Doctor(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
+    {
+        var failed = 0;
+        void Ok(string name, string detail) => output.WriteLine($"ok      {name}: {detail}");
+        void Warn(string name, string detail) => output.WriteLine($"warning {name}: {detail}");
+        void Error(string name, string detail)
+        {
+            output.WriteLine($"error   {name}: {detail}");
+            failed++;
+        }
+
+        var folder = host.Store.Directory;
+        var settings = Path.Combine(folder, "settings.json");
+        var settingsMissing = !File.Exists(settings);
+        if (settingsMissing)
+            Warn("settings", "no file yet; defaults are in use");
+        else
+        {
+            try
+            {
+                using var json = JsonDocument.Parse(File.ReadAllText(settings));
+                Ok("settings", $"schema {json.RootElement.GetProperty("schemaVersion").GetInt32()}");
+            }
+            catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException or IOException)
+            {
+                Error("settings", ex.Message);
+            }
+        }
+        if (File.Exists(settings + ".broken"))
+            Error("settings backup", "a broken settings file was kept for inspection; restore or remove it by hand");
+        if (File.Exists(Path.Combine(folder, ".queue-v2.json.broken")))
+            Error("queue backup", "a broken queue file was kept for inspection; restore or remove it by hand");
+        Ok("queue", $"{host.QueueStore.Load().Jobs.Count} saved job(s)");
+
+        try
+        {
+            using var http = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false });
+            var installer = new EngineInstaller(http);
+            var installed = 0;
+            var outdated = 0;
+            foreach (var package in EngineDownloads.Packages)
+            {
+                if (!installer.IsInstalled(package))
+                    continue;
+                installed++;
+                if (!installer.IsUpToDate(package))
+                {
+                    outdated++;
+                    Warn("engine", $"{package.Id} is installed but not the pinned version");
+                }
+            }
+            Ok("engines", $"{installed} installed, {outdated} not pinned (optional engines may be absent)");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            Warn("engines", ex.Message);
+        }
+
+        try
+        {
+            var root = Path.GetPathRoot(folder);
+            if (root is not null && new DriveInfo(root).AvailableFreeSpace < 500L * 1024 * 1024)
+                Warn("disk", "less than 500 MB free in the data folder");
+            else
+                Ok("disk", "enough free space in the data folder");
+        }
+        catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
+        {
+            Warn("disk", ex.Message);
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            var granted = new Morfa.Platforms.MacOS.MacOSPlatformServices().HasAccessibilityPermission;
+            if (granted) Ok("accessibility", "granted");
+            else Warn("accessibility", "not granted; keyboard and drag gestures need it");
+        }
+        if (OperatingSystem.IsWindows())
+        {
+            var state = Elevation.Probe();
+            if (state.ShellCannotReachMorfa)
+                Warn("elevation", "Explorer cannot reach an elevated Morfa; window drops will not work");
+            else
+                Ok("elevation", state.ToString());
+        }
+        if (OperatingSystem.IsLinux())
+        {
+            var linux = new LinuxPlatformServices();
+            if (LinuxPlatformServices.IsWaylandSession && !linux.SupportsGlobalPointerGestures)
+                Warn("session", linux.GlobalPointerGesturesUnavailableReason ?? "Wayland gestures unavailable");
+        }
+
+        if (options.Fix)
+        {
+            if (settingsMissing)
+            {
+                host.Store.SaveSettings();
+                Ok("repair", "created settings.json with defaults");
+            }
+            else
+            {
+                Ok("repair", "nothing to repair automatically; a broken file needs a human decision");
+            }
+        }
+
+        if (failed > 0)
+            errors.WriteLine($"morfa: {failed} check(s) failed.");
+        return failed == 0 ? Success : SomeFailed;
     }
 
     /// <summary>

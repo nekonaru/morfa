@@ -32,7 +32,8 @@ internal static class Help
         Usage: morfa doctor [--fix]
 
         Checks settings, engines, disk space and platform permissions. Prints one line per check
-        and exits 0 when no error was found. --fix applies only repairs that cannot lose data.
+        and exits 0 when no error was found. --fix creates a default settings file when none exists;
+        it never overwrites a broken file.
 
         """;
 
