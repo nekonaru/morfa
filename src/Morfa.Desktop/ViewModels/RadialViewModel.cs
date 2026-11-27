@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Morfa.Desktop.Controls;
 using Morfa.Desktop.Services;
 using Morfa.Domain.Formats;
+using Morfa.Domain.Conversion;
 using Morfa.Domain.History;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Presets;
@@ -109,7 +110,8 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
         var wanted = ids.ToList();
         var cutoff = DateTime.Now.AddDays(-30);
         var recent = history
-            .Where(h => h.FinishedAt >= cutoff && !string.IsNullOrEmpty(h.PresetId))
+            .Where(h => h.FinishedAt >= cutoff && !string.IsNullOrEmpty(h.PresetId)
+                && h.State is JobState.Completed or JobState.CompletedWithErrors)
             .GroupBy(h => h.PresetId!)
             .OrderByDescending(g => g.Count())
             .ThenByDescending(g => g.Max(h => h.FinishedAt))
@@ -223,9 +225,9 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
             return (IsBackFace ? BackFace() : _front).Items.Count > 0;
         _filter = text;
         _front = BuildFace(_frontIds, _formats, text);
-        _back = null;
+        _back = BuildFace(_backIds, _formats, text);
         ShowFace(IsBackFace);
-        var visible = IsBackFace ? BackFace() : _front;
+        var visible = IsBackFace ? _back : _front;
         if (visible.Items.Count == 0 && text.Length > 0)
             CenterSubtitle = loc["donut.no_matches"];
         else
@@ -269,7 +271,7 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
     }
 
     /// <summary>The back face's slices for the files, checked now if they weren't yet.</summary>
-    private Face BackFace() => _back ??= BuildFace(_backIds, _formats);
+    private Face BackFace() => _back ??= BuildFace(_backIds, _formats, _filter);
 
     private bool HasGroups(IEnumerable<string> presetIds) => presetIds.Any(id => store.FindPreset(id)?.IsGroup == true);
 
@@ -280,6 +282,7 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
             .OfType<Preset>()
             .Where(p => filter.Length == 0
                 || loc.DisplayName(p).Contains(filter, StringComparison.OrdinalIgnoreCase)
+                || loc.DonutName(p).Contains(filter, StringComparison.OrdinalIgnoreCase)
                 || p.Id.Contains(filter, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
@@ -343,7 +346,9 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
                 ? loc.Format(IsClickMode ? "donut.click_to" : "donut.drop_to", Items[index].Label)
                 : Items[index].DisabledReason;
         else
-            CenterSubtitle = IsClickMode ? loc["donut.close_hint"] : null;
+            CenterSubtitle = _filter.Length > 0 && Items.Count == 0
+                ? loc["donut.no_matches"]
+                : IsClickMode ? loc["donut.close_hint"] : null;
     }
 
     /// <summary>

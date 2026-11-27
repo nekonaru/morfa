@@ -38,9 +38,11 @@ public class DonutKeyboardFilterTests
         var first = donut.ActiveIndex;
         donut.HandleKey(Key.Right);
         Assert.Equal((first + 1) % 3, donut.ActiveIndex);
+        donut.HandleKey(Key.Left);
+        Assert.Equal(first, donut.ActiveIndex);
         donut.HandleKey(Key.Enter);
 
-        Assert.Equal([donut.ActiveIndex], invoked);
+        Assert.Equal([first], invoked);
         window.Close();
     }
 
@@ -51,6 +53,7 @@ public class DonutKeyboardFilterTests
         var history = new[]
         {
             new HistoryEntry { PresetId = "to-png", FinishedAt = DateTime.Now, State = Morfa.Domain.Conversion.JobState.Completed },
+            new HistoryEntry { PresetId = "to-jpg", FinishedAt = DateTime.Now.AddMinutes(1), State = Morfa.Domain.Conversion.JobState.Failed },
         };
 
         var ordered = RadialViewModel.OrderByRecent(ids, history);
@@ -75,6 +78,7 @@ public class DonutKeyboardFilterTests
             Assert.True(all > 1);
 
             Assert.True(vm.SetFilter("png"));
+            Assert.True(vm.Items.Count > 0 && vm.Items.Count < all);
             Assert.All(vm.Items, item =>
                 Assert.True(item.Label.Contains("png", StringComparison.OrdinalIgnoreCase)
                     || item.Id.Contains("png", StringComparison.OrdinalIgnoreCase)));
@@ -88,6 +92,93 @@ public class DonutKeyboardFilterTests
             vm.SetFilter("");
             Assert.Equal(all, vm.Items.Count);
             Assert.Equal("", vm.Filter);
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [AvaloniaFact]
+    public void Filtering_applies_to_the_back_face_and_no_match_is_reported_to_the_hub()
+    {
+        TestServices.EnsureInitialized("en");
+        var vm = NewViewModel();
+        var folder = Directory.CreateTempSubdirectory("morfa-filter-");
+        try
+        {
+            var png = Path.Combine(folder.FullName, "a.png");
+            File.WriteAllText(png, "x");
+            vm.Load([png], clickMode: true);
+
+            if (vm.CanFlip)
+                Assert.True(vm.ToggleFace());
+            var visible = vm.Items.Count;
+
+            Assert.False(vm.SetFilter("no-such-format"));
+            Assert.Empty(vm.Items);
+            vm.ShowHint(-1, -1, false);
+            Assert.Equal("No matching format", vm.CenterSubtitle);
+
+            vm.SetFilter("");
+            Assert.Equal(visible, vm.Items.Count);
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [AvaloniaFact]
+    public void Modifier_shortcuts_do_not_become_filter_text()
+    {
+        TestServices.EnsureInitialized("en");
+        var vm = NewViewModel();
+        var folder = Directory.CreateTempSubdirectory("morfa-filter-");
+        try
+        {
+            var png = Path.Combine(folder.FullName, "a.png");
+            File.WriteAllText(png, "x");
+            vm.Load([png], clickMode: true);
+            var window = new RadialWindow { DataContext = vm };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.Focus();
+
+            window.KeyPress(Key.P, RawInputModifiers.Control, PhysicalKey.P, null);
+
+            Assert.Equal("", vm.Filter);
+            window.Close();
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [AvaloniaFact]
+    public void Escape_closes_when_the_filter_is_empty()
+    {
+        TestServices.EnsureInitialized("en");
+        var vm = NewViewModel();
+        var folder = Directory.CreateTempSubdirectory("morfa-filter-");
+        try
+        {
+            var png = Path.Combine(folder.FullName, "a.png");
+            File.WriteAllText(png, "x");
+            vm.Load([png], clickMode: true);
+            var window = new RadialWindow { DataContext = vm };
+            var closed = 0;
+            window.EscapePressed += () => closed++;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.Focus();
+
+            window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+
+            Assert.Equal("", vm.Filter);
+            Assert.Equal(1, closed);
+            window.Close();
         }
         finally
         {

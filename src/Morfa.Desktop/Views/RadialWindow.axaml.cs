@@ -112,24 +112,26 @@ public partial class RadialWindow : Window
     {
         base.OnKeyDown(e);
         // In click mode the window has focus: letters and digits narrow the slices, like a small search box. Backspace
-        // shortens the text, Escape clears it before it closes the window. Drag mode has no focus and keeps its old path.
-        if (DataContext is RadialViewModel { IsClickMode: true } vm && FilterKey(e.Key) is { } key)
+        // shortens a filter, Escape clears it before it closes the window. Drag mode has no focus and keeps its old path.
+        // Modifier shortcuts belong to the OS or the app, not to the filter.
+        if (DataContext is RadialViewModel { IsClickMode: true } vm
+            && (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta)) == 0)
         {
-            var filter = key == "\b"
-                ? vm.Filter.Length == 0 ? "" : vm.Filter[..^1]
-                : vm.Filter + key;
-            vm.SetFilter(filter);
-            Donut.SetExternalHighlight(0);
-            e.Handled = true;
-            return;
-        }
-        if (DataContext is RadialViewModel { IsClickMode: true, Filter.Length: > 0 } filtering
-            && e.Key is Key.Escape or Key.Back)
-        {
-            filtering.SetFilter("");
-            Donut.SetExternalHighlight(0);
-            e.Handled = true;
-            return;
+            if (FilterKey(e.Key) is { } key && (key != "\b" || vm.Filter.Length > 0))
+            {
+                var filter = key == "\b" ? vm.Filter[..^1] : vm.Filter + key;
+                if (vm.SetFilter(filter))
+                    Donut.SetExternalHighlight(0);
+                e.Handled = true;
+                return;
+            }
+            if (e.Key == Key.Escape && vm.Filter.Length > 0)
+            {
+                vm.SetFilter("");
+                Donut.SetExternalHighlight(0);
+                e.Handled = true;
+                return;
+            }
         }
         if (Donut.HandleKey(e.Key, e.KeyModifiers))
         {
