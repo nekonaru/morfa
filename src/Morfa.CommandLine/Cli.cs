@@ -364,10 +364,8 @@ internal static class Cli
                 ?? Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
             var route = planner.Plan(from, target);
             var steps = route?.Steps.Select(s => $"{s.From}->{s.To} by {s.Converter.DisplayName}").ToList() ?? [];
-            var folder = string.IsNullOrEmpty(options.Output)
-                ? Path.GetDirectoryName(Path.GetFullPath(path))!
-                : Path.GetFullPath(options.Output);
-            var destination = Path.Combine(folder, Path.GetFileNameWithoutExtension(path) + "." + target);
+            var tokens = new OutputPathResolver.Tokens(path, host.Texts.DisplayName(preset), 0, DateTime.Now);
+            var destination = OutputPathResolver.Resolve(preset.Output, tokens, target, p => File.Exists(p));
             if (options.JsonEvents)
             {
                 WriteEvent(output, "plan", json =>
@@ -375,6 +373,7 @@ internal static class Cli
                     json.WriteString("source", path);
                     json.WriteString("target", target);
                     json.WriteString("output", destination);
+                    json.WriteBoolean("skipped", destination is null);
                     json.WriteBoolean("available", route is not null);
                     json.WriteStartArray("route");
                     foreach (var step in steps)
@@ -384,7 +383,7 @@ internal static class Cli
             }
             else if (!options.Quiet)
             {
-                output.WriteLine($"{Shorten(path)} -> {destination}: {(route is null ? "no route" : string.Join(", ", steps))}");
+                output.WriteLine($"{Shorten(path)} -> {(destination is null ? "skipped (output exists)" : destination)}: {(route is null ? "no route" : string.Join(", ", steps))}");
             }
         }
         if (!options.JsonEvents && !options.Quiet)
@@ -433,13 +432,14 @@ internal static class Cli
                 using var json = JsonDocument.Parse(File.ReadAllText(settings));
                 Ok("settings", $"schema {json.RootElement.GetProperty("schemaVersion").GetInt32()}");
             }
-            catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException or IOException)
+            catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException
+                or IOException or UnauthorizedAccessException or FormatException)
             {
-                Error("settings", ex.Message);
+                Error("settings", $"{settings}: {ex.Message}");
             }
         }
         if (File.Exists(settings + ".broken"))
-            Error("settings backup", "a broken settings file was kept for inspection; restore or remove it by hand");
+            Error("settings backup", $"{settings}.broken was kept for inspection; restore or remove it by hand");
         if (File.Exists(Path.Combine(folder, ".queue-v2.json.broken")))
             Error("queue backup", "a broken queue file was kept for inspection; restore or remove it by hand");
         Ok("queue", $"{host.QueueStore.Load().Jobs.Count} saved job(s)");
@@ -527,6 +527,11 @@ internal static class Cli
     private static int Queue(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
     {
         var action = options.Inputs[0].ToLowerInvariant();
+        if (action != "list" && !host.QueueStore.Enabled)
+        {
+            errors.WriteLine("morfa: queue persistence is turned off in settings; no change was made.");
+            return UsageError;
+        }
         if (action == "clear")
         {
             host.QueueStore.Clear();

@@ -145,6 +145,8 @@ internal sealed record CliOptions
                 $"Unknown queue action '{options.Inputs[0]}'.",
             "queue" when options.Inputs[0].ToLowerInvariant() is "pause" or "resume" && options.Inputs.Count != 2 =>
                 $"{options.Inputs[0]} needs a job id.",
+            "queue" when options.Inputs[0].ToLowerInvariant() is "list" or "clear" && options.Inputs.Count != 1 =>
+                $"{options.Inputs[0]} takes no job id.",
             "doctor" when options.Inputs.Count > 0 => "doctor takes no arguments.",
             "watch" when options.DryRun => "--dry-run works with 'convert' only.",
             _ => null,

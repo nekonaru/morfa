@@ -90,6 +90,59 @@ public class JobStoreTests
         Assert.True(File.Exists(store.FilePath));
     }
 
+    [Theory]
+    [InlineData(JobState.Queued)]
+    [InlineData(JobState.Running)]
+    [InlineData(JobState.Completed)]
+    [InlineData(JobState.CompletedWithErrors)]
+    [InlineData(JobState.Failed)]
+    [InlineData(JobState.Cancelled)]
+    public void Every_job_state_round_trips_with_all_metadata(JobState state)
+    {
+        using var dir = new TempDir();
+        var store = new JobStore(dir.Path);
+        var source = dir.File("a.jpg");
+        var job = new ConversionJob([source], new Preset { TargetFormat = "png" }, "PNG");
+        job.State = state;
+        job.Files[0].Outputs.Add("a.png");
+        var snapshot = JobSnapshot.From(job, attempts: 2, maxAttempts: 5, watchRuleId: "watch-1");
+        snapshot.Priority = 4;
+        snapshot.RecipeId = "recipe-1";
+
+        store.Upsert(snapshot);
+        var saved = Assert.Single(store.Load().Jobs);
+        Assert.Equal(snapshot.Id, saved.Id);
+        Assert.Equal([source], saved.Sources);
+        Assert.Equal(["a.png"], saved.Outputs);
+        Assert.Equal(4, saved.Priority);
+        Assert.Equal("recipe-1", saved.RecipeId);
+        Assert.Equal("watch-1", saved.WatchRuleId);
+        Assert.Equal(2, saved.Attempts);
+        Assert.Equal(5, saved.MaxAttempts);
+
+        var rebuilt = saved.ToJob();
+        Assert.Equal(state == JobState.Running ? JobState.Queued : state, rebuilt.State);
+        Assert.Equal(["a.png"], rebuilt.Outputs);
+    }
+
+    [Fact]
+    public void Finished_jobs_older_than_a_week_are_pruned_on_write()
+    {
+        using var dir = new TempDir();
+        var store = new JobStore(dir.Path);
+        var old = JobSnapshot.From(new ConversionJob([dir.File("old.jpg")], new Preset { TargetFormat = "png" }, "PNG"));
+        old.State = nameof(JobState.Completed);
+        old.CreatedAt = DateTime.Now.AddDays(-8);
+        var active = JobSnapshot.From(new ConversionJob([dir.File("new.jpg")], new Preset { TargetFormat = "png" }, "PNG"));
+
+        store.Upsert(old);
+        store.Upsert(active);
+
+        var jobs = store.Load().Jobs;
+        Assert.Single(jobs);
+        Assert.Equal(active.Id, jobs[0].Id);
+    }
+
     [Fact]
     public void A_broken_queue_file_is_kept_for_inspection_and_the_queue_starts_empty()
     {

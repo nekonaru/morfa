@@ -1,5 +1,7 @@
 // Persistent conversion queue: job metadata only, never file contents. The file is atomic like settings.json.
 
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
@@ -30,6 +32,10 @@ public sealed record JobSnapshot
     public string Preset { get; set; } = "";
     public List<string> Sources { get; set; } = [];
     public string? WatchRuleId { get; set; }
+
+    /// <summary>Recipe used by a workflow job, when the workflow feature provides one.</summary>
+    public string? RecipeId { get; set; }
+
     public int Attempts { get; set; }
     public int MaxAttempts { get; set; } = 3;
     public List<string> Outputs { get; set; } = [];
@@ -102,32 +108,57 @@ public sealed record FileSnapshot
 }
 
 /// <summary>Reads and writes the queue file with temp-plus-rename, like UserDataStore.</summary>
-public sealed class JobStore(string? folder = null)
+public sealed class JobStore
 {
-    private readonly object _lock = new();
-    private readonly string _folder = folder ?? UserDataStore.DefaultDirectory;
+    private readonly string _folder;
+    private readonly Mutex _mutex;
+
+    public JobStore(string? folder = null)
+    {
+        _folder = folder ?? UserDataStore.DefaultDirectory;
+        // A named mutex also covers the app and the CLI writing the same file in two processes.
+        var name = "MorfaQueue_" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(FilePath)))[..16];
+        _mutex = new Mutex(false, name);
+    }
 
     public string FilePath => Path.Combine(_folder, ".queue-v2.json");
 
     /// <summary>When off, reads still work but nothing is written. Tests use this to stay off the user's data.</summary>
     public bool Enabled { get; set; } = true;
 
+    private void Enter()
+    {
+        try { _mutex.WaitOne(); }
+        catch (AbandonedMutexException) { } // the previous owner died; we own it now
+    }
+
+    private void Exit()
+    {
+        try { _mutex.ReleaseMutex(); }
+        catch (ApplicationException) { }
+    }
+
     public QueueFile Load()
     {
-        lock (_lock)
+        Enter();
+        try { return LoadNoLock(); }
+        finally { Exit(); }
+    }
+
+    private QueueFile LoadNoLock()
+    {
+        if (!File.Exists(FilePath))
+            return new QueueFile();
+        try
         {
-            if (!File.Exists(FilePath))
-                return new QueueFile();
-            try
-            {
-                using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
-                return JsonSerializer.Deserialize(stream, MorfaJsonContext.Default.QueueFile) ?? new QueueFile();
-            }
-            catch (Exception ex) when (ex is JsonException or IOException or NotSupportedException or UnauthorizedAccessException)
-            {
-                try { File.Copy(FilePath, FilePath + ".broken", overwrite: true); } catch (IOException) { }
-                return new QueueFile();
-            }
+            using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            return JsonSerializer.Deserialize(stream, MorfaJsonContext.Default.QueueFile) ?? new QueueFile();
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or NotSupportedException or UnauthorizedAccessException)
+        {
+            try { File.Copy(FilePath, FilePath + ".broken", overwrite: true); }
+            catch (Exception) { } // a corrupt file must never make the caller crash
+            return new QueueFile();
         }
     }
 
@@ -135,44 +166,76 @@ public sealed class JobStore(string? folder = null)
     {
         if (!Enabled)
             return;
-        lock (_lock)
+        Enter();
+        try { SaveNoLock(file); }
+        finally { Exit(); }
+    }
+
+    private void SaveNoLock(QueueFile file)
+    {
+        System.IO.Directory.CreateDirectory(_folder);
+        // Finished jobs are useful for a while, then they are history rather than queue state.
+        var cutoff = DateTime.Now.AddDays(-7);
+        file.Jobs.RemoveAll(j => !j.Paused
+            && j.State is (nameof(JobState.Completed) or nameof(JobState.CompletedWithErrors)
+                or nameof(JobState.Failed) or nameof(JobState.Cancelled))
+            && j.CreatedAt < cutoff);
+        var temp = FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
         {
-            System.IO.Directory.CreateDirectory(_folder);
-            var temp = FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            try
+            using (var stream = File.Create(temp))
+                JsonSerializer.Serialize(stream, file, MorfaJsonContext.Default.QueueFile);
+            for (var attempt = 0; ; attempt++)
             {
-                using (var stream = File.Create(temp))
-                    JsonSerializer.Serialize(stream, file, MorfaJsonContext.Default.QueueFile);
-                for (var attempt = 0; ; attempt++)
-                {
-                    try { File.Move(temp, FilePath, overwrite: true); break; }
-                    catch (IOException) when (attempt < 3) { Thread.Sleep(50); }
-                }
+                try { File.Move(temp, FilePath, overwrite: true); break; }
+                catch (IOException) when (attempt < 3) { Thread.Sleep(50); }
             }
-            finally
-            {
-                try { File.Delete(temp); } catch (IOException) { }
-            }
+        }
+        finally
+        {
+            try { File.Delete(temp); } catch (IOException) { }
         }
     }
 
+    /// <summary>Adds or replaces one job in one critical section, so two writers cannot lose each other's changes.</summary>
     public void Upsert(JobSnapshot job)
     {
-        var file = Load();
-        var index = file.Jobs.FindIndex(j => j.Id == job.Id);
-        if (index < 0)
-            file.Jobs.Add(job);
-        else
-            file.Jobs[index] = job;
-        Save(file);
+        if (!Enabled)
+            return;
+        Enter();
+        try
+        {
+            var file = LoadNoLock();
+            var index = file.Jobs.FindIndex(j => j.Id == job.Id);
+            if (index < 0)
+                file.Jobs.Add(job);
+            else
+                file.Jobs[index] = job;
+            SaveNoLock(file);
+        }
+        finally { Exit(); }
     }
 
     public void Remove(string id)
     {
-        var file = Load();
-        if (file.Jobs.RemoveAll(j => j.Id == id) > 0)
-            Save(file);
+        if (!Enabled)
+            return;
+        Enter();
+        try
+        {
+            var file = LoadNoLock();
+            if (file.Jobs.RemoveAll(j => j.Id == id) > 0)
+                SaveNoLock(file);
+        }
+        finally { Exit(); }
     }
 
-    public void Clear() => Save(new QueueFile());
+    public void Clear()
+    {
+        if (!Enabled)
+            return;
+        Enter();
+        try { SaveNoLock(new QueueFile()); }
+        finally { Exit(); }
+    }
 }

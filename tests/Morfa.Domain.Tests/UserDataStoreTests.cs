@@ -1,11 +1,47 @@
 using Morfa.Domain.Presets;
 using Morfa.Domain.Profiles;
+using Morfa.Domain.History;
+using Morfa.Domain.Conversion;
 using Morfa.Domain.Settings;
 
 namespace Morfa.Domain.Tests;
 
 public class UserDataStoreTests
 {
+    [Fact]
+    public void Version_46_migration_keeps_presets_profiles_and_history()
+    {
+        using var dir = new TempDir();
+        var store = new UserDataStore(dir.Path);
+        store.Load();
+        store.Presets.Add(new Preset { Id = "my-preset", TargetFormat = "webp" });
+        store.Profiles.Add(new ToolbarProfile { Id = "my-profile", Name = "Mine", PresetIds = ["my-preset"] });
+        store.AddHistory(new HistoryEntry
+        {
+            JobId = "job-1",
+            PresetId = "my-preset",
+            State = JobState.Completed,
+            Sources = ["a.png"],
+            Outputs = ["a.webp"],
+        });
+        store.SaveLibrary();
+        store.SaveSettings();
+
+        var path = Path.Combine(dir.Path, "settings.json");
+        var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        node["schemaVersion"] = 46;
+        File.WriteAllText(path, node.ToJsonString());
+
+        var upgraded = new UserDataStore(dir.Path);
+        upgraded.Load();
+
+        Assert.Equal(AppSettings.CurrentSchemaVersion, upgraded.Settings.SchemaVersion);
+        Assert.Contains(upgraded.Presets, p => p.Id == "my-preset");
+        Assert.Contains(upgraded.Profiles, p => p.Id == "my-profile");
+        Assert.Contains(upgraded.History, h => h.JobId == "job-1");
+        Assert.Equal("a.webp", upgraded.History.Single(h => h.JobId == "job-1").Outputs[0]);
+    }
+
     [Fact]
     public void Version_46_settings_gain_v2_sections_and_keep_existing_values()
     {

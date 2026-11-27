@@ -4,6 +4,7 @@ using System.Text.Json;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Queue;
+using Morfa.Domain.Settings;
 
 namespace Morfa.CommandLine.Tests;
 
@@ -402,6 +403,7 @@ public sealed class CliTests : IDisposable
         var (code, output, errors) = await Run("doctor");
 
         Assert.NotEqual(Cli.Success, code);
+        Assert.Contains("settings.json", output);
         Assert.Contains("settings backup", output);
         Assert.Contains("check(s) failed", errors);
     }
@@ -436,12 +438,30 @@ public sealed class CliTests : IDisposable
     }
 
     [Fact]
+    public async Task Queue_edits_are_refused_when_persistence_is_off()
+    {
+        var store = new UserDataStore(_settings);
+        store.Load();
+        store.Settings.Queue.Persist = false;
+        store.SaveSettings();
+
+        var (code, _, errors) = await Run("queue", "pause", "some-id");
+
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("turned off", errors);
+    }
+
+    [Fact]
     public async Task Queue_command_rejects_an_unknown_action()
     {
         var (code, _, errors) = await Run("queue", "delete");
 
         Assert.Equal(Cli.UsageError, code);
         Assert.Contains("Unknown queue action", errors, StringComparison.OrdinalIgnoreCase);
+
+        (code, _, errors) = await Run("queue", "clear", "some-id");
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("takes no job id", errors);
     }
 
     [Fact]

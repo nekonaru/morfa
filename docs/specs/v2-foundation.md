@@ -14,7 +14,8 @@ Goal: make conversion work survive a restart, let users inspect a plan before wr
 ## Constraints
 
 - Everything stays local. No network call is made by doctor unless the user asks for an engine download.
-- The queue stores paths and metadata only, never file contents.
+- The queue stores paths and metadata only, never file contents. `attempts`, `maxAttempts`, `watchRuleId` and `recipeId` are written with defaults in F0. Retry and rule logic fill them in F2 and F3.
+- Finished jobs are removed from the queue file after seven days. History keeps its own records independently.
 - All writes use atomic temp plus rename with retry, matching `UserDataStore`.
 - Existing CLI commands and exit codes keep their meaning. New commands are additive.
 - The schema marker never goes down. A newer file read by an older build keeps its marker.
