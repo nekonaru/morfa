@@ -5,7 +5,9 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Morfa.Desktop.Controls;
 using Morfa.Desktop.Services;
+using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
+using Morfa.Domain.History;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Profiles;
@@ -90,9 +92,34 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
     // until then). Checking every preset against the files takes as long as for the front (a moment when engines are
     // missing), so the back is checked after the front is on screen, not before (see Load).
     private IReadOnlyList<string> _backIds = [];
+    private IReadOnlyList<string> _frontIds = [];
     private IReadOnlyList<FileFormat> _formats = [];
     private Face? _back;
     private int _loads;
+    private string _filter = "";
+
+    /// <summary>The text typed to narrow the slices, empty when no filter is active.</summary>
+    public string Filter => _filter;
+
+    /// <summary>
+    /// Recently used presets first, within the last 30 days. The original order is kept for the rest: this only
+    /// promotes formats the user actually used, without removing or duplicating any slice.
+    /// </summary>
+    public static IReadOnlyList<string> OrderByRecent(IEnumerable<string> ids, IEnumerable<HistoryEntry> history)
+    {
+        var wanted = ids.ToList();
+        var cutoff = DateTime.Now.AddDays(-30);
+        var recent = history
+            .Where(h => h.FinishedAt >= cutoff && !string.IsNullOrEmpty(h.PresetId)
+                && h.State is JobState.Completed or JobState.CompletedWithErrors)
+            .GroupBy(h => h.PresetId!)
+            .OrderByDescending(g => g.Count())
+            .ThenByDescending(g => g.Max(h => h.FinishedAt))
+            .Select(g => g.Key)
+            .Where(wanted.Contains)
+            .ToList();
+        return recent.Concat(wanted.Where(id => !recent.Contains(id))).ToList();
+    }
 
     /// <summary>The back face is showing (after a flip).</summary>
     public bool IsBackFace { get; private set; }
@@ -132,6 +159,8 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
         ReserveSubRing = store.Profiles.Any(profile => HasGroups(profile.PresetIds.Concat(profile.BackPresetIds ?? [])));
         _loads++;
         (_front, _back, _backIds, _formats) = (Face.Empty, Face.Empty, [], []);
+        _frontIds = [];
+        _filter = "";
         ShowFace(back: false);
         CenterTitle = loc["donut.center_drag"];
         CenterSubtitle = null;
@@ -156,8 +185,11 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
         var counted = CompanionFiles.WithoutCompanions(files);
         var profile = ProfileSelector.Select(store.Profiles, counted);
         var formats = ProfileSelector.DetectFormats(counted);
+        _formats = formats;
+        _frontIds = OrderByRecent(profile?.PresetIds ?? [], store.History);
+        _filter = "";
         // Both faces follow the same rule: a slice that can't convert these files is greyed out and says why.
-        _front = BuildFace(profile?.PresetIds ?? [], formats);
+        _front = BuildFace(_frontIds, formats);
         (_back, _backIds, _formats) = (null, [.. profile?.BackPresetIds ?? []], formats);
         var load = ++_loads;
         if (backFace)
@@ -180,6 +212,27 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
             ? loc.Format("donut.files_same", counted.Count, formats[0].DisplayName)
             : loc.Format("donut.files_mixed", counted.Count);
         CenterSubtitle = clickMode ? loc["donut.close_hint"] : null;
+    }
+
+    /// <summary>
+    /// Narrows both faces to presets whose name or id contains <paramref name="text"/>. An empty text restores the
+    /// full toolbar. Returns true when the visible face still has a slice to pick.
+    /// </summary>
+    public bool SetFilter(string text)
+    {
+        text = text.Trim();
+        if (string.Equals(text, _filter, StringComparison.Ordinal))
+            return (IsBackFace ? BackFace() : _front).Items.Count > 0;
+        _filter = text;
+        _front = BuildFace(_frontIds, _formats, text);
+        _back = BuildFace(_backIds, _formats, text);
+        ShowFace(IsBackFace);
+        var visible = IsBackFace ? _back : _front;
+        if (visible.Items.Count == 0 && text.Length > 0)
+            CenterSubtitle = loc["donut.no_matches"];
+        else
+            ShowHint(-1, -1, false);
+        return visible.Items.Count > 0;
     }
 
     /// <summary>
@@ -218,15 +271,19 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
     }
 
     /// <summary>The back face's slices for the files, checked now if they weren't yet.</summary>
-    private Face BackFace() => _back ??= BuildFace(_backIds, _formats);
+    private Face BackFace() => _back ??= BuildFace(_backIds, _formats, _filter);
 
     private bool HasGroups(IEnumerable<string> presetIds) => presetIds.Any(id => store.FindPreset(id)?.IsGroup == true);
 
-    private Face BuildFace(IEnumerable<string> presetIds, IReadOnlyList<FileFormat> formats)
+    private Face BuildFace(IEnumerable<string> presetIds, IReadOnlyList<FileFormat> formats, string filter = "")
     {
         var presets = presetIds
             .Select(store.FindPreset)
             .OfType<Preset>()
+            .Where(p => filter.Length == 0
+                || loc.DisplayName(p).Contains(filter, StringComparison.OrdinalIgnoreCase)
+                || loc.DonutName(p).Contains(filter, StringComparison.OrdinalIgnoreCase)
+                || p.Id.Contains(filter, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         var subPresets = presets
@@ -289,7 +346,9 @@ public sealed partial class RadialViewModel(UserDataStore store, ILocalizer loc,
                 ? loc.Format(IsClickMode ? "donut.click_to" : "donut.drop_to", Items[index].Label)
                 : Items[index].DisabledReason;
         else
-            CenterSubtitle = IsClickMode ? loc["donut.close_hint"] : null;
+            CenterSubtitle = _filter.Length > 0 && Items.Count == 0
+                ? loc["donut.no_matches"]
+                : IsClickMode ? loc["donut.close_hint"] : null;
     }
 
     /// <summary>

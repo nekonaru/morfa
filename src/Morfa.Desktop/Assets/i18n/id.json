@@ -62,6 +62,7 @@
   "donut.click_to": "Klik → {0}",
   "donut.cancel": "Jatuhkan di sini untuk membatalkan",
   "donut.close_hint": "Esc untuk menutup",
+  "donut.no_matches": "Tidak ada format yang cocok",
   "donut.edit": "Ubah prasetel",
   "donut.empty": "Seret prasetel ke sini",
   "donut.same_format": "Format sama",

@@ -111,6 +111,28 @@ public partial class RadialWindow : Window
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        // In click mode the window has focus: letters and digits narrow the slices, like a small search box. Backspace
+        // shortens a filter, Escape clears it before it closes the window. Drag mode has no focus and keeps its old path.
+        // Modifier shortcuts belong to the OS or the app, not to the filter.
+        if (DataContext is RadialViewModel { IsClickMode: true } vm
+            && (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta)) == 0)
+        {
+            if (FilterKey(e.Key) is { } key && (key != "\b" || vm.Filter.Length > 0))
+            {
+                var filter = key == "\b" ? vm.Filter[..^1] : vm.Filter + key;
+                if (vm.SetFilter(filter))
+                    Donut.SetExternalHighlight(0);
+                e.Handled = true;
+                return;
+            }
+            if (e.Key == Key.Escape && vm.Filter.Length > 0)
+            {
+                vm.SetFilter("");
+                Donut.SetExternalHighlight(0);
+                e.Handled = true;
+                return;
+            }
+        }
         if (Donut.HandleKey(e.Key, e.KeyModifiers))
         {
             e.Handled = true;
@@ -121,6 +143,16 @@ public partial class RadialWindow : Window
             EscapePressed?.Invoke();
             e.Handled = true;
         }
+    }
+
+    /// <summary>The printable part of a key, or the backspace marker; other keys are left to the donut.</summary>
+    private static string? FilterKey(Key key)
+    {
+        if (key >= Key.A && key <= Key.Z)
+            return ((char)('a' + (key - Key.A))).ToString();
+        if (key >= Key.D0 && key <= Key.D9)
+            return ((char)('0' + (key - Key.D0))).ToString();
+        return key == Key.Back ? "\b" : null;
     }
 
     public event Action? EscapePressed;

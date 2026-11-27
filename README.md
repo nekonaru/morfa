@@ -58,7 +58,7 @@ Morfa is inspired by, and builds on, [Filee](https://github.com/KnifeLemon/Filee
 
 | Feature | Description |
 |---------|-------------|
-| **A donut at the cursor** | Hold a key, drag files and drop them on a format; only formats that fit the files appear |
+| **A donut at the cursor** | Hold a key, drag files and drop them on a format; only formats that fit the files appear. Use arrow keys, Enter and Tab in click mode, or type to filter the slices |
 | **263 formats, no other software** | Images, PDF, Word, Excel, PowerPoint, HWP, e-books, archives, fonts, CAD, 3D models and geospatial data work without Office, Hancom Office or LibreOffice |
 | **Straight from the browser** | Drag a picture, a link to a file or a download out of Chrome, Edge, Firefox or Safari the same way; Morfa saves it to your Downloads folder and converts it |
 | **Many files at once, in parallel** | Routes with several steps (HWP to HWPX to DOCX) are found automatically |
