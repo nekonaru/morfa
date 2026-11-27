@@ -5,6 +5,7 @@ using Morfa.Domain.History;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Profiles;
 using Morfa.Domain.Queue;
+using Morfa.Domain.Workflows;
 
 namespace Morfa.Domain.Settings;
 
@@ -26,6 +27,7 @@ namespace Morfa.Domain.Settings;
 [JsonSerializable(typeof(QueueFile))]
 [JsonSerializable(typeof(JobSnapshot))]
 [JsonSerializable(typeof(List<JobSnapshot>))]
+[JsonSerializable(typeof(RecipeFile))]
 internal sealed partial class MorfaJsonContext : JsonSerializerContext;
 
 /// <summary>File format used to import / export presets and profiles.</summary>
