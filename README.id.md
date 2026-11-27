@@ -58,7 +58,7 @@ Morfa terinspirasi dari, dan membangun atas, [Filee](https://github.com/KnifeLem
 
 | Fitur | Deskripsi |
 |---------|-------------|
-| **Donut di kursor** | Tahan sebuah tombol, tarik file dan jatuhkan ke sebuah format; hanya format yang cocok untuk file itu yang muncul |
+| **Donut di kursor** | Tahan sebuah tombol, tarik file dan jatuhkan ke sebuah format; hanya format yang cocok untuk file itu yang muncul. Mode klik mendukung panah, Enter, Tab, dan mengetik untuk menyaring slice |
 | **263 format, tanpa software lain** | Gambar, PDF, Word, Excel, PowerPoint, HWP, e-book, arsip, font, CAD, model 3D dan data geospasial berjalan tanpa Office, Hancom Office atau LibreOffice |
 | **Langsung dari browser** | Tarik gambar, tautan ke file atau unduhan dari Chrome, Edge, Firefox atau Safari dengan cara yang sama; Morfa menyimpannya ke folder Downloads lalu mengonversinya |
 | **Banyak file sekaligus, paralel** | Rute dengan beberapa langkah (HWP ke HWPX ke DOCX) ditemukan otomatis |

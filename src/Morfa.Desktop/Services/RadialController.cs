@@ -553,7 +553,10 @@ public sealed class RadialController(
         }
         _visible = true;
         if (activate)
+        {
             window.Activate();
+            window.Focus(); // type-to-filter needs keyboard focus in click mode
+        }
     }
 
     private static bool SameFiles(IReadOnlyList<string> a, IReadOnlyList<string> b) =>

@@ -62,6 +62,7 @@
   "donut.click_to": "Click → {0}",
   "donut.cancel": "Drop here to cancel",
   "donut.close_hint": "Esc to close",
+  "donut.no_matches": "No matching format",
   "donut.edit": "Edit preset",
   "donut.empty": "Drag presets here",
   "donut.same_format": "Same format",
