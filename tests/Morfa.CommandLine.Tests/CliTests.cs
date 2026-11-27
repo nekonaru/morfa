@@ -1,7 +1,9 @@
 // End-to-end tests of the "morfa" command: real engines, a temporary settings folder, files in a temporary folder.
 
 using System.Text.Json;
+using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
+using Morfa.Domain.Queue;
 
 namespace Morfa.CommandLine.Tests;
 
@@ -326,6 +328,44 @@ public sealed class CliTests : IDisposable
         (code, output, _) = await Run("--version");
         Assert.Equal(Cli.Success, code);
         Assert.StartsWith("morfa ", output);
+    }
+
+    [Fact]
+    public async Task Queue_command_lists_pauses_and_resumes_a_saved_job()
+    {
+        var store = new JobStore(_settings);
+        var source = Png("photo.png");
+        var snapshot = JobSnapshot.From(new ConversionJob([source], new Preset { TargetFormat = "jpg" }, "JPG"));
+        store.Upsert(snapshot);
+
+        var (code, output, errors) = await Run("queue", "list");
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.Contains(snapshot.Id, output);
+        Assert.Contains("Queued", output);
+
+        (code, output, errors) = await Run("queue", "pause", snapshot.Id);
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("(paused)", output);
+        Assert.True(store.Load().Jobs.Single().Paused);
+
+        (code, output, errors) = await Run("queue", "resume", snapshot.Id);
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("(waiting)", output);
+        Assert.False(store.Load().Jobs.Single().Paused);
+
+        (code, output, _) = await Run("queue", "clear");
+        Assert.Equal(Cli.Success, code);
+        Assert.Empty(store.Load().Jobs);
+    }
+
+    [Fact]
+    public async Task Queue_command_rejects_an_unknown_action()
+    {
+        var (code, _, errors) = await Run("queue", "delete");
+
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("Unknown queue action", errors, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

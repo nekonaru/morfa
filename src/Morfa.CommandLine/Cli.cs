@@ -46,6 +46,7 @@ internal static class Cli
             "convert" => await ConvertAsync(options, host, output, errors, cancellationToken),
             "watch" => await WatchAsync(options, host, output, errors, cancellationToken),
             "formats" => ListFormats(options, host, output, errors),
+            "queue" => Queue(options, host, output, errors),
             _ => ListPresets(host, output),
         };
     }
@@ -320,6 +321,44 @@ internal static class Cli
                 missing.Add(input);
         }
         return files.Select(Path.GetFullPath).Distinct(FileSystemPaths.Comparer).ToList();
+    }
+
+    /// <summary>
+    /// Inspects or edits the v2 queue file. Changes take effect the next time Morfa starts; this command never runs
+    /// conversions itself, so it is safe to call while the app is closed.
+    /// </summary>
+    private static int Queue(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
+    {
+        var action = options.Inputs[0].ToLowerInvariant();
+        if (action == "clear")
+        {
+            host.QueueStore.Clear();
+            output.WriteLine("The queue is empty.");
+            return Success;
+        }
+        var file = host.QueueStore.Load();
+        if (action == "list")
+        {
+            if (file.Jobs.Count == 0)
+                output.WriteLine("The queue is empty.");
+            foreach (var job in file.Jobs)
+            {
+                var paused = job.Paused ? " (paused)" : "";
+                output.WriteLine($"{job.Id}  {job.State}{paused}  {job.PresetDisplayName}  {job.Sources.Count} file(s)");
+            }
+            return Success;
+        }
+        var id = options.Inputs[1];
+        var saved = file.Jobs.FirstOrDefault(j => j.Id == id);
+        if (saved is null)
+        {
+            errors.WriteLine($"morfa: no queued job '{id}'.");
+            return UsageError;
+        }
+        saved.Paused = action == "pause";
+        host.QueueStore.Upsert(saved);
+        output.WriteLine($"{saved.Id} is now {saved.State}{(saved.Paused ? " (paused)" : " (waiting)")}.");
+        return Success;
     }
 
     private static int ListFormats(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
