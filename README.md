@@ -291,12 +291,13 @@ The `morfa` command uses the same engines and presets as the app.
 morfa convert photo.heic --to jpg
 morfa convert *.png --to webp --quality 80 -o converted
 morfa convert photo.png --to webp --dry-run
+morfa run recipe.json photo.png
 morfa doctor
 morfa queue list
 morfa watch D:\Inbox --to pdf --move-originals
 ```
 
-`--dry-run` shows the route and the output path without writing files. `doctor` checks settings, engines, disk and permissions. `queue` lists or controls jobs saved between runs. Scripts can use `--json` or `--json-events` for machine-readable output.
+`--dry-run` shows the route and the output path without writing files. `morfa run` executes a saved workflow. `doctor` checks settings, engines, disk and permissions. `queue` lists or controls jobs saved between runs. Scripts can use `--json` or `--json-events` for machine-readable output.
 
 Every command and option: `morfa help`.
 

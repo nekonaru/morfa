@@ -27,7 +27,7 @@ internal sealed record CliOptions
     public double? SettleSeconds { get; set; }
     public string? Error { get; set; }
 
-    public static readonly string[] Commands = ["convert", "watch", "formats", "presets", "doctor", "queue", "help", "version"];
+    public static readonly string[] Commands = ["convert", "watch", "formats", "presets", "doctor", "queue", "run", "help", "version"];
 
     public static CliOptions Parse(IReadOnlyList<string> args)
     {
@@ -148,6 +148,7 @@ internal sealed record CliOptions
             "queue" when options.Inputs[0].ToLowerInvariant() is "list" or "clear" && options.Inputs.Count != 1 =>
                 $"{options.Inputs[0]} takes no job id.",
             "doctor" when options.Inputs.Count > 0 => "doctor takes no arguments.",
+            "run" when options.Inputs.Count < 2 => "Give a recipe file and at least one file to convert.",
             "watch" when options.DryRun => "--dry-run works with 'convert' only.",
             _ => null,
         };

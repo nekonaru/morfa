@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using Morfa.Domain.Conversion;
+using Morfa.Domain.Workflows;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Queue;
 using Morfa.Domain.Settings;
@@ -376,6 +377,39 @@ public sealed class CliTests : IDisposable
         Assert.Equal("done", events[^1].GetProperty("event").GetString());
         Assert.Equal(1, events[^1].GetProperty("converted").GetInt32());
         Assert.True(File.Exists(Path.Combine(_folder, "photo.jpg")));
+    }
+
+    [Fact]
+    public async Task Run_executes_a_recipe_and_reports_the_output()
+    {
+        var recipe = Path.Combine(_folder, "recipe.json");
+        await File.WriteAllTextAsync(recipe, """
+            { "format": 2, "id": "to-jpg", "name": "To JPG",
+              "steps": [ { "op": "convert", "to": "jpg" } ] }
+            """, TestContext.Current.CancellationToken);
+        var source = Png("photo.png");
+
+        var (code, output, errors) = await Run("run", recipe, source, "--json");
+
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        using var json = JsonDocument.Parse(output);
+        Assert.Equal(2, json.RootElement.GetProperty("format").GetInt32());
+        Assert.Equal("to-jpg", json.RootElement.GetProperty("recipe").GetString());
+        Assert.Equal(1, json.RootElement.GetProperty("converted").GetInt32());
+        var produced = json.RootElement.GetProperty("outputs")[0].GetString()!;
+        Assert.True(File.Exists(produced));
+    }
+
+    [Fact]
+    public async Task Run_names_a_missing_recipe_file()
+    {
+        var missing = Path.Combine(_folder, "missing-recipe.json");
+
+        var (code, _, errors) = await Run("run", missing, Png("photo.png"));
+
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains(missing, errors);
     }
 
     [Fact]

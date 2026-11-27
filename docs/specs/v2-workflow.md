@@ -21,7 +21,7 @@ Goal: let a user save a repeatable sequence of conversion steps as a portable JS
 
 ## Done criteria, machine checkable
 
-1. A recipe with `resize` then `convert` applies both steps in order; a fake converter records two conversions with the second input equal to the first output.
+1. A recipe with two `convert` steps applies both in order; a fake converter records two conversions with the second input equal to the first output.
 2. A recipe with an unknown operation fails validation with an error naming the operation and the step index.
 3. A recipe with `format: 1` is refused with a clear version error.
 4. Save then load then save produces the same recipe JSON.

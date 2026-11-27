@@ -10,7 +10,9 @@ using Morfa.Domain.Formats;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
 using Morfa.Domain.Presets;
+using Morfa.Domain.Settings;
 using Morfa.Domain.Watching;
+using Morfa.Domain.Workflows;
 using Morfa.Platforms.Linux;
 using Morfa.Platforms.Windows;
 
@@ -52,6 +54,7 @@ internal static class Cli
             "formats" => ListFormats(options, host, output, errors),
             "queue" => Queue(options, host, output, errors),
             "doctor" => Doctor(options, host, output, errors),
+            "run" => await RunRecipeAsync(options, host, output, errors, cancellationToken),
             _ => ListPresets(host, output),
         };
     }
@@ -403,6 +406,89 @@ internal static class Cli
             json.WriteEndObject();
         }
         output.WriteLine(System.Text.Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    /// <summary>Runs a saved workflow. Validation errors are usage errors, conversion errors are runtime errors.</summary>
+    private static async Task<int> RunRecipeAsync(CliOptions options, CliHost host, TextWriter output, TextWriter errors,
+        CancellationToken cancellationToken)
+    {
+        var recipePath = options.Inputs[0];
+        if (!File.Exists(recipePath))
+        {
+            errors.WriteLine($"morfa: recipe not found: {recipePath}");
+            return UsageError;
+        }
+        RecipeFile recipe;
+        try
+        {
+            using var stream = File.OpenRead(recipePath);
+            recipe = JsonSerializer.Deserialize(stream, MorfaJsonContext.Default.RecipeFile)
+                ?? throw new InvalidDataException("the recipe is empty");
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            errors.WriteLine($"morfa: {recipePath}: {ex.Message}");
+            return UsageError;
+        }
+        var validation = RecipeCompiler.Validate(recipe);
+        if (!validation.IsValid)
+        {
+            errors.WriteLine($"morfa: {string.Join("; ", validation.Errors)}");
+            return UsageError;
+        }
+
+        var missing = new List<string>();
+        var files = ExpandInputs(options.Inputs.Skip(1).ToList(), options.Recursive, missing);
+        foreach (var path in missing)
+            errors.WriteLine($"morfa: not found: {path}");
+        if (missing.Count > 0)
+            return UsageError;
+        if (files.Count == 0)
+        {
+            errors.WriteLine("morfa: no files to convert.");
+            return NothingToDo;
+        }
+
+        Preset? Find(string wanted) =>
+            host.Store.Presets.FirstOrDefault(p => string.Equals(p.Id, wanted, StringComparison.OrdinalIgnoreCase))
+            ?? host.Store.Presets.FirstOrDefault(p => string.Equals(host.Texts.DisplayName(p), wanted, StringComparison.OrdinalIgnoreCase));
+        var starter = new Preset { TargetFormat = "png" };
+        var presets = RecipeCompiler.Compile(recipe, starter, Find);
+        var folder = options.Output is null ? null : Path.GetFullPath(options.Output);
+        IReadOnlyList<string> results;
+        try
+        {
+            results = await new RecipeRunner(host.Queue).RunAsync(recipe, files, presets, folder, cancellationToken);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
+        {
+            errors.WriteLine($"morfa: {ex.Message}");
+            return SomeFailed;
+        }
+
+        if (options.Json)
+        {
+            using var stream = new MemoryStream();
+            using (var json = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+            {
+                json.WriteStartObject();
+                json.WriteNumber("format", 2);
+                json.WriteString("recipe", recipe.Id);
+                json.WriteNumber("converted", results.Count);
+                json.WriteStartArray("outputs");
+                foreach (var path in results)
+                    json.WriteStringValue(path);
+                json.WriteEndArray();
+                json.WriteEndObject();
+            }
+            output.WriteLine(System.Text.Encoding.UTF8.GetString(stream.ToArray()));
+        }
+        else if (!options.Quiet)
+        {
+            foreach (var path in results)
+                output.WriteLine($"ok    {path}");
+        }
+        return Success;
     }
 
     /// <summary>
