@@ -331,6 +331,53 @@ public sealed class CliTests : IDisposable
     }
 
     [Fact]
+    public async Task Dry_run_prints_the_route_and_writes_no_output()
+    {
+        var source = Png("photo.png");
+
+        var (code, output, errors) = await Run("convert", source, "--to", "jpg", "--dry-run");
+
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.Contains("->", output);
+        Assert.Contains("png->jpg", output);
+        Assert.Contains("no output written", output);
+        Assert.False(File.Exists(Path.Combine(_folder, "photo.jpg")));
+    }
+
+    [Fact]
+    public async Task Dry_run_json_events_have_a_plan_and_no_done()
+    {
+        var source = Png("photo.png");
+
+        var (code, output, _) = await Run("convert", source, "--to", "jpg", "--dry-run", "--json-events");
+
+        Assert.Equal(Cli.Success, code);
+        var events = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => JsonDocument.Parse(line).RootElement).ToList();
+        Assert.All(events, e => Assert.Equal(2, e.GetProperty("format").GetInt32()));
+        Assert.Contains(events, e => e.GetProperty("event").GetString() == "plan");
+        Assert.DoesNotContain(events, e => e.GetProperty("event").GetString() is "done" or "file");
+        Assert.False(File.Exists(Path.Combine(_folder, "photo.jpg")));
+    }
+
+    [Fact]
+    public async Task Json_events_report_each_file_and_then_done()
+    {
+        var source = Png("photo.png");
+
+        var (code, output, _) = await Run("convert", source, "--to", "jpg", "--json-events");
+
+        Assert.Equal(Cli.Success, code);
+        var events = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => JsonDocument.Parse(line).RootElement).ToList();
+        Assert.Contains(events, e => e.GetProperty("event").GetString() == "file");
+        Assert.Equal("done", events[^1].GetProperty("event").GetString());
+        Assert.Equal(1, events[^1].GetProperty("converted").GetInt32());
+        Assert.True(File.Exists(Path.Combine(_folder, "photo.jpg")));
+    }
+
+    [Fact]
     public async Task Doctor_reports_a_clean_machine_and_accepts_fix()
     {
         var (code, output, errors) = await Run("doctor");

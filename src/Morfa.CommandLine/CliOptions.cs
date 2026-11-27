@@ -20,6 +20,8 @@ internal sealed record CliOptions
     public bool MoveOriginals { get; set; }
     public bool KeepDates { get; set; }
     public bool Fix { get; set; }
+    public bool DryRun { get; set; }
+    public bool JsonEvents { get; set; }
 
     public bool Zip { get; set; }
     public double? SettleSeconds { get; set; }
@@ -104,6 +106,12 @@ internal sealed record CliOptions
                 case "--fix":
                     options.Fix = true;
                     break;
+                case "--dry-run":
+                    options.DryRun = true;
+                    break;
+                case "--json-events":
+                    options.JsonEvents = true;
+                    break;
                 case "--settle":
                     var settle = Value();
                     if (settle is not null)
@@ -138,6 +146,7 @@ internal sealed record CliOptions
             "queue" when options.Inputs[0].ToLowerInvariant() is "pause" or "resume" && options.Inputs.Count != 2 =>
                 $"{options.Inputs[0]} needs a job id.",
             "doctor" when options.Inputs.Count > 0 => "doctor takes no arguments.",
+            "watch" when options.DryRun => "--dry-run works with 'convert' only.",
             _ => null,
         };
         return options;

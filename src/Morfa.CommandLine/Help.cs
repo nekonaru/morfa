@@ -78,6 +78,8 @@ internal static class Help
               --keep-dates       Give converted files the created and modified dates of the originals
               --zip              Save the result of each file as one ZIP (a Shapefile's files together)
               --json             Print the result as JSON (for scripts and other programs)
+              --json-events      Print NDJSON events: file results, then one done event
+              --dry-run          Show the planned route and output path; write no files
               --quiet            Print nothing but errors
 
         """;

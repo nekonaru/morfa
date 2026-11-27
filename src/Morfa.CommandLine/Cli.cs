@@ -74,11 +74,20 @@ internal static class Cli
             errors.WriteLine("morfa: no files to convert.");
             return NothingToDo;
         }
+        if (options.DryRun)
+            return DryRun(files, preset, options, host, output);
 
-        var job = await RunJobAsync(files, preset, host, options.Json || options.Quiet ? null : output, cancellationToken);
+        var job = await RunJobAsync(files, preset, host, options.JsonEvents ? output : options.Json || options.Quiet ? null : output,
+            cancellationToken, options.JsonEvents);
         var done = job.Files.Count(f => f.State == FileState.Done);
         var failed = job.Files.Count(f => f.State is FileState.Failed or FileState.Cancelled);
-        if (options.Json)
+        if (options.JsonEvents)
+            WriteEvent(output, "done", json =>
+            {
+                json.WriteNumber("converted", done);
+                json.WriteNumber("failed", failed);
+            });
+        else if (options.Json)
             WriteJson(job, host.Texts, output);
         else if (!options.Quiet)
             output.WriteLine(failed == 0
@@ -127,7 +136,7 @@ internal static class Cli
 
     /// <summary>Runs one job and prints each file's result as soon as it is final (when <paramref name="output"/> is given).</summary>
     private static async Task<ConversionJob> RunJobAsync(IReadOnlyList<string> files, Preset preset, CliHost host, TextWriter? output,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool jsonEvents = false)
     {
         var job = new ConversionJob(files, preset, host.Texts.DisplayName(preset));
         var printed = new HashSet<FileResult>();
@@ -138,7 +147,20 @@ internal static class Cli
             lock (printed)
             {
                 foreach (var file in job.Files.Where(f => f.State is not (FileState.Pending or FileState.Running) && printed.Add(f)))
-                    output.WriteLine(Describe(file, host.Texts));
+                {
+                    if (jsonEvents)
+                        WriteEvent(output, "file", json =>
+                        {
+                            json.WriteString("source", file.SourcePath);
+                            json.WriteString("state", file.State.ToString().ToLowerInvariant());
+                            json.WriteStartArray("outputs");
+                            foreach (var path in file.Outputs)
+                                json.WriteStringValue(path);
+                            json.WriteEndArray();
+                        });
+                    else
+                        output.WriteLine(Describe(file, host.Texts));
+                }
             }
         }
 
@@ -326,6 +348,62 @@ internal static class Cli
                 missing.Add(input);
         }
         return files.Select(Path.GetFullPath).Distinct(FileSystemPaths.Comparer).ToList();
+    }
+
+    /// <summary>
+    /// Shows the route and the output path without creating anything. A bad route is reported but is not a conversion
+    /// failure, so the exit code stays 0: the point is to let the user see what would happen.
+    /// </summary>
+    private static int DryRun(IReadOnlyList<string> files, Preset preset, CliOptions options, CliHost host, TextWriter output)
+    {
+        var planner = host.Catalog.CreatePlanner();
+        var target = preset.TargetFormat.ToLowerInvariant();
+        foreach (var path in files)
+        {
+            var from = FormatRegistry.Detect(path)?.Id.ToLowerInvariant()
+                ?? Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
+            var route = planner.Plan(from, target);
+            var steps = route?.Steps.Select(s => $"{s.From}->{s.To} by {s.Converter.DisplayName}").ToList() ?? [];
+            var folder = string.IsNullOrEmpty(options.Output)
+                ? Path.GetDirectoryName(Path.GetFullPath(path))!
+                : Path.GetFullPath(options.Output);
+            var destination = Path.Combine(folder, Path.GetFileNameWithoutExtension(path) + "." + target);
+            if (options.JsonEvents)
+            {
+                WriteEvent(output, "plan", json =>
+                {
+                    json.WriteString("source", path);
+                    json.WriteString("target", target);
+                    json.WriteString("output", destination);
+                    json.WriteBoolean("available", route is not null);
+                    json.WriteStartArray("route");
+                    foreach (var step in steps)
+                        json.WriteStringValue(step);
+                    json.WriteEndArray();
+                });
+            }
+            else if (!options.Quiet)
+            {
+                output.WriteLine($"{Shorten(path)} -> {destination}: {(route is null ? "no route" : string.Join(", ", steps))}");
+            }
+        }
+        if (!options.JsonEvents && !options.Quiet)
+            output.WriteLine($"Dry run: {files.Count} file(s), no output written.");
+        return Success;
+    }
+
+    private static void WriteEvent(TextWriter output, string name, Action<Utf8JsonWriter> body)
+    {
+        using var stream = new MemoryStream();
+        using (var json = new Utf8JsonWriter(stream))
+        {
+            json.WriteStartObject();
+            json.WriteNumber("format", 2);
+            json.WriteString("event", name);
+            body(json);
+            json.WriteEndObject();
+        }
+        output.WriteLine(System.Text.Encoding.UTF8.GetString(stream.ToArray()));
     }
 
     /// <summary>
