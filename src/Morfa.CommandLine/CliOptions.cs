@@ -149,6 +149,8 @@ internal sealed record CliOptions
                 $"{options.Inputs[0]} takes no job id.",
             "doctor" when options.Inputs.Count > 0 => "doctor takes no arguments.",
             "run" when options.Inputs.Count < 2 => "Give a recipe file and at least one file to convert.",
+            "run" when options.DryRun => "--dry-run works with 'convert' only.",
+            "run" when options.JsonEvents => "--json-events works with 'convert' only.",
             "watch" when options.DryRun => "--dry-run works with 'convert' only.",
             _ => null,
         };

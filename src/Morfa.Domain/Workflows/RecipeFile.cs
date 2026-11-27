@@ -1,7 +1,7 @@
 // Portable v2 conversion workflow: a small ordered list of conversion steps, executed through the same JobQueue.
 
-using System.Text.Json.Serialization;
 using Morfa.Domain.Conversion;
+using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Settings;
 
@@ -57,15 +57,22 @@ public static class RecipeCompiler
             return RecipeValidation.Fail($"Unsupported recipe format {recipe.Format}; expected {RecipeFile.CurrentFormat}.");
         if (string.IsNullOrWhiteSpace(recipe.Id))
             return RecipeValidation.Fail("The recipe needs an id.");
-        if (recipe.Steps.Count == 0)
+        if (recipe.Steps is null || recipe.Steps.Count == 0)
             return RecipeValidation.Fail("The recipe needs at least one step.");
         for (var i = 0; i < recipe.Steps.Count; i++)
         {
             var step = recipe.Steps[i];
+            if (step is null)
+                return RecipeValidation.Fail($"Step {i}: empty step.");
             if (!Operations.Contains(step.Op, StringComparer.OrdinalIgnoreCase))
                 return RecipeValidation.Fail($"Step {i}: unknown operation '{step.Op}'.");
-            if (step.Op.Equals("convert", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(step.To))
-                return RecipeValidation.Fail($"Step {i}: convert needs a target format.");
+            if (step.Op.Equals("convert", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(step.To))
+                    return RecipeValidation.Fail($"Step {i}: convert needs a target format.");
+                if (FormatRegistry.FindById(step.To.Trim()) is null)
+                    return RecipeValidation.Fail($"Step {i}: unknown format '{step.To}'.");
+            }
             if (step.Op.Equals("preset", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(step.Preset))
                 return RecipeValidation.Fail($"Step {i}: preset needs a preset id or name.");
             if (step.MaxWidth < 0 || step.MaxWidth > 100_000)
@@ -83,23 +90,14 @@ public static class RecipeCompiler
     public static IReadOnlyList<Preset> Compile(RecipeFile recipe, Preset starter, Func<string, Preset?> findPreset)
     {
         var result = new List<Preset>();
-        var current = starter.Clone();
-        current.Output.Location = OutputLocation.SameFolder;
-        current.Output.ReplaceOriginal = false;
-        current.Output.ZipResult = false;
-        current.Output.OnlyIfSmaller = false;
-        current.Pdf.MergeIntoSingle = false;
-        current.Archive.CombineIntoOne = false;
-        current.Output.KeepFoldersFrom = "";
+        var current = Sanitize(starter.Clone());
 
         foreach (var step in recipe.Steps)
         {
             if (step.Op.Equals("preset", StringComparison.OrdinalIgnoreCase))
             {
-                current = findPreset(step.Preset)?.Clone()
-                    ?? throw new InvalidDataException($"Recipe '{recipe.Id}' uses unknown preset '{step.Preset}'.");
-                current.Output.Location = OutputLocation.SameFolder;
-                current.Output.ReplaceOriginal = false;
+                current = Sanitize(findPreset(step.Preset)?.Clone()
+                    ?? throw new InvalidDataException($"Recipe '{recipe.Id}' uses unknown preset '{step.Preset}'."));
             }
             else
             {
@@ -110,6 +108,18 @@ public static class RecipeCompiler
             result.Add(current.Clone());
         }
         return result;
+    }
+
+    private static Preset Sanitize(Preset preset)
+    {
+        preset.Output.Location = OutputLocation.SameFolder;
+        preset.Output.ReplaceOriginal = false;
+        preset.Output.ZipResult = false;
+        preset.Output.OnlyIfSmaller = false;
+        preset.Pdf.MergeIntoSingle = false;
+        preset.Archive.CombineIntoOne = false;
+        preset.Output.KeepFoldersFrom = "";
+        return preset;
     }
 
     private static void ApplyOptions(Preset preset, RecipeStep step)

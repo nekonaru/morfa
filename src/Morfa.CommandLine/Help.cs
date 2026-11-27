@@ -24,8 +24,8 @@ internal static class Help
     private const string RunText = """
         Usage: morfa run <recipe.json> <files or folders...> [options]
 
-        Runs the steps of a saved workflow in order and prints the final outputs. Accepts --output, --json,
-        --quiet, --recursive and --to/--preset on the command line are not used by a recipe.
+        Runs the steps of a saved workflow in order and prints the final outputs. Accepts --output, --json and
+        --quiet. --recursive expands folders; conversion options come from the recipe, not from the command line.
 
         """;
 

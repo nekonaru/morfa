@@ -402,6 +402,59 @@ public sealed class CliTests : IDisposable
     }
 
     [Fact]
+    public async Task Run_rejects_malformed_recipes_without_crashing()
+    {
+        var nullSteps = Path.Combine(_folder, "null-steps.json");
+        await File.WriteAllTextAsync(nullSteps, """{ "format": 2, "id": "bad", "steps": null }""",
+            TestContext.Current.CancellationToken);
+        var badPreset = Path.Combine(_folder, "bad-preset.json");
+        await File.WriteAllTextAsync(badPreset, """{ "format": 2, "id": "bad", "steps": [ { "op": "preset", "preset": "does-not-exist" } ] }""",
+            TestContext.Current.CancellationToken);
+
+        var (code, _, errors) = await Run("run", nullSteps, Png("photo.png"));
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("at least one step", errors);
+
+        (code, _, errors) = await Run("run", badPreset, Png("photo.png"));
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("does-not-exist", errors);
+    }
+
+    [Fact]
+    public async Task Run_reports_a_partial_failure()
+    {
+        var recipe = Path.Combine(_folder, "partial.json");
+        await File.WriteAllTextAsync(recipe, """
+            { "format": 2, "id": "partial", "steps": [ { "op": "convert", "to": "jpg" } ] }
+            """, TestContext.Current.CancellationToken);
+        var unsupported = Path.Combine(_folder, "bad.xyz");
+        await File.WriteAllTextAsync(unsupported, "not a real file", TestContext.Current.CancellationToken);
+
+        var (code, output, _) = await Run("run", recipe, Png("photo.png"), unsupported, "--json");
+
+        Assert.Equal(Cli.SomeFailed, code);
+        using var json = JsonDocument.Parse(output);
+        Assert.True(json.RootElement.GetProperty("failed").GetInt32() >= 1);
+    }
+
+    [Fact]
+    public async Task Run_rejects_dry_run_and_json_events()
+    {
+        var recipe = Path.Combine(_folder, "recipe.json");
+        await File.WriteAllTextAsync(recipe, """
+            { "format": 2, "id": "simple", "steps": [ { "op": "convert", "to": "jpg" } ] }
+            """, TestContext.Current.CancellationToken);
+
+        var (code, _, errors) = await Run("run", recipe, Png("photo.png"), "--dry-run");
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("--dry-run", errors);
+
+        (code, _, errors) = await Run("run", recipe, Png("photo.png"), "--json-events");
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("--json-events", errors);
+    }
+
+    [Fact]
     public async Task Run_names_a_missing_recipe_file()
     {
         var missing = Path.Combine(_folder, "missing-recipe.json");

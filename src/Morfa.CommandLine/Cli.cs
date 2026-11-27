@@ -419,21 +419,30 @@ internal static class Cli
             return UsageError;
         }
         RecipeFile recipe;
+        IReadOnlyList<Preset> presets;
         try
         {
             using var stream = File.OpenRead(recipePath);
             recipe = JsonSerializer.Deserialize(stream, MorfaJsonContext.Default.RecipeFile)
                 ?? throw new InvalidDataException("the recipe is empty");
+            var validation = RecipeCompiler.Validate(recipe);
+            if (!validation.IsValid)
+            {
+                errors.WriteLine($"morfa: {string.Join("; ", validation.Errors)}");
+                return UsageError;
+            }
+            Preset? Find(string wanted) =>
+                host.Store.Presets
+                    .Where(p => !p.IsGroup && !p.IsTool)
+                    .FirstOrDefault(p => string.Equals(p.Id, wanted, StringComparison.OrdinalIgnoreCase))
+                ?? host.Store.Presets
+                    .FirstOrDefault(p => string.Equals(host.Texts.DisplayName(p), wanted, StringComparison.OrdinalIgnoreCase));
+            presets = RecipeCompiler.Compile(recipe, new Preset { TargetFormat = "png" }, Find);
         }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidDataException)
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException
+            or InvalidDataException or NullReferenceException)
         {
             errors.WriteLine($"morfa: {recipePath}: {ex.Message}");
-            return UsageError;
-        }
-        var validation = RecipeCompiler.Validate(recipe);
-        if (!validation.IsValid)
-        {
-            errors.WriteLine($"morfa: {string.Join("; ", validation.Errors)}");
             return UsageError;
         }
 
@@ -449,16 +458,11 @@ internal static class Cli
             return NothingToDo;
         }
 
-        Preset? Find(string wanted) =>
-            host.Store.Presets.FirstOrDefault(p => string.Equals(p.Id, wanted, StringComparison.OrdinalIgnoreCase))
-            ?? host.Store.Presets.FirstOrDefault(p => string.Equals(host.Texts.DisplayName(p), wanted, StringComparison.OrdinalIgnoreCase));
-        var starter = new Preset { TargetFormat = "png" };
-        var presets = RecipeCompiler.Compile(recipe, starter, Find);
         var folder = options.Output is null ? null : Path.GetFullPath(options.Output);
-        IReadOnlyList<string> results;
+        RecipeRunResult result;
         try
         {
-            results = await new RecipeRunner(host.Queue).RunAsync(recipe, files, presets, folder, cancellationToken);
+            result = await new RecipeRunner(host.Queue).RunAsync(recipe, files, presets, folder, cancellationToken);
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
         {
@@ -474,10 +478,15 @@ internal static class Cli
                 json.WriteStartObject();
                 json.WriteNumber("format", 2);
                 json.WriteString("recipe", recipe.Id);
-                json.WriteNumber("converted", results.Count);
+                json.WriteNumber("converted", result.Outputs.Count);
+                json.WriteNumber("failed", result.Failed);
                 json.WriteStartArray("outputs");
-                foreach (var path in results)
+                foreach (var path in result.Outputs)
                     json.WriteStringValue(path);
+                json.WriteEndArray();
+                json.WriteStartArray("errors");
+                foreach (var error in result.Errors)
+                    json.WriteStringValue(error);
                 json.WriteEndArray();
                 json.WriteEndObject();
             }
@@ -485,10 +494,12 @@ internal static class Cli
         }
         else if (!options.Quiet)
         {
-            foreach (var path in results)
+            foreach (var error in result.Errors)
+                errors.WriteLine($"morfa: {error}");
+            foreach (var path in result.Outputs)
                 output.WriteLine($"ok    {path}");
         }
-        return Success;
+        return result.Failed == 0 ? Success : SomeFailed;
     }
 
     /// <summary>

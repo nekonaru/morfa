@@ -33,10 +33,11 @@ public class RecipeTests
         Assert.True(validation.IsValid, string.Join(", ", validation.Errors));
 
         var presets = RecipeCompiler.Compile(recipe, new Preset { TargetFormat = "png" }, _ => null);
-        var outputs = await new RecipeRunner(queue).RunAsync(recipe, [source], presets, dir.Path,
+        var result = await new RecipeRunner(queue).RunAsync(recipe, [source], presets, dir.Path,
             TestContext.Current.CancellationToken);
 
-        var output = Assert.Single(outputs);
+        var output = Assert.Single(result.Outputs);
+        Assert.Equal(0, result.Failed);
         Assert.EndsWith(".webp", output);
         Assert.Contains("photo.png", File.ReadAllText(output));
         Assert.Contains("webp by magick", File.ReadAllText(output));
@@ -69,6 +70,31 @@ public class RecipeTests
         Assert.False(validation.IsValid);
         Assert.Contains("format 1", validation.Errors[0]);
         Assert.Contains("expected 2", validation.Errors[0]);
+    }
+
+    [Fact]
+    public void Null_steps_and_null_step_are_validation_errors()
+    {
+        var withNullList = new RecipeFile { Id = "a", Steps = null! };
+        var withNullStep = new RecipeFile { Id = "b", Steps = [null!] };
+
+        Assert.Contains("at least one step", RecipeCompiler.Validate(withNullList).Errors[0]);
+        Assert.Contains("Step 0", RecipeCompiler.Validate(withNullStep).Errors[0]);
+    }
+
+    [Fact]
+    public void An_unknown_target_format_is_a_validation_error()
+    {
+        var recipe = new RecipeFile
+        {
+            Id = "bad-format",
+            Steps = [new RecipeStep { Op = "convert", To = "bogus" }],
+        };
+
+        var validation = RecipeCompiler.Validate(recipe);
+
+        Assert.False(validation.IsValid);
+        Assert.Contains("unknown format 'bogus'", validation.Errors[0]);
     }
 
     [Fact]
