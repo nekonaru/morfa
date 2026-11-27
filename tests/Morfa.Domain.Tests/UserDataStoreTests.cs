@@ -1,7 +1,7 @@
+using Morfa.Domain.Conversion;
+using Morfa.Domain.History;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Profiles;
-using Morfa.Domain.History;
-using Morfa.Domain.Conversion;
 using Morfa.Domain.Settings;
 
 namespace Morfa.Domain.Tests;
