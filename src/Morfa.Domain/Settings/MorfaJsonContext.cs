@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Morfa.Domain.History;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Profiles;
+using Morfa.Domain.Queue;
 
 namespace Morfa.Domain.Settings;
 
@@ -21,6 +22,10 @@ namespace Morfa.Domain.Settings;
 [JsonSerializable(typeof(PresetBundle))]
 [JsonSerializable(typeof(List<HistoryEntry>))]
 [JsonSerializable(typeof(CustomTheme))]
+[JsonSerializable(typeof(Preset))]
+[JsonSerializable(typeof(QueueFile))]
+[JsonSerializable(typeof(JobSnapshot))]
+[JsonSerializable(typeof(List<JobSnapshot>))]
 internal sealed partial class MorfaJsonContext : JsonSerializerContext;
 
 /// <summary>File format used to import / export presets and profiles.</summary>

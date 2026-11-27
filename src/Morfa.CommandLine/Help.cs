@@ -15,8 +15,27 @@ internal static class Help
         "watch" => Watch,
         "formats" => "Usage: morfa formats [<format>]\n\nLists every format, or what one format converts to.\n",
         "presets" => "Usage: morfa presets\n\nLists the presets saved in Morfa (built-in and your own).\n",
+        "queue" => QueueText,
+        "doctor" => DoctorText,
         _ => General,
     };
+
+    private const string QueueText = """
+        Usage: morfa queue list | pause <job id> | resume <job id> | clear
+
+        Reads or edits the persistent job file. Paused jobs are not restored when Morfa starts;
+        resume marks them as waiting for the next start. 'clear' removes all saved jobs.
+
+        """;
+
+    private const string DoctorText = """
+        Usage: morfa doctor [--fix]
+
+        Checks settings, engines, disk space and platform permissions. Prints one line per check
+        and exits 0 when no error was found. --fix creates a default settings file when none exists;
+        it never overwrites a broken file.
+
+        """;
 
     private const string General = """
         Morfa: convert files offline from the command line.
@@ -27,6 +46,8 @@ internal static class Help
           morfa watch <folder> --to <format> [options]
           morfa formats [<format>]
           morfa presets
+          morfa queue list
+          morfa doctor
           morfa help [<command>]
           morfa version
 
@@ -57,6 +78,8 @@ internal static class Help
               --keep-dates       Give converted files the created and modified dates of the originals
               --zip              Save the result of each file as one ZIP (a Shapefile's files together)
               --json             Print the result as JSON (for scripts and other programs)
+              --json-events      Print NDJSON events: file results, then one done event
+              --dry-run          Show the planned route and output path; write no files
               --quiet            Print nothing but errors
 
         """;

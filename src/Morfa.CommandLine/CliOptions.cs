@@ -19,12 +19,15 @@ internal sealed record CliOptions
     public bool Quiet { get; set; }
     public bool MoveOriginals { get; set; }
     public bool KeepDates { get; set; }
+    public bool Fix { get; set; }
+    public bool DryRun { get; set; }
+    public bool JsonEvents { get; set; }
 
     public bool Zip { get; set; }
     public double? SettleSeconds { get; set; }
     public string? Error { get; set; }
 
-    public static readonly string[] Commands = ["convert", "watch", "formats", "presets", "help", "version"];
+    public static readonly string[] Commands = ["convert", "watch", "formats", "presets", "doctor", "queue", "help", "version"];
 
     public static CliOptions Parse(IReadOnlyList<string> args)
     {
@@ -100,6 +103,15 @@ internal sealed record CliOptions
                 case "--zip":
                     options.Zip = true;
                     break;
+                case "--fix":
+                    options.Fix = true;
+                    break;
+                case "--dry-run":
+                    options.DryRun = true;
+                    break;
+                case "--json-events":
+                    options.JsonEvents = true;
+                    break;
                 case "--settle":
                     var settle = Value();
                     if (settle is not null)
@@ -127,6 +139,16 @@ internal sealed record CliOptions
             "convert" when options.Inputs.Count == 0 => "Give at least one file or folder to convert.",
             "convert" or "watch" when options.To is null == (options.Preset is null) => "Use either --to <format> or --preset <preset>.",
             "watch" when options.Inputs.Count != 1 => "Give exactly one folder to watch.",
+            "queue" when options.Inputs.Count == 0 => "Give a queue action: list, pause, resume or clear.",
+            "queue" when options.Inputs.Count > 2 => "Give at most a queue action and a job id.",
+            "queue" when options.Inputs[0].ToLowerInvariant() is not ("list" or "pause" or "resume" or "clear") =>
+                $"Unknown queue action '{options.Inputs[0]}'.",
+            "queue" when options.Inputs[0].ToLowerInvariant() is "pause" or "resume" && options.Inputs.Count != 2 =>
+                $"{options.Inputs[0]} needs a job id.",
+            "queue" when options.Inputs[0].ToLowerInvariant() is "list" or "clear" && options.Inputs.Count != 1 =>
+                $"{options.Inputs[0]} takes no job id.",
+            "doctor" when options.Inputs.Count > 0 => "doctor takes no arguments.",
+            "watch" when options.DryRun => "--dry-run works with 'convert' only.",
             _ => null,
         };
         return options;

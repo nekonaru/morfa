@@ -123,7 +123,7 @@ public sealed class DonutSettings
 public sealed class AppSettings
 {
     /// <summary>Current schema version. Increase when the format changes and add a migration.</summary>
-    public const int CurrentSchemaVersion = 46;
+    public const int CurrentSchemaVersion = 47;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
 
@@ -261,6 +261,21 @@ public sealed class AppSettings
     /// </summary>
     public double UiScale { get; set; } = 1;
 
+    /// <summary>Options for the persistent conversion queue introduced with schema 47.</summary>
+    public QueueSettings Queue { get; set; } = new();
+
+    /// <summary>Options for saved conversion workflows.</summary>
+    public WorkflowSettings Workflow { get; set; } = new();
+
+    /// <summary>Options for conditional watch folder routing.</summary>
+    public RuleSettings Rules { get; set; } = new();
+
+    /// <summary>Options for assistive technology support.</summary>
+    public AccessibilitySettings Accessibility { get; set; } = new();
+
+    /// <summary>Options for local diagnostics.</summary>
+    public DiagnosticsSettings Diagnostics { get; set; } = new();
+
     /// <summary>
     /// Returns <paramref name="preset"/> itself, or a copy with the app-wide output settings applied: it saves to
     /// <see cref="DefaultOutput"/> when the preset's location is <see cref="OutputLocation.Default"/>, and keeps the
@@ -325,4 +340,54 @@ public sealed class BrowserDropSettings
 
     /// <summary>Keep only the converted file: the original goes into a work folder and is deleted after the conversion.</summary>
     public bool SaveOnlyConverted { get; set; }
+}
+
+/// <summary>Options for the persistent conversion queue (schema 47).</summary>
+public sealed class QueueSettings
+{
+    /// <summary>Keep queued jobs on disk so a restart can resume them.</summary>
+    public bool Persist { get; set; } = true;
+
+    /// <summary>How often a failed job is tried again before it is left as failed.</summary>
+    public int MaxAttempts { get; set; } = 3;
+
+    /// <summary>Restore jobs that were running when Morfa stopped.</summary>
+    public bool ResumeOnStartup { get; set; } = true;
+}
+
+/// <summary>Options for saved conversion workflows.</summary>
+public sealed class WorkflowSettings
+{
+    /// <summary>Identifiers of the recipes used most recently, newest first.</summary>
+    public List<string> RecentRecipeIds { get; set; } = [];
+
+    /// <summary>Show recipe tools in the donut's second side.</summary>
+    public bool ShowInDonut { get; set; } = true;
+}
+
+/// <summary>Options for conditional watch folder routing.</summary>
+public sealed class RuleSettings
+{
+    /// <summary>Match multiple rules in order instead of using one preset for every file.</summary>
+    public bool ConditionalRouting { get; set; } = true;
+}
+
+/// <summary>Options for assistive technology support.</summary>
+public sealed class AccessibilitySettings
+{
+    /// <summary>Announce finished and failed conversions to screen readers.</summary>
+    public bool AnnounceResults { get; set; } = true;
+
+    /// <summary>Keep a visible focus ring on keyboard navigation.</summary>
+    public bool ShowFocusVisuals { get; set; } = true;
+}
+
+/// <summary>Options for local diagnostics. Nothing here is sent anywhere.</summary>
+public sealed class DiagnosticsSettings
+{
+    /// <summary>Keep a local log file for bug reports.</summary>
+    public bool KeepLogs { get; set; } = true;
+
+    /// <summary>How many days of log files to keep.</summary>
+    public int LogRetentionDays { get; set; } = 7;
 }

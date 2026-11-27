@@ -86,8 +86,8 @@ public sealed class ConversionJob
         Files = sources.Select(s => new FileResult { SourcePath = s, NeedsFetch = fetcher?.Fetches(s) ?? false }).ToList();
     }
 
-    public string Id { get; } = Guid.NewGuid().ToString("N")[..10];
-    public DateTime CreatedAt { get; } = DateTime.Now;
+    public string Id { get; internal set; } = Guid.NewGuid().ToString("N")[..10];
+    public DateTime CreatedAt { get; internal set; } = DateTime.Now;
 
     /// <summary>The source files, as <see cref="FileResult.SourcePath"/> currently names them.</summary>
     public IReadOnlyList<string> Sources => Files.Select(f => f.SourcePath).ToList();

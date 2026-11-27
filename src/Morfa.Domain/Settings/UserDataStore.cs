@@ -81,6 +81,8 @@ public sealed class UserDataStore
         History = Read(HistoryPath, MorfaJsonContext.Default.ListHistoryEntry) ?? [];
 
         var schema = Settings.SchemaVersion;
+        if (schema < AppSettings.CurrentSchemaVersion && File.Exists(SettingsPath))
+            BackUpSettings(schema);
         SettingsMigrations.Apply(Settings);
         var libraryChanged = SettingsMigrations.ApplyToLibrary(schema, Presets, Profiles);
         EnsureConsistency();
@@ -287,6 +289,30 @@ public sealed class UserDataStore
         }
     }
 
+    /// <summary>
+    /// Keeps one copy of the settings file before a migration, so a bad migration can be undone by hand. Old copies
+    /// expire after 30 days. A failure here does not stop loading: the original file is still there.
+    /// </summary>
+    private void BackUpSettings(int schema)
+    {
+        try
+        {
+            var backup = Path.Combine(Directory, $"settings.v{schema}.bak");
+            if (!File.Exists(backup))
+                File.Copy(SettingsPath, backup);
+            foreach (var old in System.IO.Directory.EnumerateFiles(Directory, "settings.v*.bak"))
+            {
+                var info = new FileInfo(old);
+                if (info.LastWriteTimeUtc < DateTime.UtcNow.AddDays(-30))
+                    info.Delete();
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.LogWarning(ex, "Could not back up settings before migration");
+        }
+    }
+
     private T? Read<T>(string path, JsonTypeInfo<T> type) where T : class
     {
         if (!File.Exists(path))
@@ -434,6 +460,19 @@ internal static class SettingsMigrations
         //      ties. (Schema 21 may be renumbered if another change takes it first.)
         if (settings.SchemaVersion < 21)
             InsertBefore(settings.EnginePriority, "wic", settings.EnginePriority.Contains("ffmpeg") ? "ffmpeg" : "pandoc");
+
+        // v47: sections for the persistent queue, recipes, conditional watch rules, accessibility and diagnostics.
+        // A hand-edited file can carry an explicit null for any of them, so fill those in too.
+        if (settings.SchemaVersion < 47)
+        {
+            if (settings.Queue is null) settings.Queue = new();
+            if (settings.Workflow is null) settings.Workflow = new();
+            if (settings.Rules is null) settings.Rules = new();
+            if (settings.Accessibility is null) settings.Accessibility = new();
+            if (settings.Diagnostics is null) settings.Diagnostics = new();
+            if (settings.Queue.MaxAttempts < 1) settings.Queue.MaxAttempts = 1;
+            if (settings.Diagnostics.LogRetentionDays < 1) settings.Diagnostics.LogRetentionDays = 7;
+        }
 
         // Triggers default at construction (AppSettings.Triggers initializer) for new installs; re-adding default
         // gestures here would resurrect ones the user deliberately removed, so old configs keep an empty list too.

@@ -1,3 +1,5 @@
+using Morfa.Domain.Conversion;
+using Morfa.Domain.History;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Profiles;
 using Morfa.Domain.Settings;
@@ -6,6 +8,87 @@ namespace Morfa.Domain.Tests;
 
 public class UserDataStoreTests
 {
+    [Fact]
+    public void Version_46_migration_keeps_presets_profiles_and_history()
+    {
+        using var dir = new TempDir();
+        var store = new UserDataStore(dir.Path);
+        store.Load();
+        store.Presets.Add(new Preset { Id = "my-preset", TargetFormat = "webp" });
+        store.Profiles.Add(new ToolbarProfile { Id = "my-profile", Name = "Mine", PresetIds = ["my-preset"] });
+        store.AddHistory(new HistoryEntry
+        {
+            JobId = "job-1",
+            PresetId = "my-preset",
+            State = JobState.Completed,
+            Sources = ["a.png"],
+            Outputs = ["a.webp"],
+        });
+        store.SaveLibrary();
+        store.SaveSettings();
+
+        var path = Path.Combine(dir.Path, "settings.json");
+        var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        node["schemaVersion"] = 46;
+        File.WriteAllText(path, node.ToJsonString());
+
+        var upgraded = new UserDataStore(dir.Path);
+        upgraded.Load();
+
+        Assert.Equal(AppSettings.CurrentSchemaVersion, upgraded.Settings.SchemaVersion);
+        Assert.Contains(upgraded.Presets, p => p.Id == "my-preset");
+        Assert.Contains(upgraded.Profiles, p => p.Id == "my-profile");
+        Assert.Contains(upgraded.History, h => h.JobId == "job-1");
+        Assert.Equal("a.webp", upgraded.History.Single(h => h.JobId == "job-1").Outputs[0]);
+    }
+
+    [Fact]
+    public void Version_46_settings_gain_v2_sections_and_keep_existing_values()
+    {
+        using var dir = new TempDir();
+        var path = Path.Combine(dir.Path, "settings.json");
+        File.WriteAllText(path, """
+            { "schemaVersion": 46, "language": "id", "uiScale": 1.4,
+              "queue": null, "workflow": null, "rules": null, "accessibility": null, "diagnostics": null }
+            """);
+
+        var store = new UserDataStore(dir.Path);
+        store.Load();
+
+        Assert.Equal(AppSettings.CurrentSchemaVersion, store.Settings.SchemaVersion);
+        Assert.Equal("id", store.Settings.Language);
+        Assert.Equal(1.4, store.Settings.UiScale);
+        Assert.True(store.Settings.Queue.Persist);
+        Assert.Equal(3, store.Settings.Queue.MaxAttempts);
+        Assert.True(store.Settings.Queue.ResumeOnStartup);
+        Assert.True(store.Settings.Workflow.ShowInDonut);
+        Assert.True(store.Settings.Rules.ConditionalRouting);
+        Assert.True(store.Settings.Accessibility.AnnounceResults);
+        Assert.Equal(7, store.Settings.Diagnostics.LogRetentionDays);
+        Assert.True(File.Exists(Path.Combine(dir.Path, "settings.v46.bak")));
+        var rewritten = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        Assert.Equal(AppSettings.CurrentSchemaVersion, (int?)rewritten["schemaVersion"]);
+
+        var reloaded = new UserDataStore(dir.Path);
+        reloaded.Load();
+        Assert.Equal(AppSettings.CurrentSchemaVersion, reloaded.Settings.SchemaVersion);
+        Assert.Equal("id", reloaded.Settings.Language);
+        Assert.True(File.Exists(Path.Combine(dir.Path, "settings.v46.bak")));
+    }
+
+    [Fact]
+    public void A_settings_file_from_a_newer_build_keeps_its_schema_marker()
+    {
+        using var dir = new TempDir();
+        File.WriteAllText(Path.Combine(dir.Path, "settings.json"), """{ "schemaVersion": 99 }""");
+
+        var store = new UserDataStore(dir.Path);
+        store.Load();
+
+        Assert.Equal(99, store.Settings.SchemaVersion);
+        Assert.False(File.Exists(Path.Combine(dir.Path, "settings.v99.bak")));
+    }
+
     [Theory]
     [InlineData(30)]
     [InlineData(31)]

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Presets;
+using Morfa.Domain.Queue;
 
 namespace Morfa.Domain.Conversion;
 
@@ -30,6 +31,9 @@ public sealed class JobQueue : IAsyncDisposable
     private readonly HashSet<string> _madeFolders = new(Platform.FileSystemPaths.Comparer);
     private readonly Task _worker;
     private readonly Func<string, Platform.TrashRefusal?>? _moveToTrash;
+    private readonly JobStore? _store;
+    private readonly ConcurrentDictionary<string, ConversionJob> _active = new();
+    private readonly ConcurrentDictionary<string, JobState> _savedStates = new();
     private int _busy;
 
     /// <param name="catalog">Converters and their priority.</param>
@@ -42,8 +46,11 @@ public sealed class JobQueue : IAsyncDisposable
     /// Moves a file to the Recycle Bin / Trash for <see cref="OutputRule.ReplaceOriginal"/>: null when it worked, else
     /// why not. Without it originals are always kept.
     /// </param>
+    /// <param name="store">Optional persistent store. Tests leave it out, so they never touch the user's data.</param>
+    /// <param name="restoreOnStartup">Re-queue stored jobs that were waiting or running when Morfa stopped.</param>
     public JobQueue(ConverterCatalog catalog, IPdfMerger? pdfMerger = null, ILogger<JobQueue>? log = null, IFileCombiner? combiner = null,
-        ITiffMerger? tiffMerger = null, IMediaJoiner? mediaJoiner = null, Func<string, Platform.TrashRefusal?>? moveToTrash = null)
+        ITiffMerger? tiffMerger = null, IMediaJoiner? mediaJoiner = null, Func<string, Platform.TrashRefusal?>? moveToTrash = null,
+        JobStore? store = null, bool restoreOnStartup = false)
     {
         _moveToTrash = moveToTrash;
         _catalog = catalog;
@@ -52,7 +59,10 @@ public sealed class JobQueue : IAsyncDisposable
         _tiffMerger = tiffMerger;
         _mediaJoiner = mediaJoiner;
         _log = log ?? (ILogger)NullLogger.Instance;
+        _store = store;
         _worker = Task.Run(WorkLoopAsync);
+        if (restoreOnStartup)
+            Restore();
     }
 
     /// <summary>Raised (on a background thread) whenever a job's state or progress changes.</summary>
@@ -75,6 +85,8 @@ public sealed class JobQueue : IAsyncDisposable
             Interlocked.Decrement(ref _busy); // job was not queued (e.g. after shutdown); don't count it as busy
             _log.LogWarning("Job {Job} was rejected because the queue is closing", job.Id);
         }
+        _active[job.Id] = job;
+        Persist(job); // even with no UI listening, the job is on disk before it can be lost
         Notify(job); // safe raise (handlers can throw); the caller needs the job enqueued regardless
         return job;
     }
@@ -1192,6 +1204,8 @@ public sealed class JobQueue : IAsyncDisposable
 
     private void Notify(ConversionJob job)
     {
+        if (_savedStates.GetValueOrDefault(job.Id) != job.State)
+            Persist(job); // state changes are durable; progress updates are not written on every frame
         try
         {
             JobUpdated?.Invoke(this, job);
@@ -1212,6 +1226,62 @@ public sealed class JobQueue : IAsyncDisposable
         catch (Exception ex)
         {
             _log.LogWarning(ex, "JobFinished handler threw");
+        }
+        Persist(job);
+        _active.TryRemove(job.Id, out _);
+    }
+
+    /// <summary>Writes one snapshot. A broken queue file must never break a conversion.</summary>
+    private void Persist(ConversionJob job)
+    {
+        if (_store is null || !_store.Enabled)
+            return;
+        try
+        {
+            _store.Upsert(JobSnapshot.From(job));
+            _savedStates[job.Id] = job.State;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            _log.LogWarning(ex, "Could not save job {Job} to the queue", job.Id);
+        }
+    }
+
+    /// <summary>Re-queues work that was waiting or running when Morfa last stopped. Paused and finished jobs stay on disk only.</summary>
+    private void Restore()
+    {
+        if (_store is null || !_store.Enabled)
+            return;
+        QueueFile file;
+        try { file = _store.Load(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.LogWarning(ex, "Could not read the queue on startup");
+            return;
+        }
+        foreach (var snapshot in file.Jobs)
+        {
+            if (snapshot.Paused || snapshot.State is not (nameof(JobState.Queued) or nameof(JobState.Running)))
+                continue;
+            ConversionJob job;
+            try
+            {
+                job = snapshot.ToJob();
+                job.State = JobState.Queued; // a job cut short by a restart starts over, never trusted as half done
+            }
+            catch (Exception ex) when (ex is InvalidDataException or System.Text.Json.JsonException)
+            {
+                _log.LogWarning(ex, "Could not restore job {Job}; skipping it", snapshot.Id);
+                continue;
+            }
+            Interlocked.Increment(ref _busy);
+            if (!_channel.Writer.TryWrite(job))
+            {
+                Interlocked.Decrement(ref _busy);
+                continue;
+            }
+            _active[job.Id] = job;
+            _savedStates[job.Id] = job.State;
         }
     }
 
@@ -1309,6 +1379,8 @@ public sealed class JobQueue : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        foreach (var job in _active.Values)
+            Persist(job);
         _channel.Writer.TryComplete();
         await _worker;
     }

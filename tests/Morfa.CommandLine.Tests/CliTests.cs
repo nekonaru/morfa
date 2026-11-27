@@ -1,7 +1,10 @@
 // End-to-end tests of the "morfa" command: real engines, a temporary settings folder, files in a temporary folder.
 
 using System.Text.Json;
+using Morfa.Domain.Conversion;
 using Morfa.Domain.Presets;
+using Morfa.Domain.Queue;
+using Morfa.Domain.Settings;
 
 namespace Morfa.CommandLine.Tests;
 
@@ -326,6 +329,139 @@ public sealed class CliTests : IDisposable
         (code, output, _) = await Run("--version");
         Assert.Equal(Cli.Success, code);
         Assert.StartsWith("morfa ", output);
+    }
+
+    [Fact]
+    public async Task Dry_run_prints_the_route_and_writes_no_output()
+    {
+        var source = Png("photo.png");
+
+        var (code, output, errors) = await Run("convert", source, "--to", "jpg", "--dry-run");
+
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.Contains("->", output);
+        Assert.Contains("png->jpg", output);
+        Assert.Contains("no output written", output);
+        Assert.False(File.Exists(Path.Combine(_folder, "photo.jpg")));
+    }
+
+    [Fact]
+    public async Task Dry_run_json_events_have_a_plan_and_no_done()
+    {
+        var source = Png("photo.png");
+
+        var (code, output, _) = await Run("convert", source, "--to", "jpg", "--dry-run", "--json-events");
+
+        Assert.Equal(Cli.Success, code);
+        var events = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => JsonDocument.Parse(line).RootElement).ToList();
+        Assert.All(events, e => Assert.Equal(2, e.GetProperty("format").GetInt32()));
+        Assert.Contains(events, e => e.GetProperty("event").GetString() == "plan");
+        Assert.DoesNotContain(events, e => e.GetProperty("event").GetString() is "done" or "file");
+        Assert.False(File.Exists(Path.Combine(_folder, "photo.jpg")));
+    }
+
+    [Fact]
+    public async Task Json_events_report_each_file_and_then_done()
+    {
+        var source = Png("photo.png");
+
+        var (code, output, _) = await Run("convert", source, "--to", "jpg", "--json-events");
+
+        Assert.Equal(Cli.Success, code);
+        var events = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => JsonDocument.Parse(line).RootElement).ToList();
+        Assert.Contains(events, e => e.GetProperty("event").GetString() == "file");
+        Assert.Equal("done", events[^1].GetProperty("event").GetString());
+        Assert.Equal(1, events[^1].GetProperty("converted").GetInt32());
+        Assert.True(File.Exists(Path.Combine(_folder, "photo.jpg")));
+    }
+
+    [Fact]
+    public async Task Doctor_reports_a_clean_machine_and_accepts_fix()
+    {
+        var (code, output, errors) = await Run("doctor");
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.Contains("settings", output);
+        Assert.Contains("engines", output);
+        Assert.Contains("queue", output);
+
+        (code, output, _) = await Run("doctor", "--fix");
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("created settings.json with defaults", output);
+        Assert.True(File.Exists(Path.Combine(_settings, "settings.json")));
+    }
+
+    [Fact]
+    public async Task Doctor_fails_on_a_broken_settings_file()
+    {
+        await File.WriteAllTextAsync(Path.Combine(_settings, "settings.json"), "{ not json",
+            TestContext.Current.CancellationToken);
+
+        var (code, output, errors) = await Run("doctor");
+
+        Assert.NotEqual(Cli.Success, code);
+        Assert.Contains("settings.json", output);
+        Assert.Contains("settings backup", output);
+        Assert.Contains("check(s) failed", errors);
+    }
+
+    [Fact]
+    public async Task Queue_command_lists_pauses_and_resumes_a_saved_job()
+    {
+        var store = new JobStore(_settings);
+        var source = Png("photo.png");
+        var snapshot = JobSnapshot.From(new ConversionJob([source], new Preset { TargetFormat = "jpg" }, "JPG"));
+        store.Upsert(snapshot);
+
+        var (code, output, errors) = await Run("queue", "list");
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.Contains(snapshot.Id, output);
+        Assert.Contains("Queued", output);
+
+        (code, output, errors) = await Run("queue", "pause", snapshot.Id);
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("(paused)", output);
+        Assert.True(store.Load().Jobs.Single().Paused);
+
+        (code, output, errors) = await Run("queue", "resume", snapshot.Id);
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("(waiting)", output);
+        Assert.False(store.Load().Jobs.Single().Paused);
+
+        (code, output, _) = await Run("queue", "clear");
+        Assert.Equal(Cli.Success, code);
+        Assert.Empty(store.Load().Jobs);
+    }
+
+    [Fact]
+    public async Task Queue_edits_are_refused_when_persistence_is_off()
+    {
+        var store = new UserDataStore(_settings);
+        store.Load();
+        store.Settings.Queue.Persist = false;
+        store.SaveSettings();
+
+        var (code, _, errors) = await Run("queue", "pause", "some-id");
+
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("turned off", errors);
+    }
+
+    [Fact]
+    public async Task Queue_command_rejects_an_unknown_action()
+    {
+        var (code, _, errors) = await Run("queue", "delete");
+
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("Unknown queue action", errors, StringComparison.OrdinalIgnoreCase);
+
+        (code, _, errors) = await Run("queue", "clear", "some-id");
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("takes no job id", errors);
     }
 
     [Fact]

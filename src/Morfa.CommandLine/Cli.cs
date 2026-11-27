@@ -2,13 +2,17 @@
 // --json, one JSON document for other programs. Exit codes: 0 everything converted, 1 some files failed,
 // 2 wrong arguments or a missing input, 3 nothing to convert.
 
+using System.Net.Http;
 using System.Text.Json;
+using Morfa.Converters.Infrastructure;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Formats;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
 using Morfa.Domain.Presets;
 using Morfa.Domain.Watching;
+using Morfa.Platforms.Linux;
+using Morfa.Platforms.Windows;
 
 namespace Morfa.CommandLine;
 
@@ -46,6 +50,8 @@ internal static class Cli
             "convert" => await ConvertAsync(options, host, output, errors, cancellationToken),
             "watch" => await WatchAsync(options, host, output, errors, cancellationToken),
             "formats" => ListFormats(options, host, output, errors),
+            "queue" => Queue(options, host, output, errors),
+            "doctor" => Doctor(options, host, output, errors),
             _ => ListPresets(host, output),
         };
     }
@@ -68,11 +74,20 @@ internal static class Cli
             errors.WriteLine("morfa: no files to convert.");
             return NothingToDo;
         }
+        if (options.DryRun)
+            return DryRun(files, preset, options, host, output);
 
-        var job = await RunJobAsync(files, preset, host, options.Json || options.Quiet ? null : output, cancellationToken);
+        var job = await RunJobAsync(files, preset, host, options.JsonEvents ? output : options.Json || options.Quiet ? null : output,
+            cancellationToken, options.JsonEvents);
         var done = job.Files.Count(f => f.State == FileState.Done);
         var failed = job.Files.Count(f => f.State is FileState.Failed or FileState.Cancelled);
-        if (options.Json)
+        if (options.JsonEvents)
+            WriteEvent(output, "done", json =>
+            {
+                json.WriteNumber("converted", done);
+                json.WriteNumber("failed", failed);
+            });
+        else if (options.Json)
             WriteJson(job, host.Texts, output);
         else if (!options.Quiet)
             output.WriteLine(failed == 0
@@ -121,7 +136,7 @@ internal static class Cli
 
     /// <summary>Runs one job and prints each file's result as soon as it is final (when <paramref name="output"/> is given).</summary>
     private static async Task<ConversionJob> RunJobAsync(IReadOnlyList<string> files, Preset preset, CliHost host, TextWriter? output,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool jsonEvents = false)
     {
         var job = new ConversionJob(files, preset, host.Texts.DisplayName(preset));
         var printed = new HashSet<FileResult>();
@@ -132,7 +147,20 @@ internal static class Cli
             lock (printed)
             {
                 foreach (var file in job.Files.Where(f => f.State is not (FileState.Pending or FileState.Running) && printed.Add(f)))
-                    output.WriteLine(Describe(file, host.Texts));
+                {
+                    if (jsonEvents)
+                        WriteEvent(output, "file", json =>
+                        {
+                            json.WriteString("source", file.SourcePath);
+                            json.WriteString("state", file.State.ToString().ToLowerInvariant());
+                            json.WriteStartArray("outputs");
+                            foreach (var path in file.Outputs)
+                                json.WriteStringValue(path);
+                            json.WriteEndArray();
+                        });
+                    else
+                        output.WriteLine(Describe(file, host.Texts));
+                }
             }
         }
 
@@ -320,6 +348,219 @@ internal static class Cli
                 missing.Add(input);
         }
         return files.Select(Path.GetFullPath).Distinct(FileSystemPaths.Comparer).ToList();
+    }
+
+    /// <summary>
+    /// Shows the route and the output path without creating anything. A bad route is reported but is not a conversion
+    /// failure, so the exit code stays 0: the point is to let the user see what would happen.
+    /// </summary>
+    private static int DryRun(IReadOnlyList<string> files, Preset preset, CliOptions options, CliHost host, TextWriter output)
+    {
+        var planner = host.Catalog.CreatePlanner();
+        var target = preset.TargetFormat.ToLowerInvariant();
+        foreach (var path in files)
+        {
+            var from = FormatRegistry.Detect(path)?.Id.ToLowerInvariant()
+                ?? Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
+            var route = planner.Plan(from, target);
+            var steps = route?.Steps.Select(s => $"{s.From}->{s.To} by {s.Converter.DisplayName}").ToList() ?? [];
+            var tokens = new OutputPathResolver.Tokens(path, host.Texts.DisplayName(preset), 0, DateTime.Now);
+            var destination = OutputPathResolver.Resolve(preset.Output, tokens, target, p => File.Exists(p));
+            if (options.JsonEvents)
+            {
+                WriteEvent(output, "plan", json =>
+                {
+                    json.WriteString("source", path);
+                    json.WriteString("target", target);
+                    json.WriteString("output", destination);
+                    json.WriteBoolean("skipped", destination is null);
+                    json.WriteBoolean("available", route is not null);
+                    json.WriteStartArray("route");
+                    foreach (var step in steps)
+                        json.WriteStringValue(step);
+                    json.WriteEndArray();
+                });
+            }
+            else if (!options.Quiet)
+            {
+                output.WriteLine($"{Shorten(path)} -> {(destination is null ? "skipped (output exists)" : destination)}: {(route is null ? "no route" : string.Join(", ", steps))}");
+            }
+        }
+        if (!options.JsonEvents && !options.Quiet)
+            output.WriteLine($"Dry run: {files.Count} file(s), no output written.");
+        return Success;
+    }
+
+    private static void WriteEvent(TextWriter output, string name, Action<Utf8JsonWriter> body)
+    {
+        using var stream = new MemoryStream();
+        using (var json = new Utf8JsonWriter(stream))
+        {
+            json.WriteStartObject();
+            json.WriteNumber("format", 2);
+            json.WriteString("event", name);
+            body(json);
+            json.WriteEndObject();
+        }
+        output.WriteLine(System.Text.Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    /// <summary>
+    /// Local health check. Missing optional engines and missing permissions are warnings, because Morfa can run
+    /// without them. Unreadable settings or a corrupt queue are errors and give a nonzero exit.
+    /// </summary>
+    private static int Doctor(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
+    {
+        var failed = 0;
+        void Ok(string name, string detail) => output.WriteLine($"ok      {name}: {detail}");
+        void Warn(string name, string detail) => output.WriteLine($"warning {name}: {detail}");
+        void Error(string name, string detail)
+        {
+            output.WriteLine($"error   {name}: {detail}");
+            failed++;
+        }
+
+        var folder = host.Store.Directory;
+        var settings = Path.Combine(folder, "settings.json");
+        var settingsMissing = !File.Exists(settings);
+        if (settingsMissing)
+            Warn("settings", "no file yet; defaults are in use");
+        else
+        {
+            try
+            {
+                using var json = JsonDocument.Parse(File.ReadAllText(settings));
+                Ok("settings", $"schema {json.RootElement.GetProperty("schemaVersion").GetInt32()}");
+            }
+            catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException
+                or IOException or UnauthorizedAccessException or FormatException)
+            {
+                Error("settings", $"{settings}: {ex.Message}");
+            }
+        }
+        if (File.Exists(settings + ".broken"))
+            Error("settings backup", $"{settings}.broken was kept for inspection; restore or remove it by hand");
+        if (File.Exists(Path.Combine(folder, ".queue-v2.json.broken")))
+            Error("queue backup", "a broken queue file was kept for inspection; restore or remove it by hand");
+        Ok("queue", $"{host.QueueStore.Load().Jobs.Count} saved job(s)");
+
+        try
+        {
+            using var http = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false });
+            var installer = new EngineInstaller(http);
+            var installed = 0;
+            var outdated = 0;
+            foreach (var package in EngineDownloads.Packages)
+            {
+                if (!installer.IsInstalled(package))
+                    continue;
+                installed++;
+                if (!installer.IsUpToDate(package))
+                {
+                    outdated++;
+                    Warn("engine", $"{package.Id} is installed but not the pinned version");
+                }
+            }
+            Ok("engines", $"{installed} installed, {outdated} not pinned (optional engines may be absent)");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            Warn("engines", ex.Message);
+        }
+
+        try
+        {
+            var root = Path.GetPathRoot(folder);
+            if (root is not null && new DriveInfo(root).AvailableFreeSpace < 500L * 1024 * 1024)
+                Warn("disk", "less than 500 MB free in the data folder");
+            else
+                Ok("disk", "enough free space in the data folder");
+        }
+        catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
+        {
+            Warn("disk", ex.Message);
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            var granted = new Morfa.Platforms.MacOS.MacOSPlatformServices().HasAccessibilityPermission;
+            if (granted) Ok("accessibility", "granted");
+            else Warn("accessibility", "not granted; keyboard and drag gestures need it");
+        }
+        if (OperatingSystem.IsWindows())
+        {
+            var state = Elevation.Probe();
+            if (state.ShellCannotReachMorfa)
+                Warn("elevation", "Explorer cannot reach an elevated Morfa; window drops will not work");
+            else
+                Ok("elevation", state.ToString());
+        }
+        if (OperatingSystem.IsLinux())
+        {
+            var linux = new LinuxPlatformServices();
+            if (LinuxPlatformServices.IsWaylandSession && !linux.SupportsGlobalPointerGestures)
+                Warn("session", linux.GlobalPointerGesturesUnavailableReason ?? "Wayland gestures unavailable");
+        }
+
+        if (options.Fix)
+        {
+            if (settingsMissing)
+            {
+                host.Store.SaveSettings();
+                Ok("repair", "created settings.json with defaults");
+            }
+            else
+            {
+                Ok("repair", "nothing to repair automatically; a broken file needs a human decision");
+            }
+        }
+
+        if (failed > 0)
+            errors.WriteLine($"morfa: {failed} check(s) failed.");
+        return failed == 0 ? Success : SomeFailed;
+    }
+
+    /// <summary>
+    /// Inspects or edits the v2 queue file. Changes take effect the next time Morfa starts; this command never runs
+    /// conversions itself, so it is safe to call while the app is closed.
+    /// </summary>
+    private static int Queue(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
+    {
+        var action = options.Inputs[0].ToLowerInvariant();
+        if (action != "list" && !host.QueueStore.Enabled)
+        {
+            errors.WriteLine("morfa: queue persistence is turned off in settings; no change was made.");
+            return UsageError;
+        }
+        if (action == "clear")
+        {
+            host.QueueStore.Clear();
+            output.WriteLine("The queue is empty.");
+            return Success;
+        }
+        var file = host.QueueStore.Load();
+        if (action == "list")
+        {
+            if (file.Jobs.Count == 0)
+                output.WriteLine("The queue is empty.");
+            foreach (var job in file.Jobs)
+            {
+                var paused = job.Paused ? " (paused)" : "";
+                output.WriteLine($"{job.Id}  {job.State}{paused}  {job.PresetDisplayName}  {job.Sources.Count} file(s)");
+            }
+            return Success;
+        }
+        var id = options.Inputs[1];
+        var saved = file.Jobs.FirstOrDefault(j => j.Id == id);
+        if (saved is null)
+        {
+            errors.WriteLine($"morfa: no queued job '{id}'.");
+            return UsageError;
+        }
+        saved.Paused = action == "pause";
+        host.QueueStore.Upsert(saved);
+        output.WriteLine($"{saved.Id} is now {saved.State}{(saved.Paused ? " (paused)" : " (waiting)")}.");
+        return Success;
     }
 
     private static int ListFormats(CliOptions options, CliHost host, TextWriter output, TextWriter errors)

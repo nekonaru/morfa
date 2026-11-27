@@ -292,8 +292,13 @@ Perintah `morfa` memakai engine dan preset yang sama dengan aplikasi.
 ```bash
 morfa convert photo.heic --to jpg
 morfa convert *.png --to webp --quality 80 -o converted
+morfa convert photo.png --to webp --dry-run
+morfa doctor
+morfa queue list
 morfa watch D:\Inbox --to pdf --move-originals
 ```
+
+`--dry-run` menampilkan rute dan path output tanpa menulis file. `doctor` memeriksa settings, engine, disk, dan izin. `queue` menampilkan atau mengatur job yang tersimpan antar sesi. Script bisa memakai `--json` atau `--json-events` untuk output yang bisa dibaca mesin.
 
 Setiap perintah dan opsi: `morfa help`.
 
