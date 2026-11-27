@@ -9,6 +9,7 @@ using Morfa.Desktop.ViewModels;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Localization;
 using Morfa.Domain.Platform;
+using Morfa.Domain.Queue;
 using Morfa.Domain.Settings;
 using Morfa.Domain.Web;
 using Morfa.Platforms.Linux;
@@ -35,6 +36,10 @@ public static class AppHost
             .SetMinimumLevel(LogLevel.Information));
 
         services.AddSingleton(sp => preloadedStore ?? new UserDataStore(dataDir, sp.GetRequiredService<ILogger<UserDataStore>>()));
+        services.AddSingleton(sp => new JobStore(dataDir)
+        {
+            Enabled = sp.GetRequiredService<UserDataStore>().Settings.Queue.Persist,
+        });
         services.AddSingleton<IPlatformServices>(_ =>
             OperatingSystem.IsWindows() ? new WindowsPlatformServices()
             : OperatingSystem.IsMacOS() ? new MacOSPlatformServices()
@@ -58,7 +63,9 @@ public static class AppHost
             EngineRegistry.FindFileCombiner(sp.GetRequiredService<IReadOnlyList<IConverter>>()),
             EngineRegistry.FindTiffMerger(sp.GetRequiredService<IReadOnlyList<IConverter>>()),
             EngineRegistry.FindMediaJoiner(sp.GetRequiredService<IReadOnlyList<IConverter>>()),
-            sp.GetRequiredService<IPlatformServices>().MoveToTrash));
+            sp.GetRequiredService<IPlatformServices>().MoveToTrash,
+            sp.GetRequiredService<JobStore>(),
+            sp.GetRequiredService<UserDataStore>().Settings.Queue.ResumeOnStartup));
 
         // Files dragged from a browser with only an address are downloaded without the browser's cookies.
         services.AddSingleton(_ => new WebDownloader(userAgent: $"Morfa/{typeof(AppHost).Assembly.GetName().Version?.ToString(3)}"));
