@@ -188,6 +188,7 @@ public sealed class EngineDownloadService
         _logger = logger;
         _loc = loc;
         _store = store;
+        EngineEnvironment.Offline = store.Settings.Engine?.Offline == true;
         // Redirects are followed by the installer (mirrors may use plain HTTP; files are verified by SHA-256).
         var http = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan };
         http.DefaultRequestHeaders.UserAgent.ParseAdd($"Morfa/{typeof(EngineDownloadService).Assembly.GetName().Version}");
@@ -252,9 +253,11 @@ public sealed class EngineDownloadService
     {
         if (!state.CanInstall && !state.CanUpdate)
             return;
-        if (_store.Settings.Engine.Offline)
+        if (_store.Settings.Engine is { Offline: true })
         {
             state.Error = _loc["engine.offline"];
+            state.Status = EnginePackageStatus.Failed;
+            state.Cancellation = null;
             _logger.LogWarning("Engine downloads are turned off in settings");
             return;
         }

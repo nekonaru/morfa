@@ -502,6 +502,32 @@ public sealed class CliTests : IDisposable
     }
 
     [Fact]
+    public async Task Config_command_refuses_a_newer_bundle()
+    {
+        var path = Path.Combine(_folder, "newer.json");
+        await File.WriteAllTextAsync(path, """{ "schemaVersion": 99, "settings": {}, "presets": [], "profiles": [] }""",
+            TestContext.Current.CancellationToken);
+
+        var (code, _, errors) = await Run("config", "import", path);
+
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("newer version", errors);
+    }
+
+    [Fact]
+    public async Task Engines_verify_lists_each_component_and_rejects_a_blank_pin()
+    {
+        var (code, output, _) = await Run("engines", "verify");
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("ffmpeg", output);
+        Assert.Contains("ok", output);
+
+        (code, _, var errors) = await Run("engines", "pin", "ffmpeg", "   ");
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("non-empty", errors);
+    }
+
+    [Fact]
     public async Task Doctor_reports_a_clean_machine_and_accepts_fix()
     {
         var (code, output, errors) = await Run("doctor");

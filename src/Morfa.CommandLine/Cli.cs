@@ -510,6 +510,7 @@ internal static class Cli
         var action = options.Inputs[0].ToLowerInvariant();
         if (action is "offline" or "online")
         {
+            host.Store.Settings.Engine ??= new();
             host.Store.Settings.Engine.Offline = action == "offline";
             host.Store.SaveSettings();
             output.WriteLine($"Engine downloads are now {(host.Store.Settings.Engine.Offline ? "off" : "on")}.");
@@ -523,9 +524,17 @@ internal static class Cli
                 errors.WriteLine($"morfa: unknown engine package '{id}'.");
                 return UsageError;
             }
-            host.Store.Settings.Engine.PinnedVersions[id] = options.Inputs[2].Trim();
+            var version = options.Inputs[2].Trim();
+            if (version.Length == 0)
+            {
+                errors.WriteLine("morfa: pin needs a non-empty version.");
+                return UsageError;
+            }
+            host.Store.Settings.Engine ??= new();
+            host.Store.Settings.Engine.PinnedVersions ??= [];
+            host.Store.Settings.Engine.PinnedVersions[id] = version;
             host.Store.SaveSettings();
-            output.WriteLine($"{id} is pinned to {options.Inputs[2].Trim()} (advisory in v2).");
+            output.WriteLine($"{id} is pinned to {version} (advisory in v2).");
             return Success;
         }
 
@@ -537,21 +546,41 @@ internal static class Cli
             foreach (var package in EngineDownloads.Packages)
             {
                 var installed = installer.IsInstalled(package);
-                var current = installed && installer.IsUpToDate(package);
-                var manifest = package.Components.Count > 0 && EngineDownloads.Components.TryGetValue(package.Components[0], out var component)
-                    ? component.Version
+                var manifest = package.Components.Count > 0 && EngineDownloads.Components.TryGetValue(package.Components[0], out var first)
+                    ? first.Version
                     : "-";
-                host.Store.Settings.Engine.PinnedVersions.TryGetValue(package.Id, out var pinned);
-                if (action == "list" || !installed)
+                string? pinned = null;
+                host.Store.Settings.Engine?.PinnedVersions?.TryGetValue(package.Id, out pinned);
+                if (action == "list")
                     output.WriteLine($"{package.Id,-14} {(installed ? "installed" : "not installed"),-13} manifest {manifest,-12} pin {pinned ?? "-"}");
-                if (action == "verify" && installed && !current)
+                if (action != "verify")
+                    continue;
+                foreach (var componentId in package.Components)
                 {
-                    output.WriteLine($"error   {package.Id}: installed files do not match the pinned checksum");
+                    if (!EngineDownloads.Components.TryGetValue(componentId, out var component))
+                    {
+                        output.WriteLine($"mismatch {componentId}: unavailable on this platform");
+                        if (installed) failed++;
+                        continue;
+                    }
+                    if (!installed)
+                    {
+                        output.WriteLine($"not installed {componentId} {component.Version}");
+                        continue;
+                    }
+                    var result = installer.IsUpToDate(package) ? "ok" : "mismatch";
+                    output.WriteLine($"{result,-8} {componentId} {component.Version}");
+                    if (result == "mismatch")
+                        failed++;
+                }
+                if (installed && !string.IsNullOrWhiteSpace(pinned) && pinned != manifest)
+                {
+                    output.WriteLine($"mismatch {package.Id}: pin {pinned} but manifest {manifest}");
                     failed++;
                 }
             }
             if (action == "verify" && failed == 0)
-                output.WriteLine("All installed engines match their pinned checksums.");
+                output.WriteLine("All installed engines match their checksums and pins.");
             return failed == 0 ? Success : SomeFailed;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
@@ -580,7 +609,8 @@ internal static class Cli
             }
             return Success;
         }
-        catch (Exception ex) when (ex is IOException or JsonException or InvalidDataException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or JsonException or InvalidDataException or UnauthorizedAccessException
+            or ArgumentException or NotSupportedException)
         {
             errors.WriteLine($"morfa: {path}: {ex.Message}");
             return UsageError;

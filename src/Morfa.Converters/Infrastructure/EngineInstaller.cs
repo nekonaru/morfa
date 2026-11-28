@@ -64,6 +64,8 @@ public sealed class EngineInstaller
     /// <summary>Downloads and unpacks the components that are missing or outdated.</summary>
     public async Task InstallAsync(EnginePackage package, IProgress<EngineInstallProgress>? progress, CancellationToken cancellationToken)
     {
+        if (EngineEnvironment.Offline)
+            throw new InvalidOperationException("Engine downloads are turned off in settings.");
         if (package.Components.Any(c => !_components.ContainsKey(c)))
             throw new PlatformNotSupportedException(EngineDownloads.UnavailableReason(package)
                 ?? $"The {package.Id} package is unavailable on this platform.");
