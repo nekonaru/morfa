@@ -20,13 +20,23 @@ public class HistoryV2UiTests
         store.History.Clear();
         store.AddHistory(new HistoryEntry
         {
-            JobId = "1", PresetName = "To PNG", PresetId = "png", State = JobState.Completed,
-            Sources = ["a.jpg"], Outputs = ["a.png"], FinishedAt = DateTime.Now,
+            JobId = "1",
+            PresetName = "To PNG",
+            PresetId = "png",
+            State = JobState.Completed,
+            Sources = ["a.jpg"],
+            Outputs = ["a.png"],
+            FinishedAt = DateTime.Now,
         });
         store.AddHistory(new HistoryEntry
         {
-            JobId = "2", PresetName = "To PDF", PresetId = "pdf", State = JobState.Failed,
-            Sources = ["b.jpg"], Outputs = [], FinishedAt = DateTime.Now,
+            JobId = "2",
+            PresetName = "To PDF",
+            PresetId = "pdf",
+            State = JobState.Failed,
+            Sources = ["b.jpg"],
+            Outputs = [],
+            FinishedAt = DateTime.Now,
         });
         var vm = new HomePageViewModel(store, AppHost.Get<Morfa.Domain.Localization.ILocalizer>(),
             AppHost.Get<Morfa.Domain.Platform.IPlatformServices>());
@@ -57,8 +67,12 @@ public class HistoryV2UiTests
         store.History.Clear();
         store.AddHistory(new HistoryEntry
         {
-            JobId = "3", PresetName = "To PNG", State = JobState.Completed,
-            Sources = ["a.jpg"], Outputs = ["a.png"], FinishedAt = DateTime.Now,
+            JobId = "3",
+            PresetName = "To PNG",
+            State = JobState.Completed,
+            Sources = ["a.jpg"],
+            Outputs = ["a.png"],
+            FinishedAt = DateTime.Now,
         });
         var item = new HistoryItemViewModel(store.History[0], AppHost.Get<Morfa.Domain.Localization.ILocalizer>(),
             AppHost.Get<Morfa.Domain.Platform.IPlatformServices>(), store: store);
@@ -83,8 +97,12 @@ public class HistoryV2UiTests
         store.Load();
         store.AddHistory(new HistoryEntry
         {
-            JobId = "4", PresetName = "To PNG", State = JobState.Completed,
-            Sources = ["a.jpg"], Outputs = ["a.png"], FinishedAt = DateTime.Now,
+            JobId = "4",
+            PresetName = "To PNG",
+            State = JobState.Completed,
+            Sources = ["a.jpg"],
+            Outputs = ["a.png"],
+            FinishedAt = DateTime.Now,
             Failures = [],
         });
         var path = Path.Combine(dir.FullName, "history.json");
