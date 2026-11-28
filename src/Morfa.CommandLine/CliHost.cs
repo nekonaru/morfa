@@ -32,6 +32,7 @@ internal sealed class CliHost : IAsyncDisposable
     {
         var store = new UserDataStore(dataDirectory ?? UserDataStore.DefaultDirectory);
         store.Load();
+        EngineEnvironment.Offline = store.Settings.Engine?.Offline == true;
         EngineEnvironment.OwnCopies = new Dictionary<string, string>(store.Settings.EngineOwnCopies);
         EngineEnvironment.LibreOfficeForSlides = store.Settings.LibreOfficeForSlides;
         EngineEnvironment.LibreOfficeForHwp = store.Settings.LibreOfficeForHwp;

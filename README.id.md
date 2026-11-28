@@ -295,12 +295,14 @@ morfa convert photo.heic --to jpg
 morfa convert *.png --to webp --quality 80 -o converted
 morfa convert photo.png --to webp --dry-run
 morfa run recipe.json photo.png
+morfa engines list
+morfa config export backup.json
 morfa doctor
 morfa queue list
 morfa watch D:\Inbox --to pdf --move-originals
 ```
 
-`--dry-run` menampilkan rute dan path output tanpa menulis file. `morfa run` menjalankan workflow yang tersimpan. `doctor` memeriksa settings, engine, disk, dan izin. `queue` menampilkan atau mengatur job yang tersimpan antar sesi. Script bisa memakai `--json` atau `--json-events` untuk output yang bisa dibaca mesin.
+`--dry-run` menampilkan rute dan path output tanpa menulis file. `morfa run` menjalankan workflow yang tersimpan. `morfa engines` menampilkan dan memverifikasi engine opsional. `morfa config` mengekspor atau memulihkan settings, preset, dan profil. `doctor` memeriksa settings, engine, disk, dan izin. `queue` menampilkan atau mengatur job yang tersimpan antar sesi. Script bisa memakai `--json` atau `--json-events` untuk output yang bisa dibaca mesin.
 
 Setiap perintah dan opsi: `morfa help`.
 

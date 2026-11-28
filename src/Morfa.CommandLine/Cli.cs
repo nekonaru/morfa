@@ -54,6 +54,8 @@ internal static class Cli
             "formats" => ListFormats(options, host, output, errors),
             "queue" => Queue(options, host, output, errors),
             "doctor" => Doctor(options, host, output, errors),
+            "engines" => Engines(options, host, output, errors),
+            "config" => Config(options, host, output, errors),
             "run" => await RunRecipeAsync(options, host, output, errors, cancellationToken),
             _ => ListPresets(host, output),
         };
@@ -500,6 +502,122 @@ internal static class Cli
                 output.WriteLine($"ok    {path}");
         }
         return result.Failed == 0 ? Success : SomeFailed;
+    }
+
+    /// <summary>Lists, verifies and pins optional engines. Pins are advisory in v2.</summary>
+    private static int Engines(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
+    {
+        var action = options.Inputs[0].ToLowerInvariant();
+        if (action is "offline" or "online")
+        {
+            host.Store.Settings.Engine ??= new();
+            host.Store.Settings.Engine.Offline = action == "offline";
+            host.Store.SaveSettings();
+            output.WriteLine($"Engine downloads are now {(host.Store.Settings.Engine.Offline ? "off" : "on")}.");
+            return Success;
+        }
+        if (action == "pin")
+        {
+            var id = options.Inputs[1];
+            if (EngineDownloads.Packages.All(p => p.Id != id))
+            {
+                errors.WriteLine($"morfa: unknown engine package '{id}'.");
+                return UsageError;
+            }
+            var version = options.Inputs[2].Trim();
+            if (version.Length == 0)
+            {
+                errors.WriteLine("morfa: pin needs a non-empty version.");
+                return UsageError;
+            }
+            host.Store.Settings.Engine ??= new();
+            host.Store.Settings.Engine.PinnedVersions ??= [];
+            host.Store.Settings.Engine.PinnedVersions[id] = version;
+            host.Store.SaveSettings();
+            output.WriteLine($"{id} is pinned to {version} (advisory in v2).");
+            return Success;
+        }
+
+        try
+        {
+            using var http = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false });
+            var installer = new EngineInstaller(http);
+            var failed = 0;
+            foreach (var package in EngineDownloads.Packages)
+            {
+                var installed = installer.IsInstalled(package);
+                var manifest = package.Components.Count > 0 && EngineDownloads.Components.TryGetValue(package.Components[0], out var first)
+                    ? first.Version
+                    : "-";
+                string? pinned = null;
+                host.Store.Settings.Engine?.PinnedVersions?.TryGetValue(package.Id, out pinned);
+                if (action == "list")
+                    output.WriteLine($"{package.Id,-14} {(installed ? "installed" : "not installed"),-13} manifest {manifest,-12} pin {pinned ?? "-"}");
+                if (action != "verify")
+                    continue;
+                foreach (var componentId in package.Components)
+                {
+                    if (!EngineDownloads.Components.TryGetValue(componentId, out var component))
+                    {
+                        if (installed)
+                        {
+                            output.WriteLine($"mismatch {componentId}: unavailable on this platform");
+                            failed++;
+                        }
+                        continue;
+                    }
+                    if (!installed)
+                    {
+                        output.WriteLine($"not installed {componentId} {component.Version}");
+                        continue;
+                    }
+                    var result = installer.IsUpToDate(package) ? "ok" : "mismatch";
+                    output.WriteLine($"{result,-8} {componentId} {component.Version}");
+                    if (result == "mismatch")
+                        failed++;
+                }
+                if (installed && !string.IsNullOrWhiteSpace(pinned) && pinned != manifest)
+                {
+                    output.WriteLine($"mismatch {package.Id}: pin {pinned} but manifest {manifest}");
+                    failed++;
+                }
+            }
+            if (action == "verify" && failed == 0)
+                output.WriteLine("All installed engines match their checksums and pins.");
+            return failed == 0 ? Success : SomeFailed;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            errors.WriteLine($"morfa: {ex.Message}");
+            return SomeFailed;
+        }
+    }
+
+    /// <summary>Exports or imports the whole local configuration bundle.</summary>
+    private static int Config(CliOptions options, CliHost host, TextWriter output, TextWriter errors)
+    {
+        var action = options.Inputs[0].ToLowerInvariant();
+        var path = options.Inputs[1];
+        try
+        {
+            if (action == "export")
+            {
+                host.Store.ExportConfig(path);
+                output.WriteLine($"Configuration exported to {path}.");
+            }
+            else
+            {
+                host.Store.ImportConfig(path);
+                output.WriteLine($"Configuration imported from {path}.");
+            }
+            return Success;
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or InvalidDataException or UnauthorizedAccessException
+            or ArgumentException or NotSupportedException)
+        {
+            errors.WriteLine($"morfa: {path}: {ex.Message}");
+            return UsageError;
+        }
     }
 
     /// <summary>

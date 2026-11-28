@@ -466,6 +466,67 @@ public sealed class CliTests : IDisposable
     }
 
     [Fact]
+    public async Task Engines_command_lists_packages_and_pins_a_known_one()
+    {
+        var (code, output, errors) = await Run("engines", "list");
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.Contains("ffmpeg", output);
+
+        (code, output, errors) = await Run("engines", "pin", "ffmpeg", "7.0");
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("7.0", output);
+
+        var store = new UserDataStore(_settings);
+        store.Load();
+        Assert.Equal("7.0", store.Settings.Engine.PinnedVersions["ffmpeg"]);
+
+        (code, _, errors) = await Run("engines", "pin", "ghost", "1.0");
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("ghost", errors);
+    }
+
+    [Fact]
+    public async Task Config_command_exports_and_imports_a_bundle()
+    {
+        var path = Path.Combine(_folder, "config.json");
+
+        var (code, output, errors) = await Run("config", "export", path);
+        Assert.Equal(Cli.Success, code);
+        Assert.Equal("", errors);
+        Assert.True(File.Exists(path));
+
+        (code, output, errors) = await Run("config", "import", path);
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("imported", output);
+    }
+
+    [Fact]
+    public async Task Config_command_refuses_a_newer_bundle()
+    {
+        var path = Path.Combine(_folder, "newer.json");
+        await File.WriteAllTextAsync(path, """{ "schemaVersion": 99, "settings": {}, "presets": [], "profiles": [] }""",
+            TestContext.Current.CancellationToken);
+
+        var (code, _, errors) = await Run("config", "import", path);
+
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("newer version", errors);
+    }
+
+    [Fact]
+    public async Task Engines_verify_lists_each_component_and_rejects_a_blank_pin()
+    {
+        var (code, output, _) = await Run("engines", "verify");
+        Assert.Equal(Cli.Success, code);
+        Assert.Contains("not installed", output);
+
+        (code, _, var errors) = await Run("engines", "pin", "ffmpeg", "   ");
+        Assert.Equal(Cli.UsageError, code);
+        Assert.Contains("non-empty", errors);
+    }
+
+    [Fact]
     public async Task Doctor_reports_a_clean_machine_and_accepts_fix()
     {
         var (code, output, errors) = await Run("doctor");

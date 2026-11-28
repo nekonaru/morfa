@@ -17,9 +17,27 @@ internal static class Help
         "presets" => "Usage: morfa presets\n\nLists the presets saved in Morfa (built-in and your own).\n",
         "queue" => QueueText,
         "doctor" => DoctorText,
+        "engines" => EnginesText,
+        "config" => ConfigText,
         "run" => RunText,
         _ => General,
     };
+
+    private const string EnginesText = """
+        Usage: morfa engines list | verify | pin <package> <version> | offline | online
+
+        Shows optional engines, checks installed checksums, records an advisory version pin, or
+        turns downloads off and on. Installed and system engines work in offline mode.
+
+        """;
+
+    private const string ConfigText = """
+        Usage: morfa config export <file> | import <file>
+
+        Exports or restores settings, presets and profiles as one JSON file. No file contents,
+        history outputs or PDF passwords are included. A newer bundle format is refused.
+
+        """;
 
     private const string RunText = """
         Usage: morfa run <recipe.json> <files or folders...> [options]
@@ -57,6 +75,8 @@ internal static class Help
           morfa presets
           morfa queue list
           morfa run recipe.json photo.png
+          morfa engines list
+          morfa config export backup.json
           morfa doctor
           morfa help [<command>]
           morfa version

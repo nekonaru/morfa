@@ -27,7 +27,7 @@ internal sealed record CliOptions
     public double? SettleSeconds { get; set; }
     public string? Error { get; set; }
 
-    public static readonly string[] Commands = ["convert", "watch", "formats", "presets", "doctor", "queue", "run", "help", "version"];
+    public static readonly string[] Commands = ["convert", "watch", "formats", "presets", "doctor", "queue", "run", "engines", "config", "help", "version"];
 
     public static CliOptions Parse(IReadOnlyList<string> args)
     {
@@ -152,6 +152,16 @@ internal sealed record CliOptions
             "run" when options.DryRun => "--dry-run works with 'convert' only.",
             "run" when options.JsonEvents => "--json-events works with 'convert' only.",
             "watch" when options.DryRun => "--dry-run works with 'convert' only.",
+            "engines" when options.Inputs.Count == 0 => "Give an engines action: list, verify, pin, offline or online.",
+            "engines" when options.Inputs[0].ToLowerInvariant() is not ("list" or "verify" or "pin" or "offline" or "online") =>
+                $"Unknown engines action '{options.Inputs[0]}'.",
+            "engines" when options.Inputs[0].ToLowerInvariant() == "pin" && options.Inputs.Count != 3 =>
+                "pin needs a package id and a version.",
+            "engines" when options.Inputs[0].ToLowerInvariant() is "list" or "verify" or "offline" or "online" && options.Inputs.Count != 1 =>
+                $"{options.Inputs[0]} takes no arguments.",
+            "config" when options.Inputs.Count != 2 => "Give config export or import and a file path.",
+            "config" when options.Inputs[0].ToLowerInvariant() is not ("export" or "import") =>
+                $"Unknown config action '{options.Inputs[0]}'.",
             _ => null,
         };
         return options;

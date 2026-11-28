@@ -24,6 +24,9 @@ public sealed class EngineEnvironment(string dataDirectory)
     /// </summary>
     public static string DownloadRoot { get; set; } = DefaultDownloadRoot(UserDataStore.OverrideDirectory);
 
+    /// <summary>Block engine downloads without blocking installed or system engines. Set from settings at startup.</summary>
+    public static bool Offline { get; set; }
+
     internal static string DefaultDownloadRoot(string? dataDirectoryOverride) =>
         dataDirectoryOverride is not null
             ? Path.Combine(dataDirectoryOverride, "engines")

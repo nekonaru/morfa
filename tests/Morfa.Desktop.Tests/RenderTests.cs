@@ -298,6 +298,7 @@ public class RenderTests
             ],
             Preset = new Morfa.Domain.Presets.Preset { TargetFormat = "pdf" },
         };
+        store.History.Clear(); // other tests share this AppHost store; pinning can put their entries first
         store.AddHistory(entry);
         try
         {
