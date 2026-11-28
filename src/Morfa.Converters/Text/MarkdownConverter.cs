@@ -55,7 +55,7 @@ public sealed class MarkdownConverter : IConverter
         {
             // Relative image paths would break away from the Markdown file: point them at the original files.
             foreach (var image in document.Descendants<LinkInline>().Where(l => l.IsImage))
-                if (MarkdownReader.ResolveImage(image.Url, inputFolder) is { } path)
+                if (MarkdownReader.ResolveImage(image.Url, inputFolder, inputFolder) is { } path)
                     image.Url = new Uri(path).AbsoluteUri;
         }
 

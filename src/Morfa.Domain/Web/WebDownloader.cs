@@ -1,6 +1,6 @@
 // Saves files from the web: the bytes a browser handed over with a drag, or, when a drag brought only an address, the
 // file downloaded from it. Downloads are plain GET requests without the browser's cookies or sign-in (Morfa has
-// neither): only http and https, a few redirects, a size cap and timeouts. Whatever arrives is named by what it
+// neither): https for remote links, plus http for a local test server, a few redirects, a size cap and timeouts. Whatever arrives is named by what it
 // really is, never replaces an existing file, and programs or web pages are refused instead of saved.
 
 using System.Net;
@@ -146,9 +146,16 @@ public sealed class WebDownloader : IDisposable
         }
     }
 
-    /// <summary>True for an http or https address, the only ones Morfa downloads.</summary>
+    /// <summary>
+    /// True for https addresses, and for http only on loopback (a local test server). Cleartext remote web drops
+    /// are refused.
+    /// </summary>
     public static bool IsWebAddress(Uri url) =>
-        url.IsAbsoluteUri && (url.Scheme == Uri.UriSchemeHttps || url.Scheme == Uri.UriSchemeHttp);
+        url.IsAbsoluteUri
+        && (url.Scheme == Uri.UriSchemeHttps
+            || (url.Scheme == Uri.UriSchemeHttp
+                && (url.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                    || (IPAddress.TryParse(url.Host, out var ip) && IPAddress.IsLoopback(ip)))));
 
     private async Task<HttpResponseMessage> GetFollowingRedirectsAsync(Uri url, CancellationToken cancellationToken)
     {

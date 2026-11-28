@@ -122,7 +122,8 @@ public sealed class EbookConverter : IConverter
                 }
             case "md":
                 {
-                    var document = MarkdownReader.Read(HwpxConverter.DecodeText(File.ReadAllBytes(input)), Path.GetDirectoryName(Path.GetFullPath(input))!);
+                    var folder = Path.GetDirectoryName(Path.GetFullPath(input))!;
+                    var document = MarkdownReader.Read(HwpxConverter.DecodeText(File.ReadAllBytes(input)), folder, folder);
                     return new Book(document, new BookMetadata { Title = document.Title });
                 }
             case "txt":

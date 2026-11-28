@@ -44,9 +44,10 @@ public class BrowserDragTests
     [Theory]
     [InlineData("https://example.com/files/Q3%20report.pdf?download=1", "Q3 report.pdf")]
     [InlineData("https://example.com/a/photo.JPG", "photo.JPG")]
-    [InlineData("http://example.com/sheet.xlsx", "sheet.xlsx")]
-    public void A_link_to_a_file_Morfa_converts_is_a_file(string url, string name) =>
-        Assert.Equal([name], Names(Drag((BrowserDragFormats.MozUrl, url + "\nTitle"))));
+    [InlineData("https://example.com/sheet.xlsx", "sheet.xlsx")]
+    [InlineData("http://example.com/sheet.xlsx", null)]
+    public void A_link_to_a_file_Morfa_converts_is_a_file(string url, string? name) =>
+        Assert.Equal(name is null ? [] : [name], Names(Drag((BrowserDragFormats.MozUrl, url + "\nTitle"))));
 
     [Theory]
     [InlineData("https://example.com/news/article")]

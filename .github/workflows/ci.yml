@@ -108,6 +108,24 @@ jobs:
       - name: Restore
         run: dotnet restore Morfa.slnx
 
+      - name: Audit dependencies
+        shell: pwsh
+        run: |
+          $text = dotnet list Morfa.slnx package --vulnerable --include-transitive --format json | Out-String
+          $report = $text | ConvertFrom-Json
+          $bad = @()
+          function Walk($node) {
+            if ($null -eq $node) { return }
+            if ($node -is [System.Array]) { foreach ($item in $node) { Walk $item }; return }
+            if ($node.PSObject.Properties.Name -contains 'severity' -and $node.severity -in @('High', 'Critical')) {
+              $bad += $node.id
+              return
+            }
+            foreach ($property in $node.PSObject.Properties) { Walk $property.Value }
+          }
+          Walk $report
+          if ($bad.Count -gt 0) { throw "High or critical dependency vulnerabilities: $($bad -join ', ')" }
+
       - name: Check formatting
         run: dotnet format Morfa.slnx --verify-no-changes --no-restore --severity warn
 
