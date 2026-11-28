@@ -13,8 +13,9 @@ public class WebDropJobTests
     [Theory]
     [InlineData("https://example.com/a.png", true)]
     [InlineData("http://example.com/a.png", false)]
+    [InlineData("http://127.0.0.1:8080/a.png", true)]
     [InlineData("file:///C:/a.png", false)]
-    public void Only_https_addresses_are_downloaded(string url, bool expected) =>
+    public void Only_https_and_local_http_addresses_are_downloaded(string url, bool expected) =>
         Assert.Equal(expected, WebDownloader.IsWebAddress(new Uri(url)));
 
     private static readonly byte[] Png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0x0D];
