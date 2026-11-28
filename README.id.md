@@ -62,9 +62,10 @@ Morfa terinspirasi dari, dan membangun atas, [Filee](https://github.com/KnifeLem
 | **263 format, tanpa software lain** | Gambar, PDF, Word, Excel, PowerPoint, HWP, e-book, arsip, font, CAD, model 3D dan data geospasial berjalan tanpa Office, Hancom Office atau LibreOffice |
 | **Langsung dari browser** | Tarik gambar, tautan ke file atau unduhan dari Chrome, Edge, Firefox atau Safari dengan cara yang sama; Morfa menyimpannya ke folder Downloads lalu mengonversinya |
 | **Banyak file sekaligus, paralel** | Rute dengan beberapa langkah (HWP ke HWPX ke DOCX) ditemukan otomatis |
-| **Watch folder** | Konversi setiap file yang masuk ke folder yang kamu pilih |
+| **Watch folder** | Konversi setiap file yang masuk ke folder yang kamu pilih, dengan rute per file dan retensi output opsional |
 | **Konversi terbaru** | Setiap hasil muncul di Home dengan thumbnail: buka file itu, atau buka dengan aplikasi lain |
-| **Ekspor riwayat** | Ekspor daftar konversi terbaru ke CSV UTF-8 dari Home |
+| **Ekspor riwayat** | Ekspor daftar konversi terbaru ke CSV atau JSON UTF-8 dari Home |
+| **Dashboard riwayat** | Cari berdasarkan teks, format, status, preset, dan watch folder; sematkan entri, tambah tag dan catatan, serta lihat ringkasan |
 
 ### Toolbar dan Preset
 

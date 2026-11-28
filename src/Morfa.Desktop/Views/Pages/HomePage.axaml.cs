@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Microsoft.Extensions.Logging;
 using Morfa.Desktop.Services;
+using Morfa.Domain.Localization;
 using Morfa.Domain.Settings;
 
 namespace Morfa.Desktop.Views.Pages;
@@ -63,22 +64,36 @@ public partial class HomePage : UserControl
         AppHost.Get<RadialController>().ShowForFiles(screenPoint.X, screenPoint.Y, paths);
     }
 
-    private async void OnExportHistoryClick(object? sender, RoutedEventArgs? e)
+    private async void OnExportHistoryClick(object? sender, RoutedEventArgs? e) => await ExportHistory(json: false);
+
+    private async void OnExportJsonClick(object? sender, RoutedEventArgs? e) => await ExportHistory(json: true);
+
+    private async Task ExportHistory(bool json)
     {
         if (TopLevel.GetTopLevel(this) is not { } top)
             return;
+        var loc = AppHost.Get<ILocalizer>();
         var target = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Export history as CSV",
-            SuggestedFileName = "morfa-history.csv",
-            FileTypeChoices = [new FilePickerFileType("CSV") { Patterns = ["*.csv"] }],
+            Title = loc[json ? "home.export_json" : "home.export_csv"],
+            SuggestedFileName = json ? "morfa-history.json" : "morfa-history.csv",
+            FileTypeChoices =
+            [
+                new FilePickerFileType(json ? "JSON" : "CSV")
+                {
+                    Patterns = [json ? "*.json" : "*.csv"],
+                },
+            ],
         });
         if (target?.TryGetLocalPath() is not { } path)
             return;
         var entries = AppHost.Get<UserDataStore>().History;
         if (entries.Count == 0)
             return; // nothing to write
-        HistoryCsv.Write(path, entries);
+        if (json)
+            HistoryJson.Write(path, entries);
+        else
+            HistoryCsv.Write(path, entries);
     }
 
     private void OnDrop(object? sender, DragEventArgs e)

@@ -22,15 +22,23 @@ public sealed partial class HistoryItemViewModel : ObservableObject
     private readonly HistoryEntry _entry;
     private readonly IPlatformServices _platform;
     private readonly ConversionService? _conversions;
+    private readonly UserDataStore? _store;
+    private readonly ILocalizer _loc;
+    private readonly Action? _reload;
 
     /// <summary>The first output still on disk (the one the buttons open), or null.</summary>
     private readonly string? _output;
 
-    public HistoryItemViewModel(HistoryEntry entry, ILocalizer loc, IPlatformServices platform, ConversionService? conversions = null)
+    public HistoryItemViewModel(HistoryEntry entry, ILocalizer loc, IPlatformServices platform,
+        ConversionService? conversions = null, UserDataStore? store = null, Action? reload = null)
     {
         _entry = entry;
+        _loc = loc;
+        _store = store;
+        _reload = reload;
         _platform = platform;
         _conversions = conversions;
+        _store = store;
         Title = entry.PresetName;
         Subtitle = entry.Sources.Count == 1 ? Path.GetFileName(entry.Sources[0]) : loc.Format("home.files", entry.Sources.Count);
         Time = entry.FinishedAt.Date == DateTime.Today ? entry.FinishedAt.ToString("t") : entry.FinishedAt.ToString("d");
@@ -91,6 +99,45 @@ public sealed partial class HistoryItemViewModel : ObservableObject
     public bool CanRetry { get; }
 
     [ObservableProperty] private bool _showFailures;
+
+    /// <summary>Pinned entries stay at the top of Home.</summary>
+    public bool Pinned => _entry.Pinned;
+
+    /// <summary>The button says what the next click does.</summary>
+    public string PinLabel => _loc[_entry.Pinned ? "home.unpin" : "home.pin"];
+
+    [RelayCommand]
+    private void TogglePin()
+    {
+        _entry.Pinned = !_entry.Pinned;
+        _store?.SaveHistoryQuiet();
+        OnPropertyChanged(nameof(Pinned));
+        OnPropertyChanged(nameof(PinLabel));
+        _reload?.Invoke();
+    }
+
+    /// <summary>Comma-separated tags, kept in sync with the persisted entry.</summary>
+    public string TagsText
+    {
+        get => string.Join(", ", _entry.Tags);
+        set
+        {
+            _entry.Tags = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(tag => tag.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            _store?.SaveHistoryQuiet();
+        }
+    }
+
+    /// <summary>A free-form note for this result.</summary>
+    public string Notes
+    {
+        get => _entry.Notes ?? "";
+        set
+        {
+            _entry.Notes = value.Length == 0 ? null : value;
+            _store?.SaveHistoryQuiet();
+        }
+    }
 
     [RelayCommand]
     private void ToggleFailures() => ShowFailures = !ShowFailures;
@@ -209,6 +256,20 @@ public sealed partial class HomePageViewModel : ObservableObject, IDisposable
 
     partial void OnSearchChanged(string value) => Reload();
 
+    /// <summary>Optional filters next to the search box. Empty means all entries.</summary>
+    [ObservableProperty] private string _formatFilter = "";
+    [ObservableProperty] private string _stateFilter = "";
+    [ObservableProperty] private string _presetFilter = "";
+    [ObservableProperty] private string _watchFilter = "";
+
+    partial void OnFormatFilterChanged(string value) => Reload();
+    partial void OnStateFilterChanged(string value) => Reload();
+    partial void OnPresetFilterChanged(string value) => Reload();
+    partial void OnWatchFilterChanged(string value) => Reload();
+
+    /// <summary>Numbers shown in the dashboard above the search box.</summary>
+    public HistoryStats Dashboard { get; private set; } = HistoryStats.Of([]);
+
     /// <summary>No history at all: no search box, and the hint that converted files show up here.</summary>
     [ObservableProperty] private bool _isEmpty;
 
@@ -219,13 +280,17 @@ public sealed partial class HomePageViewModel : ObservableObject, IDisposable
     {
         var query = Search.Trim();
         // The entries are picked first, then built: building one looks for its outputs on disk.
-        var entries = _store.History
-            .Where(entry => query.Length == 0 || Matches(entry, query))
+        var all = _store.History;
+        Dashboard = HistoryStats.Of(all);
+        OnPropertyChanged(nameof(Dashboard));
+        var entries = all
+            .Where(entry => (query.Length == 0 || Matches(entry, query)) && MatchesFilters(entry))
+            .OrderByDescending(entry => entry.Pinned)
             .Take(Shown)
             .ToList();
         History.Clear();
         foreach (var entry in entries)
-            History.Add(new HistoryItemViewModel(entry, _loc, _platform, _conversions));
+            History.Add(new HistoryItemViewModel(entry, _loc, _platform, _conversions, _store, Reload));
         IsEmpty = _store.History.Count == 0;
         NoMatches = !IsEmpty && History.Count == 0;
         LoadThumbnails();
@@ -270,9 +335,27 @@ public sealed partial class HomePageViewModel : ObservableObject, IDisposable
         }, token);
     }
 
+    private bool MatchesFilters(HistoryEntry entry)
+    {
+        if (FormatFilter.Length > 0 && !entry.Outputs.Any(p =>
+                Path.GetExtension(p).TrimStart('.').Equals(FormatFilter.Trim(), StringComparison.OrdinalIgnoreCase)))
+            return false;
+        if (StateFilter.Length > 0 && !entry.State.ToString().Equals(StateFilter.Trim(), StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (PresetFilter.Length > 0
+            && !(entry.PresetId?.Contains(PresetFilter.Trim(), StringComparison.OrdinalIgnoreCase) == true
+                || entry.PresetName?.Contains(PresetFilter.Trim(), StringComparison.OrdinalIgnoreCase) == true))
+            return false;
+        if (WatchFilter.Length > 0
+            && !string.Equals(entry.WatchRuleId, WatchFilter.Trim(), StringComparison.OrdinalIgnoreCase))
+            return false;
+        return true;
+    }
+
     private static bool Matches(HistoryEntry entry, string query)
     {
-        return Contains(entry.PresetName) || entry.Sources.Any(source => Contains(Path.GetFileName(source)));
+        return Contains(entry.PresetName) || Contains(entry.Notes) || entry.Tags.Any(Contains)
+            || entry.Sources.Any(source => Contains(Path.GetFileName(source)));
 
         bool Contains(string? text) => text?.Contains(query, StringComparison.CurrentCultureIgnoreCase) == true;
     }
@@ -285,3 +368,4 @@ public sealed partial class HomePageViewModel : ObservableObject, IDisposable
         Reload();
     }
 }
+

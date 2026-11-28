@@ -125,7 +125,7 @@ public sealed class FolderWatcher : IAsyncDisposable
     /// <summary>Registers a file that appeared or changed; it is converted once it has settled.</summary>
     public void Notice(string path)
     {
-        if (ShouldIgnore(path, Rule))
+        if (ShouldIgnore(path, Rule) || _results.IsSuppressed(path))
             return;
         var now = _time.GetUtcNow();
         _pending.AddOrUpdate(path, _ => Candidate.Of(path, now), (_, old) => old.Refresh(path, now));
@@ -139,6 +139,7 @@ public sealed class FolderWatcher : IAsyncDisposable
     {
         if (!await _busy.WaitAsync(0))
             return 0; // the previous batch is still converting; new files wait for the next tick
+        ApplyRetention(); // every tick: an idle inbox still needs its old outputs cleaned
         var ready = new List<string>();
         var readyKeys = new List<string>();
         DateTimeOffset now = _time.GetUtcNow();
@@ -193,6 +194,8 @@ public sealed class FolderWatcher : IAsyncDisposable
                 if (SameFolder(Rule.ResolvedOutputFolder, Rule.Folder)
                     || !IsInside(Rule.ResolvedOutputFolder, Rule.Folder))
                     resultsChanged |= _results.Remember(output);
+                if (Rule.RetentionDays > 0)
+                    _results.RememberForRetention(output);
                 if (!Directory.Exists(output))
                 {
                     var result = Candidate.Of(output, _time.GetUtcNow());
@@ -226,6 +229,33 @@ public sealed class FolderWatcher : IAsyncDisposable
         }
     }
 
+    /// <summary>Deletes outputs older than the rule's retention window; 0 keeps them.</summary>
+    internal void ApplyRetention()
+    {
+        if (Rule.RetentionDays <= 0 || !Directory.Exists(Rule.ResolvedOutputFolder))
+            return;
+        var cutoff = _time.GetUtcNow().UtcDateTime.AddDays(-Rule.RetentionDays);
+        foreach (var path in _results.RetentionPaths())
+        {
+            try
+            {
+                if (!File.Exists(path) || File.GetLastWriteTimeUtc(path) >= cutoff)
+                    continue;
+                File.Delete(path);
+                _results.Forget(path);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _log.LogWarning(ex, "Could not apply retention to {Path}", path);
+            }
+        }
+        try { _results.Save(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.LogWarning(ex, "Could not save retention state for watch folder {Folder}", Rule.Folder);
+        }
+    }
+
     /// <summary>
     /// Re-queues a batch whose conversion could not run at all. Files are stable again before the next scan picks
     /// them up, and the folder is capped at <see cref="MaxBatchRetries"/> re-queue attempts per file per session.
@@ -239,6 +269,7 @@ public sealed class FolderWatcher : IAsyncDisposable
             if (attempts > MaxBatchRetries)
             {
                 _log.LogWarning("Watch folder {Folder}: skipping {Path} after {Attempts} failed attempts", Rule.Folder, path, attempts);
+                _results.Suppress(path); // persisted, so a restart does not start over
                 continue;
             }
             _pending[path] = Candidate.Of(path, now) with { StableSince = now };

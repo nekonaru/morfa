@@ -138,6 +138,16 @@ public sealed class UserDataStore
         HistoryChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>Writes edits made to entries already in <see cref="History"/> without reloading the page.</summary>
+    public void SaveHistoryQuiet() => Write(HistoryPath, History, MorfaJsonContext.Default.ListHistoryEntry);
+
+    /// <summary>Writes edits made to entries already in <see cref="History"/>.</summary>
+    public void SaveHistory()
+    {
+        Write(HistoryPath, History, MorfaJsonContext.Default.ListHistoryEntry);
+        HistoryChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     public void ClearHistory()
     {
         lock (_saveLock)
