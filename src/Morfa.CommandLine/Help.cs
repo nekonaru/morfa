@@ -17,8 +17,17 @@ internal static class Help
         "presets" => "Usage: morfa presets\n\nLists the presets saved in Morfa (built-in and your own).\n",
         "queue" => QueueText,
         "doctor" => DoctorText,
+        "run" => RunText,
         _ => General,
     };
+
+    private const string RunText = """
+        Usage: morfa run <recipe.json> <files or folders...> [options]
+
+        Runs the steps of a saved workflow in order and prints the final outputs. Accepts --output, --json and
+        --quiet. --recursive expands folders; conversion options come from the recipe, not from the command line.
+
+        """;
 
     private const string QueueText = """
         Usage: morfa queue list | pause <job id> | resume <job id> | clear
@@ -47,6 +56,7 @@ internal static class Help
           morfa formats [<format>]
           morfa presets
           morfa queue list
+          morfa run recipe.json photo.png
           morfa doctor
           morfa help [<command>]
           morfa version

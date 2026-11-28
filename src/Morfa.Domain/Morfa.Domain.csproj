@@ -14,5 +14,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Morfa.Domain.Tests" />
+    <InternalsVisibleTo Include="morfa-cli" />
   </ItemGroup>
 </Project>
