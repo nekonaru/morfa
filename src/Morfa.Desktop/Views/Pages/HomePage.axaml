@@ -91,9 +91,11 @@
         </TextBox>
         <WrapPanel IsVisible="{Binding !IsEmpty}">
           <TextBlock Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0" Text="{DynamicResource home.dashboard}" />
-          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.Total}" />
-          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.Succeeded}" />
-          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.ThisWeek}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.Total, StringFormat={}{0} }" /><TextBlock Classes="muted" VerticalAlignment="Center" Text="{DynamicResource home.stat_total}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.SuccessRate, StringFormat={}{0:P0}}" /><TextBlock Classes="muted" VerticalAlignment="Center" Text="{DynamicResource home.stat_success}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.BytesOut, StringFormat={}{0:N0}}" /><TextBlock Classes="muted" VerticalAlignment="Center" Text="{DynamicResource home.stat_bytes}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.TopFormat}" /><TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.TopPreset}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.ThisWeek}" /><TextBlock Classes="muted" VerticalAlignment="Center" Text="{DynamicResource home.stat_week}" />
         </WrapPanel>
         <WrapPanel IsVisible="{Binding !IsEmpty}">
           <TextBox Width="96" Margin="0,0,6,0" Text="{Binding FormatFilter}" PlaceholderText="{DynamicResource home.format_filter}" />
@@ -115,7 +117,7 @@
                 <StackPanel Spacing="10">
                   <DockPanel>
                     <Button DockPanel.Dock="Right" Classes="ghost" Command="{Binding TogglePinCommand}"
-                            Content="{DynamicResource home.pin}" />
+                            Content="{Binding PinLabel}" />
                     <TextBox Text="{Binding TagsText, Mode=TwoWay}"
                              PlaceholderText="{DynamicResource home.tags}" />
                   </DockPanel>
@@ -225,4 +227,6 @@
     </Grid>
   </StackPanel>
 </UserControl>
+
+
 

@@ -23,14 +23,19 @@ public sealed partial class HistoryItemViewModel : ObservableObject
     private readonly IPlatformServices _platform;
     private readonly ConversionService? _conversions;
     private readonly UserDataStore? _store;
+    private readonly ILocalizer _loc;
+    private readonly Action? _reload;
 
     /// <summary>The first output still on disk (the one the buttons open), or null.</summary>
     private readonly string? _output;
 
     public HistoryItemViewModel(HistoryEntry entry, ILocalizer loc, IPlatformServices platform,
-        ConversionService? conversions = null, UserDataStore? store = null)
+        ConversionService? conversions = null, UserDataStore? store = null, Action? reload = null)
     {
         _entry = entry;
+        _loc = loc;
+        _store = store;
+        _reload = reload;
         _platform = platform;
         _conversions = conversions;
         _store = store;
@@ -98,12 +103,17 @@ public sealed partial class HistoryItemViewModel : ObservableObject
     /// <summary>Pinned entries stay at the top of Home.</summary>
     public bool Pinned => _entry.Pinned;
 
+    /// <summary>The button says what the next click does.</summary>
+    public string PinLabel => _loc[_entry.Pinned ? "home.unpin" : "home.pin"];
+
     [RelayCommand]
     private void TogglePin()
     {
         _entry.Pinned = !_entry.Pinned;
         _store?.SaveHistoryQuiet();
         OnPropertyChanged(nameof(Pinned));
+        OnPropertyChanged(nameof(PinLabel));
+        _reload?.Invoke();
     }
 
     /// <summary>Comma-separated tags, kept in sync with the persisted entry.</summary>
@@ -280,7 +290,7 @@ public sealed partial class HomePageViewModel : ObservableObject, IDisposable
             .ToList();
         History.Clear();
         foreach (var entry in entries)
-            History.Add(new HistoryItemViewModel(entry, _loc, _platform, _conversions, _store));
+            History.Add(new HistoryItemViewModel(entry, _loc, _platform, _conversions, _store, Reload));
         IsEmpty = _store.History.Count == 0;
         NoMatches = !IsEmpty && History.Count == 0;
         LoadThumbnails();

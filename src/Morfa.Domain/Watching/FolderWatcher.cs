@@ -139,6 +139,7 @@ public sealed class FolderWatcher : IAsyncDisposable
     {
         if (!await _busy.WaitAsync(0))
             return 0; // the previous batch is still converting; new files wait for the next tick
+        ApplyRetention(); // every tick: an idle inbox still needs its old outputs cleaned
         var ready = new List<string>();
         var readyKeys = new List<string>();
         DateTimeOffset now = _time.GetUtcNow();
@@ -193,6 +194,8 @@ public sealed class FolderWatcher : IAsyncDisposable
                 if (SameFolder(Rule.ResolvedOutputFolder, Rule.Folder)
                     || !IsInside(Rule.ResolvedOutputFolder, Rule.Folder))
                     resultsChanged |= _results.Remember(output);
+                if (Rule.RetentionDays > 0)
+                    _results.RememberForRetention(output);
                 if (!Directory.Exists(output))
                 {
                     var result = Candidate.Of(output, _time.GetUtcNow());
@@ -211,7 +214,6 @@ public sealed class FolderWatcher : IAsyncDisposable
             if (Rule.Originals == AfterConversion.MoveToOriginals)
                 foreach (var file in job.Files.Where(f => f.State == FileState.Done))
                     MoveToOriginals(Rule, file.SourcePath, _log);
-            ApplyRetention();
             Converted?.Invoke(this, job);
             return ready.Count;
         }
@@ -233,17 +235,24 @@ public sealed class FolderWatcher : IAsyncDisposable
         if (Rule.RetentionDays <= 0 || !Directory.Exists(Rule.ResolvedOutputFolder))
             return;
         var cutoff = _time.GetUtcNow().UtcDateTime.AddDays(-Rule.RetentionDays);
-        foreach (var path in Directory.EnumerateFiles(Rule.ResolvedOutputFolder, "*", SearchOption.AllDirectories))
+        foreach (var path in _results.RetentionPaths())
         {
             try
             {
-                if (File.GetLastWriteTimeUtc(path) < cutoff)
-                    File.Delete(path);
+                if (!File.Exists(path) || File.GetLastWriteTimeUtc(path) >= cutoff)
+                    continue;
+                File.Delete(path);
+                _results.Forget(path);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 _log.LogWarning(ex, "Could not apply retention to {Path}", path);
             }
+        }
+        try { _results.Save(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.LogWarning(ex, "Could not save retention state for watch folder {Folder}", Rule.Folder);
         }
     }
 

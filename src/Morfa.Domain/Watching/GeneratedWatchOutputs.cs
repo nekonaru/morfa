@@ -16,7 +16,9 @@ internal sealed class GeneratedWatchOutputs(WatchRule rule)
     private readonly Dictionary<string, Entry> _entries = new(FileSystemPaths.Comparer);
     private readonly HashSet<string> _directories = new(FileSystemPaths.Comparer);
     private readonly HashSet<string> _suppressed = new(StringComparer.Ordinal);
-    internal sealed record State(List<Entry> Entries, List<string> Suppressed);
+    private readonly HashSet<string> _retention = new(FileSystemPaths.Comparer);
+    private readonly object _lock = new();
+    internal sealed record State(List<Entry> Entries, List<string> Suppressed, List<string> Retention);
     private string StateFile => System.IO.Path.Combine(rule.Folder, ".morfa-watch-" +
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(rule.Id)))[..16].ToLowerInvariant() + ".json");
 
@@ -30,7 +32,7 @@ internal sealed class GeneratedWatchOutputs(WatchRule rule)
         {
             entries = JsonSerializer.Deserialize<List<Entry?>>(text) ?? [];
         }
-        else
+        else if (document.RootElement.ValueKind == JsonValueKind.Object)
         {
             entries = document.RootElement.TryGetProperty("entries", out var list)
                 ? JsonSerializer.Deserialize<List<Entry?>>(list.GetRawText()) ?? []
@@ -45,6 +47,18 @@ internal sealed class GeneratedWatchOutputs(WatchRule rule)
                 foreach (var item in suppressedProperty.EnumerateArray())
                     if (item.GetString() is { Length: > 0 } key) _suppressed.Add(key);
             }
+            var retentionProperty = document.RootElement.TryGetProperty("retention", out var retention)
+                ? retention
+                : document.RootElement.TryGetProperty("Retention", out var oldRetention) ? oldRetention : default;
+            if (retentionProperty.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in retentionProperty.EnumerateArray())
+                    if (item.GetString() is { Length: > 0 } path && IsInside(path, rule.Folder)) _retention.Add(path);
+            }
+        }
+        else
+        {
+            return; // a valid JSON scalar is not a state file; start fresh
         }
         foreach (var entry in entries)
         {
@@ -83,29 +97,63 @@ internal sealed class GeneratedWatchOutputs(WatchRule rule)
         if (!IsInside(path, rule.Folder)) return;
         var info = new FileInfo(path);
         if (!info.Exists) return;
-        _suppressed.Add($"{path}|{info.Length}|{info.LastWriteTimeUtc.Ticks}");
-        Save();
+        lock (_lock)
+            _suppressed.Add($"{path}|{info.Length}|{info.LastWriteTimeUtc.Ticks}");
+        try { Save(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 
     public bool IsSuppressed(string path)
     {
         if (!File.Exists(path)) return false;
         var info = new FileInfo(path);
-        return _suppressed.Contains($"{path}|{info.Length}|{info.LastWriteTimeUtc.Ticks}");
+        lock (_lock)
+            return _suppressed.Contains($"{path}|{info.Length}|{info.LastWriteTimeUtc.Ticks}");
+    }
+
+    /// <summary>Outputs this rule created, used by retention so it never deletes unrelated user files.</summary>
+    public IReadOnlyList<string> RetentionPaths()
+    {
+        lock (_lock)
+            return [.. _retention];
+    }
+
+    public void RememberForRetention(string path)
+    {
+        if (!IsInside(path, rule.Folder) || !File.Exists(path)) return;
+        lock (_lock)
+            _retention.Add(path);
+    }
+
+    public void Forget(string path)
+    {
+        lock (_lock)
+            _retention.Remove(path);
     }
 
     public void Save()
     {
-        foreach (var stale in _entries.Values.Where(e => !IsCurrent(e)).ToArray())
+        lock (_lock)
         {
-            _entries.Remove(stale.Path);
-            _directories.Remove(stale.Path);
+            foreach (var stale in _entries.Values.Where(e => !IsCurrent(e)).ToArray())
+            {
+                _entries.Remove(stale.Path);
+                _directories.Remove(stale.Path);
+            }
+            foreach (var key in _suppressed.Where(k => !File.Exists(k.Split('|')[0])).ToArray())
+                _suppressed.Remove(key);
+            foreach (var path in _retention.Where(p => !File.Exists(p)).ToArray())
+                _retention.Remove(path);
         }
         var temporary = StateFile + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp";
         try
         {
-            File.WriteAllText(temporary, JsonSerializer.Serialize(
-                new State([.. _entries.Values], [.. _suppressed])));
+            string json;
+            lock (_lock)
+            {
+                json = JsonSerializer.Serialize(new State([.. _entries.Values], [.. _suppressed], [.. _retention]));
+            }
+            File.WriteAllText(temporary, json);
             File.Move(temporary, StateFile, overwrite: true);
             if (OperatingSystem.IsWindows())
                 File.SetAttributes(StateFile, File.GetAttributes(StateFile) | FileAttributes.Hidden);

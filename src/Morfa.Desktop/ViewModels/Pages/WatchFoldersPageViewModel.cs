@@ -24,6 +24,8 @@ public sealed partial class WatchFoldersPageViewModel : ObservableObject, IDispo
     private readonly ILocalizer _loc;
     private readonly ConversionService? _conversions;
 
+    internal ILocalizer Loc => _loc;
+
     public WatchFoldersPageViewModel(UserDataStore store, WatchFolderService service, ILocalizer loc, ConversionService? conversions = null)
     {
         _store = store;
@@ -340,23 +342,32 @@ public sealed partial class WatchRuleViewModel : ObservableObject
         if (!Choices.Restore(oldValue, newValue, v => Preset = v))
             Change(r => r.PresetId = newValue?.Value ?? "");
     }
+    private static readonly JsonSerializerOptions RouteJson = new() { PropertyNameCaseInsensitive = true };
+
     /// <summary>Conditional routes as JSON; edited in the options panel and saved as the user types.</summary>
     public string RoutesText
     {
-        get => JsonSerializer.Serialize(Rule.Routes);
+        get => JsonSerializer.Serialize(Rule.Routes, RouteJson);
         set
         {
             try
             {
-                var routes = JsonSerializer.Deserialize<List<WatchRoute>>(value) ?? [];
-                Change(r => r.Routes = routes);
+                var routes = JsonSerializer.Deserialize<List<WatchRoute>>(value, RouteJson) ?? [];
+                RoutesError = routes.Any(r => string.IsNullOrWhiteSpace(r.PresetId))
+                    ? _page.Loc["watch.routes_error"]
+                    : null;
+                if (RoutesError is null)
+                    Change(r => r.Routes = routes);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                // The user is still typing; the last valid text stays in the rule.
+                RoutesError = ex.Message;
             }
+            OnPropertyChanged(nameof(RoutesError));
         }
     }
+
+    public string? RoutesError { get; private set; }
 
     public int RetentionDays
     {

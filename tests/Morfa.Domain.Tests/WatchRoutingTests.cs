@@ -54,6 +54,26 @@ public class WatchRoutingTests
     }
 
     [Fact]
+    public async Task Retention_runs_on_an_idle_tick_without_new_files()
+    {
+        using var dir = new TempDir();
+        var outputFolder = Path.Combine(dir.Path, WatchRule.DefaultOutputName);
+        Directory.CreateDirectory(outputFolder);
+        var old = Path.Combine(outputFolder, "old.png");
+        File.WriteAllText(old, "x");
+        File.SetLastWriteTimeUtc(old, DateTime.UtcNow.AddDays(-10));
+        var rule = new WatchRule { Id = "watch-idle", Folder = dir.Path, RetentionDays = 2 };
+        var state = new GeneratedWatchOutputs(rule);
+        state.RememberForRetention(old);
+        state.Save();
+
+        await using var watcher = new FolderWatcher(rule, (_, _) => Task.FromResult<ConversionJob?>(null));
+        await watcher.ProcessPendingAsync();
+
+        Assert.False(File.Exists(old));
+    }
+
+    [Fact]
     public void Old_outputs_are_deleted_when_retention_is_set()
     {
         using var dir = new TempDir();
@@ -65,10 +85,15 @@ public class WatchRoutingTests
         File.WriteAllText(recent, "x");
         File.SetLastWriteTimeUtc(old, DateTime.UtcNow.AddDays(-10));
         File.SetLastWriteTimeUtc(recent, DateTime.UtcNow);
-        var rule = new WatchRule { Folder = dir.Path, RetentionDays = 2 };
+        var rule = new WatchRule { Id = "watch-1", Folder = dir.Path, RetentionDays = 2 };
 
         var watcher = new FolderWatcher(rule, (_, _) => Task.FromResult<ConversionJob?>(null));
-        watcher.ApplyRetention();
+        var state = new GeneratedWatchOutputs(rule);
+        state.RememberForRetention(old);
+        state.RememberForRetention(recent);
+        state.Save();
+        var reloaded = new FolderWatcher(rule, (_, _) => Task.FromResult<ConversionJob?>(null));
+        reloaded.ApplyRetention();
 
         Assert.False(File.Exists(old));
         Assert.True(File.Exists(recent));
