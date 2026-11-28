@@ -2,6 +2,7 @@
 // saved at once; the service applies it after a short pause.
 
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -339,6 +340,30 @@ public sealed partial class WatchRuleViewModel : ObservableObject
         if (!Choices.Restore(oldValue, newValue, v => Preset = v))
             Change(r => r.PresetId = newValue?.Value ?? "");
     }
+    /// <summary>Conditional routes as JSON; edited in the options panel and saved as the user types.</summary>
+    public string RoutesText
+    {
+        get => JsonSerializer.Serialize(Rule.Routes);
+        set
+        {
+            try
+            {
+                var routes = JsonSerializer.Deserialize<List<WatchRoute>>(value) ?? [];
+                Change(r => r.Routes = routes);
+            }
+            catch (JsonException)
+            {
+                // The user is still typing; the last valid text stays in the rule.
+            }
+        }
+    }
+
+    public int RetentionDays
+    {
+        get => Rule.RetentionDays;
+        set => Change(r => r.RetentionDays = Math.Clamp(value, 0, 3650));
+    }
+
     partial void OnIncludeSubfoldersChanged(bool value) => Change(r => r.IncludeSubfolders = value);
     partial void OnOutputFolderChanged(string value) => Change(r => r.OutputFolder = value.Trim());
     partial void OnOriginalsChanged(Choice<AfterConversion>? oldValue, Choice<AfterConversion> newValue)

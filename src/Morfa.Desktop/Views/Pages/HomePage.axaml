@@ -79,6 +79,7 @@
       <StackPanel Grid.Column="2" Spacing="10">
         <DockPanel>
           <Button DockPanel.Dock="Right" Classes="ghost" Content="{DynamicResource home.export_csv}" Click="OnExportHistoryClick" Margin="0,0,6,0" />
+          <Button DockPanel.Dock="Right" Classes="ghost" Content="{DynamicResource home.export_json}" Click="OnExportJsonClick" Margin="0,0,6,0" />
           <Button DockPanel.Dock="Right" Classes="ghost" Content="{DynamicResource home.clear_history}" Command="{Binding ClearHistoryCommand}" />
           <TextBlock Classes="h2" VerticalAlignment="Center" Text="{DynamicResource home.recent}" />
         </DockPanel>
@@ -88,6 +89,18 @@
             <PathIcon Width="14" Height="14" Margin="10,0,0,0" Data="{StaticResource Icon.Search}" Foreground="{DynamicResource TextSecondaryBrush}" />
           </TextBox.InnerLeftContent>
         </TextBox>
+        <WrapPanel IsVisible="{Binding !IsEmpty}">
+          <TextBlock Classes="muted" VerticalAlignment="Center" Margin="0,0,8,0" Text="{DynamicResource home.dashboard}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.Total}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.Succeeded}" />
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding Dashboard.ThisWeek}" />
+        </WrapPanel>
+        <WrapPanel IsVisible="{Binding !IsEmpty}">
+          <TextBox Width="96" Margin="0,0,6,0" Text="{Binding FormatFilter}" PlaceholderText="{DynamicResource home.format_filter}" />
+          <TextBox Width="96" Margin="0,0,6,0" Text="{Binding StateFilter}" PlaceholderText="{DynamicResource home.state_filter}" />
+          <TextBox Width="96" Margin="0,0,6,0" Text="{Binding PresetFilter}" PlaceholderText="{DynamicResource home.preset_filter}" />
+          <TextBox Width="96" Text="{Binding WatchFilter}" PlaceholderText="{DynamicResource home.watch_filter}" />
+        </WrapPanel>
         <TextBlock Classes="muted" Text="{DynamicResource home.recent_empty}" IsVisible="{Binding IsEmpty}" />
         <TextBlock Classes="muted" Text="{DynamicResource home.no_matches}" IsVisible="{Binding NoMatches}" />
         <ItemsControl ItemsSource="{Binding History}">
@@ -100,6 +113,14 @@
             <DataTemplate x:DataType="vm:HistoryItemViewModel">
               <Border Classes="card history-card" Padding="14,12">
                 <StackPanel Spacing="10">
+                  <DockPanel>
+                    <Button DockPanel.Dock="Right" Classes="ghost" Command="{Binding TogglePinCommand}"
+                            Content="{DynamicResource home.pin}" />
+                    <TextBox Text="{Binding TagsText, Mode=TwoWay}"
+                             PlaceholderText="{DynamicResource home.tags}" />
+                  </DockPanel>
+                  <TextBox Text="{Binding Notes, Mode=TwoWay}"
+                           PlaceholderText="{DynamicResource home.notes}" AcceptsReturn="False" />
                   <!-- The result: its picture, else its format; the corner says whether the job went well. -->
                   <DockPanel>
                     <Panel DockPanel.Dock="Left" Width="42" Height="42" Margin="0,0,12,0">
@@ -204,3 +225,4 @@
     </Grid>
   </StackPanel>
 </UserControl>
+

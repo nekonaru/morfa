@@ -118,6 +118,16 @@
                     </StackPanel>
                   </Button>
                 </StackPanel>
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="label" Text="{DynamicResource watch.routes}" />
+                  <TextBlock Classes="caption" Text="{DynamicResource watch.routes_hint}" TextWrapping="Wrap" />
+                  <TextBox Text="{Binding RoutesText, Mode=TwoWay}" AcceptsReturn="False" FontSize="11" />
+                </StackPanel>
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="label" Text="{DynamicResource watch.retention}" />
+                  <NumericUpDown Minimum="0" Maximum="3650" Increment="1" Value="{Binding RetentionDays}" />
+                  <TextBlock Classes="caption" Text="{DynamicResource watch.retention_hint}" TextWrapping="Wrap" />
+                </StackPanel>
               </StackPanel>
               </Border>
 

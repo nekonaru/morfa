@@ -84,13 +84,45 @@ public sealed class WatchFolderService(UserDataStore store, ConversionService co
 
     private async Task<Domain.Conversion.ConversionJob?> ConvertAsync(WatchRule rule, IReadOnlyList<string> files, CancellationToken cancellationToken)
     {
-        var preset = store.FindConversion(rule.PresetId);
-        if (preset is null)
+        if (rule.Routes.Count == 0)
         {
-            log.LogWarning("Watch folder {Folder}: preset {Preset} no longer exists", rule.Folder, rule.PresetId);
-            return null;
+            var preset = store.FindConversion(rule.PresetId);
+            if (preset is null)
+            {
+                log.LogWarning("Watch folder {Folder}: preset {Preset} no longer exists", rule.Folder, rule.PresetId);
+                return null;
+            }
+            return await conversions.RunAsync(files, rule.Apply(preset), rule.Id, cancellationToken);
         }
-        return await conversions.RunAsync(files, rule.Apply(preset), rule.Id, cancellationToken);
+
+        // Conditional routing: one conversion per chosen preset, combined into a single result for the watcher.
+        var jobs = new List<Domain.Conversion.ConversionJob>();
+        foreach (var group in files.GroupBy(f => rule.PresetIdFor(f) ?? "").Where(g => g.Key.Length > 0))
+        {
+            var preset = store.FindConversion(group.Key);
+            if (preset is null)
+            {
+                log.LogWarning("Watch folder {Folder}: preset {Preset} no longer exists", rule.Folder, group.Key);
+                continue;
+            }
+            if (await conversions.RunAsync(group.ToList(), rule.Apply(preset), rule.Id, cancellationToken) is { } job)
+                jobs.Add(job);
+        }
+        if (jobs.Count == 0)
+            return null;
+        var combined = new Domain.Conversion.ConversionJob(files, jobs[0].Preset, jobs[0].PresetDisplayName);
+        foreach (var source in combined.Files)
+        {
+            var from = jobs.SelectMany(j => j.Files).FirstOrDefault(f =>
+                string.Equals(f.SourcePath, source.SourcePath, StringComparison.OrdinalIgnoreCase));
+            if (from is null) continue;
+            source.State = from.State;
+            source.Progress = from.Progress;
+            source.Outputs.AddRange(from.Outputs);
+            source.ErrorKey = from.ErrorKey;
+            source.ErrorDetail = from.ErrorDetail;
+        }
+        return combined;
     }
 
     /// <summary>
@@ -110,7 +142,10 @@ public sealed class WatchFolderService(UserDataStore store, ConversionService co
     private static string Signature(WatchRule rule) =>
         string.Join('|', rule.Folder, rule.PresetId, rule.IncludeSubfolders, rule.OutputFolder, rule.Originals,
             string.Join('/', rule.Include), rule.FileNamePattern,
-            string.Join('/', rule.Renames.Select(r => $"{r.Kind}:{r.Find}>{r.Replace}")));
+            string.Join('/', rule.Renames.Select(r => $"{r.Kind}:{r.Find}>{r.Replace}")),
+            rule.RetentionDays,
+            string.Join('/', rule.Routes.Select(r =>
+                $"{r.PresetId}:{string.Join(',', r.NamePatterns)}:{string.Join(',', r.Formats)}:{r.MinSizeMb}:{r.MaxSizeMb}")));
 
     public async ValueTask DisposeAsync()
     {

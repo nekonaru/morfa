@@ -62,9 +62,10 @@ Morfa is inspired by, and builds on, [Filee](https://github.com/KnifeLemon/Filee
 | **263 formats, no other software** | Images, PDF, Word, Excel, PowerPoint, HWP, e-books, archives, fonts, CAD, 3D models and geospatial data work without Office, Hancom Office or LibreOffice |
 | **Straight from the browser** | Drag a picture, a link to a file or a download out of Chrome, Edge, Firefox or Safari the same way; Morfa saves it to your Downloads folder and converts it |
 | **Many files at once, in parallel** | Routes with several steps (HWP to HWPX to DOCX) are found automatically |
-| **Watch folders** | Convert every file that lands in a folder you choose |
+| **Watch folders** | Convert every file that lands in a folder you choose, with optional per-file routes and output retention |
 | **Recent conversions** | Every result on Home with a thumbnail: open it, or open it with another app |
-| **Export history** | Save the recent-conversions list to a UTF-8 CSV file from Home |
+| **Export history** | Save the recent-conversions list to a UTF-8 CSV or JSON file from Home |
+| **History dashboard** | Search by text, format, state, preset and watch folder; pin entries, add tags and notes, and see totals at a glance |
 
 ### Toolbars and Presets
 
