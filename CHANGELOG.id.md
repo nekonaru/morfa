@@ -2,6 +2,41 @@
 
 Apa yang berubah di setiap versi Morfa. Versi terbaru di paling atas.
 
+## v2.0.0
+
+Update besar v2: konversi bertahan setelah restart, donut bisa dipakai dengan keyboard, workflow bisa disimpan dan dijalankan ulang, riwayat bisa dicari, dan watch folder mengatur file berdasarkan aturan.
+
+## Fitur baru
+
+- **Antrian konversi persisten.** Job disimpan ke `.queue-v2.json` dan dilanjutkan setelah restart. `morfa queue list`, `pause`, `resume`, dan `clear` mengaturnya.
+- **Donut keyboard dan pencarian.** Panah berpindah antar slice, Enter memilih, Tab membalik, dan mengetik menyaring slice. Preset yang sering dipakai naik ke depan.
+- **Workflow tersimpan.** File resep versi 2 menyimpan langkah berulang. `morfa run recipe.json FILES...` menjalankannya dengan file antara di folder sementara dan output akhir yang stabil.
+- **Dashboard riwayat.** Home mencari berdasarkan teks, format, status, preset, dan watch folder. Entri bisa disematkan, diberi tag, dan dicatat.
+- **Ekspor riwayat JSON.** Home mengekspor seluruh riwayat ke JSON selain CSV.
+- **Watch folder bersyarat.** Aturan mengarahkan file berdasarkan nama, format, dan ukuran, menghapus output lama, serta mengingat file yang terlalu sering gagal agar tidak dicoba ulang setelah restart.
+- **Manajer engine.** `morfa engines list|verify|pin|offline|online` memeriksa engine opsional, memverifikasi checksum, menyimpan pin saran, dan memblokir unduhan.
+- **Bundel konfigurasi.** `morfa config export|import` memindahkan settings, preset, dan profil dalam satu file JSON tanpa kata sandi atau isi file.
+- **Dry run dan event CLI.** `morfa convert --dry-run` menampilkan rute dan output tanpa menulis, sedangkan `--json-events` menghasilkan progres yang bisa dibaca mesin.
+- **Doctor CLI.** `morfa doctor` memeriksa settings, engine, disk, dan izin platform, dengan `--fix` untuk perbaikan aman.
+
+## Peningkatan
+
+- **Schema settings 47 dan 48.** Opsi queue, workflow, rule, aksesibilitas, diagnostik, dan engine mendapat bagian sendiri, dengan cadangan sebelum migrasi.
+- **Tulisan antrian lintas proses.** Mutex bernama mencegah app dan CLI menimpa update antrian satu sama lain.
+- **Thumbnail terbaru.** Hanya seperlima cache tertua yang dibuang, sehingga cache penuh tidak memuat ulang seluruh daftar.
+- **Donut multi-monitor.** Jendela radial tetap berada di area kerja layar yang memuat kursor.
+- **Dok dwibahasa.** README dan catatan rilis tetap sinkron dalam Inggris dan Bahasa Indonesia.
+
+## Perbaikan bug
+
+- **Keluar tidak lagi meninggalkan konversi.** Job yang berjalan dibatalkan dan diselesaikan sebelum layanan dibongkar.
+- **Job gabungan melaporkan kegagalan.** Merge yang gagal menandai file-file sebagai gagal, bukan menghitungnya sebagai sukses.
+- **Output XML menyaring karakter terlarang.** Link XHTML hanya menjaga skema aman, SVG melepas memori Skia, dan jalur media Pandoc hanya ditulis ulang di target gambar.
+- **Thunar dan installer lebih aman.** uca.xml yang rusak tidak menggagalkan entri file manager lain, dan installer Linux tidak mengganti `~/.local/bin/morfa` milik program lain.
+- **Tulisan settings lebih aman.** Reader memakai share-delete, rename dicoba ulang, dan file sementara tersisa dibersihkan saat startup.
+- **Retensi watch folder tepat sasaran.** Hanya output yang tercatat untuk aturan yang dihapus, dan retensi berjalan walau tidak ada file baru.
+- **Mode offline memblokir unduhan engine.** Sakelar offline memblokir installer, termasuk paket bahasa OCR.
+
 ## v1.3.0
 
 Penyegaran stabilitas: keluar dari aplikasi membatalkan konversi yang sedang berjalan, job merge melaporkan kegagalan dengan benar, watch folder mencoba masalah sementara, dan ekspor CSV baru ada di Home.

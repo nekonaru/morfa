@@ -146,9 +146,9 @@ public sealed class WebDownloader : IDisposable
         }
     }
 
-    /// <summary>True for an http or https address, the only ones Morfa downloads.</summary>
+    /// <summary>True for an https address, the only scheme Morfa downloads. Cleartext http is refused.</summary>
     public static bool IsWebAddress(Uri url) =>
-        url.IsAbsoluteUri && (url.Scheme == Uri.UriSchemeHttps || url.Scheme == Uri.UriSchemeHttp);
+        url.IsAbsoluteUri && url.Scheme == Uri.UriSchemeHttps;
 
     private async Task<HttpResponseMessage> GetFollowingRedirectsAsync(Uri url, CancellationToken cancellationToken)
     {

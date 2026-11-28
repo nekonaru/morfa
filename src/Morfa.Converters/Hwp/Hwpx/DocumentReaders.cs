@@ -33,7 +33,11 @@ internal static class DocumentReaders
         ["dotx"] = DocxReader.Read,
         ["dotm"] = DocxReader.Read,
         ["txt"] = (path, _) => TextDocument(File.ReadAllBytes(path)),
-        ["md"] = (path, _) => MarkdownReader.Read(DecodeText(File.ReadAllBytes(path)), Path.GetDirectoryName(Path.GetFullPath(path))!),
+        ["md"] = (path, _) =>
+        {
+            var folder = Path.GetDirectoryName(Path.GetFullPath(path))!;
+            return MarkdownReader.Read(DecodeText(File.ReadAllBytes(path)), folder, folder);
+        },
         ["xlsx"] = (path, _) => SheetDocument.Build(XlsxReader.Read(path)),
         ["xlsm"] = (path, _) => SheetDocument.Build(XlsxReader.Read(path)),
         ["xltx"] = (path, _) => SheetDocument.Build(XlsxReader.Read(path)),

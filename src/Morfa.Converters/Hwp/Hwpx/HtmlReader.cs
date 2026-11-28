@@ -92,6 +92,8 @@ internal sealed partial class HtmlReader
         {
             BaseFolder = Path.GetDirectoryName(Path.GetFullPath(path))!,
             MediaFolder = mediaFolder,
+            // Standalone HTML must not reach outside its own folder: no ../ or file: images from unrelated paths.
+            ResourceRoot = Path.GetDirectoryName(Path.GetFullPath(path))!,
         });
         return ToDocument(content);
     }

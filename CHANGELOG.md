@@ -2,6 +2,41 @@
 
 What changed in each version of Morfa. Newest version on top.
 
+## v2.0.0
+
+The big v2 update: conversions survive a restart, the donut works from the keyboard, workflows can be saved and run again, history is searchable, and watch folders route files by rule.
+
+## New features
+
+- **Persistent conversion queue.** Jobs are saved to `.queue-v2.json` and resume after a restart. `morfa queue list`, `pause`, `resume` and `clear` control them.
+- **Donut keyboard and search.** Arrow keys move between slices, Enter activates, Tab flips, and typing narrows the slices. Recently used presets move to the front.
+- **Saved workflows.** Recipe files with version 2 store repeatable steps. `morfa run recipe.json FILES...` runs them with temporary intermediates and stable final paths.
+- **History dashboard.** Home searches by text, format, state, preset and watch folder. Entries can be pinned, tagged and annotated.
+- **JSON history export.** Home exports the full history to JSON alongside the existing CSV.
+- **Conditional watch folders.** Rules can route files by name, format and size, delete old outputs, and remember files that failed too often so a restart does not retry them forever.
+- **Engine manager.** `morfa engines list|verify|pin|offline|online` inspects optional engines, verifies checksums, records advisory pins and blocks downloads.
+- **Configuration bundles.** `morfa config export|import` moves settings, presets and profiles as one JSON file without passwords or file contents.
+- **CLI dry run and events.** `morfa convert --dry-run` shows the planned route and output without writing, and `--json-events` emits machine-readable progress.
+- **CLI doctor.** `morfa doctor` checks settings, engines, disk space and platform permissions, with `--fix` for safe repairs.
+
+## Improvements
+
+- **Settings schema 47 and 48.** Queue, workflow, rule, accessibility, diagnostics and engine options get their own settings sections, with backups before migration.
+- **Cross-process queue writes.** A named mutex keeps the app and the CLI from overwriting each other's queue updates.
+- **Recent thumbnails.** Only the oldest fifth of the thumbnail cache is evicted, so a full cache no longer reloads the whole list.
+- **Multi-monitor donut.** The radial window stays inside the working area of the screen that contains the pointer.
+- **Bilingual docs.** README and the release notes stay in sync in English and Bahasa Indonesia.
+
+## Bug fixes
+
+- **Quit no longer abandons conversions.** Running jobs are cancelled and drained before services are disposed.
+- **Merged jobs report failures.** A failed merge marks its files failed instead of counting them as converted.
+- **XML output filters forbidden characters.** XHTML links keep only safe schemes, SVG releases native Skia memory, and Pandoc media paths are rewritten only inside image targets.
+- **Thunar and installer safety.** A broken Thunar config no longer aborts other file manager entries, and the Linux installer leaves a foreign `~/.local/bin/morfa` alone.
+- **Settings writes are safer.** Readers share delete, renames are retried, and stale temporary files are swept at startup.
+- **Watch retention is precise.** Only outputs recorded for the rule are deleted, and retention runs even when no new files arrive.
+- **Engine downloads honour offline mode.** The offline switch blocks the installer, including OCR language packs.
+
 ## v1.3.0
 
 Stability refresh: exits cancel in-flight conversions, merge jobs report failures properly, watch folders retry transient problems, and a new CSV export joins Home.
