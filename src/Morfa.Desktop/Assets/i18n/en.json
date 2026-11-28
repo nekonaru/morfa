@@ -157,6 +157,7 @@
   "notice.geo_shapefile_split": "A Shapefile holds one kind of shape, so points, lines and polygons were saved as separate files",
 
   "engine.reason.not_installed": "Not installed",
+  "engine.offline": "Engine downloads are turned off in settings",
   "engine.reason.error": "Error while checking",
   "engine.reason.unsupported_platform": "Not available on this platform",
   "engine.reason.needs_package": "Needs {0}. Install it in Settings → Engines",

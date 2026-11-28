@@ -266,6 +266,34 @@ public sealed class UserDataStore
         return bundle.Presets.Count + bundle.Profiles.Count;
     }
 
+    /// <summary>Exports settings, presets and profiles. PDF passwords and file contents are never included.</summary>
+    public void ExportConfig(string path) =>
+        Write(path, new ConfigBundle
+        {
+            Settings = Settings,
+            Presets = [.. Presets.Select(p => p.WithoutPassword(mark: false))],
+            Profiles = Profiles,
+        }, MorfaJsonContext.Default.ConfigBundle);
+
+    /// <summary>Restores a config bundle. A newer bundle format is refused.</summary>
+    public void ImportConfig(string path)
+    {
+        using var stream = File.OpenRead(path);
+        var bundle = JsonSerializer.Deserialize(stream, MorfaJsonContext.Default.ConfigBundle)
+            ?? throw new InvalidDataException("Empty config bundle.");
+        if (bundle.SchemaVersion > ConfigBundle.CurrentSchemaVersion)
+            throw new InvalidDataException($"This bundle was exported by a newer version of Morfa (format {bundle.SchemaVersion}).");
+        if (bundle.Settings is null)
+            throw new InvalidDataException("The config bundle has no settings.");
+        Settings = bundle.Settings;
+        SettingsMigrations.Apply(Settings);
+        Presets = [.. bundle.Presets.Select(p => p.WithoutPassword(mark: false))];
+        Profiles = [.. bundle.Profiles];
+        EnsureConsistency();
+        SaveSettings();
+        SaveLibrary();
+    }
+
     /// <summary>Removes dangling preset references and guarantees at least one mixed-selection profile.</summary>
     private void EnsureConsistency()
     {
@@ -482,6 +510,13 @@ internal static class SettingsMigrations
             if (settings.Diagnostics is null) settings.Diagnostics = new();
             if (settings.Queue.MaxAttempts < 1) settings.Queue.MaxAttempts = 1;
             if (settings.Diagnostics.LogRetentionDays < 1) settings.Diagnostics.LogRetentionDays = 7;
+        }
+
+        // v48: engine pins and the offline switch.
+        if (settings.SchemaVersion < 48)
+        {
+            if (settings.Engine is null) settings.Engine = new();
+            if (settings.Engine.PinnedVersions is null) settings.Engine.PinnedVersions = [];
         }
 
         // Triggers default at construction (AppSettings.Triggers initializer) for new installs; re-adding default

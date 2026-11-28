@@ -9,6 +9,7 @@ using Morfa.Converters.Infrastructure;
 using Morfa.Converters.Office;
 using Morfa.Domain.Conversion;
 using Morfa.Domain.Localization;
+using Morfa.Domain.Settings;
 
 namespace Morfa.Desktop.Services;
 
@@ -177,13 +178,16 @@ public sealed class EngineDownloadService
     private readonly ConverterCatalog _catalog;
     private readonly ILogger<EngineDownloadService> _logger;
     private readonly SemaphoreSlim _oneAtATime = new(1, 1);
+    private readonly UserDataStore _store;
     private int _warmingUp;
 
-    public EngineDownloadService(ConverterCatalog catalog, ILocalizer loc, ILogger<EngineDownloadService> logger)
+    public EngineDownloadService(ConverterCatalog catalog, ILocalizer loc, ILogger<EngineDownloadService> logger,
+        UserDataStore store)
     {
         _catalog = catalog;
         _logger = logger;
         _loc = loc;
+        _store = store;
         // Redirects are followed by the installer (mirrors may use plain HTTP; files are verified by SHA-256).
         var http = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan };
         http.DefaultRequestHeaders.UserAgent.ParseAdd($"Morfa/{typeof(EngineDownloadService).Assembly.GetName().Version}");
@@ -248,6 +252,12 @@ public sealed class EngineDownloadService
     {
         if (!state.CanInstall && !state.CanUpdate)
             return;
+        if (_store.Settings.Engine.Offline)
+        {
+            state.Error = _loc["engine.offline"];
+            _logger.LogWarning("Engine downloads are turned off in settings");
+            return;
+        }
         using var cancellation = new CancellationTokenSource();
         state.Cancellation = cancellation;
         state.Error = null;

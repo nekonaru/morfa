@@ -123,7 +123,7 @@ public sealed class DonutSettings
 public sealed class AppSettings
 {
     /// <summary>Current schema version. Increase when the format changes and add a migration.</summary>
-    public const int CurrentSchemaVersion = 47;
+    public const int CurrentSchemaVersion = 48;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
 
@@ -276,6 +276,9 @@ public sealed class AppSettings
     /// <summary>Options for local diagnostics.</summary>
     public DiagnosticsSettings Diagnostics { get; set; } = new();
 
+    /// <summary>Engine manager options (schema 48).</summary>
+    public EngineSettings Engine { get; set; } = new();
+
     /// <summary>
     /// Returns <paramref name="preset"/> itself, or a copy with the app-wide output settings applied: it saves to
     /// <see cref="DefaultOutput"/> when the preset's location is <see cref="OutputLocation.Default"/>, and keeps the
@@ -390,4 +393,14 @@ public sealed class DiagnosticsSettings
 
     /// <summary>How many days of log files to keep.</summary>
     public int LogRetentionDays { get; set; } = 7;
+}
+
+/// <summary>Engine manager options. Pins are advisory in v2: they are shown and checked, not downloaded.</summary>
+public sealed class EngineSettings
+{
+    /// <summary>Block every engine download; installed and system engines still work.</summary>
+    public bool Offline { get; set; }
+
+    /// <summary>Package id to a version the user wants; the manifest still supplies the download URL and hash.</summary>
+    public Dictionary<string, string> PinnedVersions { get; set; } = [];
 }

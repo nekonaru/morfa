@@ -157,6 +157,7 @@
   "notice.geo_shapefile_split": "Shapefile menampung satu jenis bentuk, jadi titik, garis, dan poligon disimpan sebagai berkas terpisah",
 
   "engine.reason.not_installed": "Belum dipasang",
+  "engine.offline": "Unduhan engine dimatikan di pengaturan",
   "engine.reason.error": "Kesalahan saat memeriksa",
   "engine.reason.unsupported_platform": "Tidak tersedia di platform ini",
   "engine.reason.needs_package": "Butuh {0}. Pasang di Pengaturan → Mesin",

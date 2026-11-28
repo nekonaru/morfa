@@ -28,6 +28,7 @@ namespace Morfa.Domain.Settings;
 [JsonSerializable(typeof(JobSnapshot))]
 [JsonSerializable(typeof(List<JobSnapshot>))]
 [JsonSerializable(typeof(RecipeFile))]
+[JsonSerializable(typeof(ConfigBundle))]
 internal sealed partial class MorfaJsonContext : JsonSerializerContext;
 
 /// <summary>File format used to import / export presets and profiles.</summary>
@@ -36,6 +37,17 @@ public sealed class PresetBundle
     public const int CurrentSchemaVersion = 1;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
+    public List<Preset> Presets { get; set; } = [];
+    public List<ToolbarProfile> Profiles { get; set; } = [];
+}
+
+/// <summary>Complete local configuration bundle: settings, presets and profiles. Never contains file contents.</summary>
+public sealed class ConfigBundle
+{
+    public const int CurrentSchemaVersion = 1;
+
+    public int SchemaVersion { get; set; } = CurrentSchemaVersion;
+    public AppSettings? Settings { get; set; }
     public List<Preset> Presets { get; set; } = [];
     public List<ToolbarProfile> Profiles { get; set; } = [];
 }
