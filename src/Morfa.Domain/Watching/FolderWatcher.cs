@@ -125,7 +125,7 @@ public sealed class FolderWatcher : IAsyncDisposable
     /// <summary>Registers a file that appeared or changed; it is converted once it has settled.</summary>
     public void Notice(string path)
     {
-        if (ShouldIgnore(path, Rule))
+        if (ShouldIgnore(path, Rule) || _results.IsSuppressed(path))
             return;
         var now = _time.GetUtcNow();
         _pending.AddOrUpdate(path, _ => Candidate.Of(path, now), (_, old) => old.Refresh(path, now));
@@ -211,6 +211,7 @@ public sealed class FolderWatcher : IAsyncDisposable
             if (Rule.Originals == AfterConversion.MoveToOriginals)
                 foreach (var file in job.Files.Where(f => f.State == FileState.Done))
                     MoveToOriginals(Rule, file.SourcePath, _log);
+            ApplyRetention();
             Converted?.Invoke(this, job);
             return ready.Count;
         }
@@ -223,6 +224,26 @@ public sealed class FolderWatcher : IAsyncDisposable
         finally
         {
             _busy.Release();
+        }
+    }
+
+    /// <summary>Deletes outputs older than the rule's retention window; 0 keeps them.</summary>
+    internal void ApplyRetention()
+    {
+        if (Rule.RetentionDays <= 0 || !Directory.Exists(Rule.ResolvedOutputFolder))
+            return;
+        var cutoff = _time.GetUtcNow().UtcDateTime.AddDays(-Rule.RetentionDays);
+        foreach (var path in Directory.EnumerateFiles(Rule.ResolvedOutputFolder, "*", SearchOption.AllDirectories))
+        {
+            try
+            {
+                if (File.GetLastWriteTimeUtc(path) < cutoff)
+                    File.Delete(path);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _log.LogWarning(ex, "Could not apply retention to {Path}", path);
+            }
         }
     }
 
@@ -239,6 +260,7 @@ public sealed class FolderWatcher : IAsyncDisposable
             if (attempts > MaxBatchRetries)
             {
                 _log.LogWarning("Watch folder {Folder}: skipping {Path} after {Attempts} failed attempts", Rule.Folder, path, attempts);
+                _results.Suppress(path); // persisted, so a restart does not start over
                 continue;
             }
             _pending[path] = Candidate.Of(path, now) with { StableSince = now };

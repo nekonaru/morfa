@@ -22,6 +22,22 @@ public sealed class HistoryEntry
     /// <summary>Files that failed, with the reason.</summary>
     public List<HistoryFailure> Failures { get; set; } = [];
 
+    /// <summary>Pinned entries stay at the top of Home.</summary>
+    public bool Pinned { get; set; }
+
+    /// <summary>User tags, shown as chips and searched along with the file names.</summary>
+    public List<string> Tags { get; set; } = [];
+
+    /// <summary>User note for this result.</summary>
+    public string? Notes { get; set; }
+
+    /// <summary>Recipe used for this job, when it came from a saved workflow.</summary>
+    public string? RecipeId { get; set; }
+
+    /// <summary>Total size of the sources and outputs, used by the dashboard.</summary>
+    public long BytesIn { get; set; }
+    public long BytesOut { get; set; }
+
     /// <summary>
     /// The preset as the job ran it (save location already decided, a watch folder's output folder included), kept
     /// when files failed: they can be converted again the same way even after the preset was changed or deleted. Its PDF
@@ -48,9 +64,22 @@ public sealed class HistoryEntry
             Sources = [.. job.Sources],
             Outputs = [.. job.Outputs],
             Failures = failures,
+            BytesIn = LengthOf(job.Sources),
+            BytesOut = LengthOf(job.Outputs),
             // history.json isn't the place for a PDF password: a retry takes it from the preset again.
             Preset = failures.Count > 0 ? job.Preset.Clone().WithoutPassword(mark: true) : null,
         };
+    }
+
+    private static long LengthOf(IEnumerable<string> paths)
+    {
+        long total = 0;
+        foreach (var path in paths)
+        {
+            try { total += new FileInfo(path).Length; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        return total;
     }
 }
 

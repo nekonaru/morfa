@@ -51,6 +51,45 @@ public sealed class WatchRule
     /// <summary>Replacements applied in order to the names of converted files (<see cref="OutputRule.Renames"/>).</summary>
     public List<RenameStep> Renames { get; set; } = [];
 
+    /// <summary>
+    /// Conditional routes, checked in order. When any are set, the first matching route's preset is used instead of
+    /// <see cref="PresetId"/>; a file that matches none is skipped. An empty list keeps the single-preset behaviour.
+    /// </summary>
+    public List<WatchRoute> Routes { get; set; } = [];
+
+    /// <summary>Delete outputs older than this many days; 0 keeps them forever.</summary>
+    public int RetentionDays { get; set; }
+
+    /// <summary>The preset id chosen for <paramref name="path"/>, or null when no route and no default applies.</summary>
+    public string? PresetIdFor(string path)
+    {
+        if (Routes.Count == 0)
+            return PresetId;
+        var name = Path.GetFileName(path);
+        var extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
+        long bytes = -1;
+        foreach (var route in Routes)
+        {
+            if (route.NamePatterns.Count > 0 && !route.NamePatterns.Any(p => FileNameFilter.Of([p]).Matches(name)))
+                continue;
+            if (route.Formats.Count > 0 && !route.Formats.Any(f =>
+                    f.Trim().TrimStart('.').Equals(extension, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            if (route.MaxSizeMb > 0 || route.MinSizeMb > 0)
+            {
+                if (bytes < 0)
+                {
+                    try { bytes = new FileInfo(path).Length; }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { bytes = 0; }
+                }
+                if (route.MinSizeMb > 0 && bytes < route.MinSizeMb * 1024L * 1024) continue;
+                if (route.MaxSizeMb > 0 && bytes > route.MaxSizeMb * 1024L * 1024) continue;
+            }
+            return route.PresetId;
+        }
+        return null;
+    }
+
     /// <summary>The output folder actually used.</summary>
     public string ResolvedOutputFolder =>
         string.IsNullOrWhiteSpace(OutputFolder) ? Path.Combine(Folder, DefaultOutputName) : OutputFolder;
@@ -83,6 +122,31 @@ public sealed class WatchRule
         var clone = (WatchRule)MemberwiseClone();
         clone.Include = [.. Include];
         clone.Renames = Renames.Select(r => r.Clone()).ToList();
+        clone.Routes = Routes.Select(r => r.Clone()).ToList();
+        return clone;
+    }
+}
+
+/// <summary>One conditional route of a watch folder.</summary>
+public sealed class WatchRoute
+{
+    public string PresetId { get; set; } = "";
+
+    /// <summary>File name patterns, any match is enough (<see cref="FileNameFilter"/>).</summary>
+    public List<string> NamePatterns { get; set; } = [];
+
+    /// <summary>Source format ids or extensions, any match is enough.</summary>
+    public List<string> Formats { get; set; } = [];
+
+    /// <summary>Size bounds in megabytes; 0 means no bound.</summary>
+    public double MinSizeMb { get; set; }
+    public double MaxSizeMb { get; set; }
+
+    public WatchRoute Clone()
+    {
+        var clone = (WatchRoute)MemberwiseClone();
+        clone.NamePatterns = [.. NamePatterns];
+        clone.Formats = [.. Formats];
         return clone;
     }
 }
