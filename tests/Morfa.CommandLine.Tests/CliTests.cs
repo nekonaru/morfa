@@ -520,7 +520,7 @@ public sealed class CliTests : IDisposable
         var (code, output, _) = await Run("engines", "verify");
         Assert.Equal(Cli.Success, code);
         Assert.Contains("ffmpeg", output);
-        Assert.Contains("ok", output);
+        Assert.Contains("not installed", output);
 
         (code, _, var errors) = await Run("engines", "pin", "ffmpeg", "   ");
         Assert.Equal(Cli.UsageError, code);

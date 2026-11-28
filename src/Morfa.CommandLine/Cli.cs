@@ -559,8 +559,11 @@ internal static class Cli
                 {
                     if (!EngineDownloads.Components.TryGetValue(componentId, out var component))
                     {
-                        output.WriteLine($"mismatch {componentId}: unavailable on this platform");
-                        if (installed) failed++;
+                        if (installed)
+                        {
+                            output.WriteLine($"mismatch {componentId}: unavailable on this platform");
+                            failed++;
+                        }
                         continue;
                     }
                     if (!installed)
